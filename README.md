@@ -145,3 +145,6 @@ npm run dev
 ## Next phases
 
 See `~/.claude/projects/-Users-mvergouwe-Projects-Memries/memory/project_photo_manager.md` for the full phased plan. Phase 2 = video; Phase 3 = S3 + WebSocket live updates; Phase 4 = sharing graph + Piwigo importer.
+
+- [ ] Wire the frontend indexing splash to the real Go indexer / photos API (today it is a simulated wait over the Vite disk scan + mock API).
+- [ ] Persist albums (and favorites) beyond the in-memory mock store.
