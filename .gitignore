@@ -1,0 +1,10 @@
+.env
+data/
+node_modules/
+dist/
+*.log
+backend/server
+backend/indexer
+.DS_Store
+.vscode/
+.idea/
