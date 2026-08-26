@@ -119,7 +119,9 @@ export async function setNoExifTimes(filePath) {
     `$i.CreationTimeUtc = $utc`,
     `$i.LastWriteTimeUtc = $utc`,
   ].join('; ');
-  const result = spawnSync('powershell.exe', ['-NoProfile', '-Command', script], { encoding: 'utf8' });
+  const result = spawnSync('powershell.exe', ['-NoProfile', '-Command', script], {
+    encoding: 'utf8',
+  });
   if (result.status !== 0) {
     throw new Error(result.stderr || result.stdout || 'failed to set CreationTime');
   }
@@ -145,7 +147,9 @@ if (isMain) {
   if (cmd === 'set-exif') {
     const datetime = datetimeParts.join(' ');
     if (!file || !datetime) {
-      console.error('Usage: node scripts/prepare-fixtures.mjs set-exif <file.jpg> <YYYY:MM:DD HH:MM:SS>');
+      console.error(
+        'Usage: node scripts/prepare-fixtures.mjs set-exif <file.jpg> <YYYY:MM:DD HH:MM:SS>',
+      );
       process.exit(1);
     }
     await setExif(file, datetime);

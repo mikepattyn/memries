@@ -60,18 +60,26 @@ When('I scroll until I see the memory from {string}', async ({ page }, day: stri
   await revealPhoto(page, day);
 });
 
-Then('memories should appear in this capture order:', async ({ page }, table: { raw: () => string[][] }) => {
-  const expected = table.raw().map((row) => row[0]).filter(Boolean);
-  const labels = await collectTimelineLabels(page);
-  const found = expected.map((day: string) => {
-    const index = labels.findIndex((label: string) => label.includes(day));
-    expect(index, `missing memory from ${day}`).toBeGreaterThanOrEqual(0);
-    return index;
-  });
-  for (let i = 1; i < found.length; i += 1) {
-    expect(found[i], `${expected[i]} should follow ${expected[i - 1]}`).toBeGreaterThan(found[i - 1]);
-  }
-});
+Then(
+  'memories should appear in this capture order:',
+  async ({ page }, table: { raw: () => string[][] }) => {
+    const expected = table
+      .raw()
+      .map((row) => row[0])
+      .filter(Boolean);
+    const labels = await collectTimelineLabels(page);
+    const found = expected.map((day: string) => {
+      const index = labels.findIndex((label: string) => label.includes(day));
+      expect(index, `missing memory from ${day}`).toBeGreaterThanOrEqual(0);
+      return index;
+    });
+    for (let i = 1; i < found.length; i += 1) {
+      expect(found[i], `${expected[i]} should follow ${expected[i - 1]}`).toBeGreaterThan(
+        found[i - 1],
+      );
+    }
+  },
+);
 
 Then('the first memory should be from {string}', async ({ page }, day: string) => {
   const labels = await collectTimelineLabels(page);
@@ -127,9 +135,12 @@ Then('I should see the photo from {string} in search results', async ({ page }, 
   await expect(photoByDay(page, day).first()).toBeVisible();
 });
 
-Then('I should not see the photo from {string} in search results', async ({ page }, day: string) => {
-  await expect(photoByDay(page, day)).toHaveCount(0);
-});
+Then(
+  'I should not see the photo from {string} in search results',
+  async ({ page }, day: string) => {
+    await expect(photoByDay(page, day)).toHaveCount(0);
+  },
+);
 
 Then('I should see no matching search results', async ({ page }) => {
   await expect(page.getByText('No memories match that search.', { exact: true })).toBeVisible();
@@ -146,7 +157,10 @@ When('I search for year {string}', async ({ page }, year: string) => {
 
 When('I filter search to favorites', async ({ page }) => {
   await openTab(page, 'Search');
-  await page.getByRole('button', { name: 'Favorites', exact: true }).and(page.locator('[aria-pressed]')).click();
+  await page
+    .getByRole('button', { name: 'Favorites', exact: true })
+    .and(page.locator('[aria-pressed]'))
+    .click();
 });
 
 Then('I should see {int} search results', async ({ page }, count: number) => {
@@ -200,22 +214,29 @@ Then('the original image is requested', async ({ page }) => {
 });
 
 Then('the actions menu offers to remove from this album', async ({ page }) => {
-  await expect(photoActionsDialog(page).getByRole('button', { name: 'Remove from this album' })).toBeVisible();
-  await expect(photoActionsDialog(page).getByRole('group', { name: 'Add to album' })).toHaveCount(0);
+  await expect(
+    photoActionsDialog(page).getByRole('button', { name: 'Remove from this album' }),
+  ).toBeVisible();
+  await expect(photoActionsDialog(page).getByRole('group', { name: 'Add to album' })).toHaveCount(
+    0,
+  );
 });
 
 When('I remove the photo from this album', async ({ page }) => {
   await photoActionsDialog(page).getByRole('button', { name: 'Remove from this album' }).click();
 });
 
-Then('the album {string} should have {int} photos', async ({ page }, name: string, count: number) => {
-  await openTab(page, 'Albums');
-  const label = count === 1 ? '1 photo' : `${count} photos`;
-  const card = page.locator('article').filter({
-    has: page.getByRole('button', { name: new RegExp(`Open album ${name}, ${label}`) }),
-  });
-  await expect(card.getByText(label, { exact: true })).toBeVisible();
-});
+Then(
+  'the album {string} should have {int} photos',
+  async ({ page }, name: string, count: number) => {
+    await openTab(page, 'Albums');
+    const label = count === 1 ? '1 photo' : `${count} photos`;
+    const card = page.locator('article').filter({
+      has: page.getByRole('button', { name: new RegExp(`Open album ${name}, ${label}`) }),
+    });
+    await expect(card.getByText(label, { exact: true })).toBeVisible();
+  },
+);
 
 When('I open the photo from {string}', async ({ page }, day: string) => {
   const search = page.getByRole('heading', { name: 'Search', exact: true });
@@ -248,7 +269,9 @@ When('I add the viewer photo to favorites', async ({ page }) => {
 When('I add the viewer photo to album {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'Add to album', exact: true }).click();
   await expect(photoActionsDialog(page)).toBeVisible();
-  await photoActionsDialog(page).getByRole('button', { name: new RegExp(`Add to album ${name}`) }).click();
+  await photoActionsDialog(page)
+    .getByRole('button', { name: new RegExp(`Add to album ${name}`) })
+    .click();
 });
 
 When('I go to the next photo', async ({ page }) => {
@@ -284,33 +307,49 @@ Then('the photo actions menu is visible', async ({ page }) => {
   await expect(photoActionsDialog(page)).toBeVisible();
 });
 
-Then('album {string} in the actions menu shows {int} on the right', async ({ page }, name: string, count: number) => {
-  const item = photoActionsDialog(page).getByRole('button', {
-    name: new RegExp(`Add to album ${name}, ${count} photo`),
-  });
-  await expect(item).toBeVisible();
-  await expect(item).toContainText(name);
-  await expect(item).toContainText(String(count));
-  const nameBox = await item.locator('span').filter({ hasText: name }).first().boundingBox();
-  const countBox = await item.locator('span').filter({ hasText: String(count) }).last().boundingBox();
-  if (!nameBox || !countBox) throw new Error(`missing layout boxes for album ${name}`);
-  expect(countBox.x, 'album count should sit to the right of the name').toBeGreaterThan(nameBox.x);
-});
+Then(
+  'album {string} in the actions menu shows {int} on the right',
+  async ({ page }, name: string, count: number) => {
+    const item = photoActionsDialog(page).getByRole('button', {
+      name: new RegExp(`Add to album ${name}, ${count} photo`),
+    });
+    await expect(item).toBeVisible();
+    await expect(item).toContainText(name);
+    await expect(item).toContainText(String(count));
+    const nameBox = await item.locator('span').filter({ hasText: name }).first().boundingBox();
+    const countBox = await item
+      .locator('span')
+      .filter({ hasText: String(count) })
+      .last()
+      .boundingBox();
+    if (!nameBox || !countBox) throw new Error(`missing layout boxes for album ${name}`);
+    expect(countBox.x, 'album count should sit to the right of the name').toBeGreaterThan(
+      nameBox.x,
+    );
+  },
+);
 
 When('I choose album {string} in the actions menu', async ({ page }, name: string) => {
-  await photoActionsDialog(page).getByRole('button', { name: new RegExp(`Add to album ${name}`) }).click();
+  await photoActionsDialog(page)
+    .getByRole('button', { name: new RegExp(`Add to album ${name}`) })
+    .click();
 });
 
-When('I change the capture date of {string} to {string}', async ({ page }, file: string, datetime: string) => {
-  markFixturesDirty();
-  runPrepareFixtures(['set-exif', file, datetime]);
-  await signIn(page);
-});
+When(
+  'I change the capture date of {string} to {string}',
+  async ({ page }, file: string, datetime: string) => {
+    markFixturesDirty();
+    runPrepareFixtures(['set-exif', file, datetime]);
+    await signIn(page);
+  },
+);
 
 When('I sync the folder', async ({ page }) => {
   await openTab(page, 'Memories');
   await page.getByRole('button', { name: 'Sync folder' }).click();
-  await expect(page.getByRole('heading', { name: 'Your memries' })).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByRole('heading', { name: 'Your memries' })).toBeVisible({
+    timeout: 120_000,
+  });
   await expect(page.getByRole('heading', { name: 'Indexing your files' })).toHaveCount(0, {
     timeout: 120_000,
   });

@@ -38,9 +38,7 @@ async function reindexOwner(page: Page) {
   if (!started.ok() && started.status() !== 202) {
     throw new Error(`index start failed: ${started.status()} ${await started.text()}`);
   }
-  await expect
-    .poll(() => indexStatus(page), { timeout: 120_000 })
-    .toMatch(/^complete/);
+  await expect.poll(() => indexStatus(page), { timeout: 120_000 }).toMatch(/^complete/);
 }
 
 async function resetLibrary(page: Page) {
@@ -73,7 +71,9 @@ export async function signIn(page: Page) {
   } catch {
     // Session cookie already present, or the splash is already showing.
   }
-  await expect(page.getByRole('heading', { name: 'Your memries' })).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByRole('heading', { name: 'Your memries' })).toBeVisible({
+    timeout: 120_000,
+  });
 }
 
 export async function openTab(page: Page, tab: string) {
@@ -81,7 +81,9 @@ export async function openTab(page: Page, tab: string) {
 }
 
 export function photoByDay(page: Page, day: string): Locator {
-  return page.getByRole('button', { name: new RegExp(`Open (favorited )?photo, ${escapeRegExp(day)}`) });
+  return page.getByRole('button', {
+    name: new RegExp(`Open (favorited )?photo, ${escapeRegExp(day)}`),
+  });
 }
 
 /** Viewer dialog is labelled by the capture title, not a fixed "Photo viewer" name. */
@@ -113,7 +115,9 @@ export async function scrollTimeline(page: Page, dy: number) {
       return;
     }
     const nodes = [root, ...[...root.querySelectorAll('*')].reverse()];
-    const scroller = nodes.find((node) => node instanceof HTMLElement && node.scrollHeight - node.clientHeight > 8);
+    const scroller = nodes.find(
+      (node) => node instanceof HTMLElement && node.scrollHeight - node.clientHeight > 8,
+    );
     (scroller ?? root).scrollBy(0, delta);
   }, dy);
 }
@@ -159,9 +163,9 @@ export async function collectTimelineLabels(page: Page): Promise<string[]> {
   const seen = new Set<string>();
   const order: string[] = [];
   for (let i = 0; i < 24; i += 1) {
-    const labels = await timeline.getByRole('button', { name: /Open / }).evaluateAll((els) =>
-      els.map((el) => el.getAttribute('aria-label') ?? ''),
-    );
+    const labels = await timeline
+      .getByRole('button', { name: /Open / })
+      .evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? ''));
     for (const label of labels) {
       if (label && !seen.has(label)) {
         seen.add(label);

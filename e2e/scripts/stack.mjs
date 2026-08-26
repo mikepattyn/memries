@@ -121,7 +121,11 @@ function writeGeneratedDex(config) {
 
 async function dumpLogs(config) {
   try {
-    await run('docker', composeArgs(config, composeFile, envFile, ['logs', '--tail', '80']), config.composeEnv);
+    await run(
+      'docker',
+      composeArgs(config, composeFile, envFile, ['logs', '--tail', '80']),
+      config.composeEnv,
+    );
   } catch {
     // ignore
   }
@@ -155,8 +159,7 @@ async function down(wipe) {
   await run('docker', composeArgs(config, composeFile, envFile, extra), config.composeEnv);
 }
 
-const isMain =
-  Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
+const isMain = Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
 
 if (isMain) {
   const cmd = process.argv[2] ?? 'up';
