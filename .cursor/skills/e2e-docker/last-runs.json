@@ -25,13 +25,13 @@
     },
     "memries-capture": {
       "path": "apps/e2e/features/capture.feature",
-      "recordedAt": "2026-08-26T11:24:03.530Z",
-      "lastCommit": "1abf1ba3cb3faffb2db9826c346e614a6c14644a",
+      "recordedAt": "2026-08-26T11:36:23.205Z",
+      "lastCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73",
       "finding": {
         "status": "passed",
         "summary": "4 passed",
         "composeProject": "e2e-memries-capture",
-        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
+        "suiteCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73"
       }
     },
     "memries-indexing": {
