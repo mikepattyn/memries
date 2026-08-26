@@ -113,13 +113,13 @@
     },
     "memries-motion": {
       "path": "apps/e2e/features/motion.feature",
-      "recordedAt": "2026-08-26T11:24:07.552Z",
-      "lastCommit": "c8c403d613c30e9accaf4587ae365889d522610a",
+      "recordedAt": "2026-08-26T11:38:17.315Z",
+      "lastCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73",
       "finding": {
-        "status": "failed",
-        "summary": "0 passed, stack up failed: frontend image Node 20 incompatible with jest-dom engines >=22",
+        "status": "passed",
+        "summary": "10 passed (30.3s)",
         "composeProject": "e2e-memries-motion",
-        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
+        "suiteCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73"
       }
     },
     "memries-viewer": {
