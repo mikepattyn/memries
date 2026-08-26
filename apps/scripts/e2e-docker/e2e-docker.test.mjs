@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, it } from 'node:test';
 import { claimSlot } from '../../e2e/scripts/e2e-slots.mjs';
-import { lastRunsCommitTarget } from './e2e-docker-last-runs.mjs';
-import { downFanoutProjects, MAX_LAUNCH, planE2eFeatures } from './e2e-docker.mjs';
+import { commitLastRunsIfNeeded, lastRunsCommitTarget } from './e2e-docker-last-runs.mjs';
+import { buildE2eStatus, downFanoutProjects, MAX_LAUNCH, planE2eFeatures } from './e2e-docker.mjs';
 
 const temps = [];
 
@@ -183,5 +183,101 @@ describe('lastRunsCommitTarget', () => {
       cwd: '/repo',
       relPath: '.cursor/skills/e2e-docker/last-runs.json',
     });
+  });
+});
+
+describe('commitLastRunsIfNeeded', () => {
+  it('commits last-runs and the README tag in one commit', () => {
+    const calls = [];
+    const result = commitLastRunsIfNeeded({
+      beforeApps: {},
+      afterApps: {
+        'memries-login': { recordedAt: '2026-08-26T00:00:00.000Z', finding: { status: 'passed' } },
+      },
+      ids: ['memries-login'],
+      skillId: 'e2e-docker',
+      relPath: '.cursor/skills/e2e-docker/last-runs.json',
+      extraPaths: ['README.md'],
+      branch: 'main',
+      runGit: (args) => {
+        calls.push(args);
+        if (args[0] === 'status') return ` M ${args.at(-1)}`;
+        if (args[0] === 'rev-parse') return 'abc123';
+        return '';
+      },
+    });
+    assert.equal(result.committed, true);
+    assert.equal(result.message, 'chore(e2e-docker): add last-run for memries-login');
+    assert.deepEqual(
+      calls.find((args) => args[0] === 'add'),
+      ['add', '--', '.cursor/skills/e2e-docker/last-runs.json', 'README.md'],
+    );
+    assert.deepEqual(
+      calls.find((args) => args[0] === 'commit'),
+      [
+        'commit',
+        '--only',
+        '-m',
+        'chore(e2e-docker): add last-run for memries-login',
+        '--',
+        '.cursor/skills/e2e-docker/last-runs.json',
+        'README.md',
+      ],
+    );
+  });
+
+  it('omits a clean README from the last-runs commit', () => {
+    const calls = [];
+    commitLastRunsIfNeeded({
+      beforeApps: {},
+      afterApps: {
+        'memries-login': { recordedAt: '2026-08-26T00:00:00.000Z', finding: { status: 'passed' } },
+      },
+      ids: ['memries-login'],
+      skillId: 'e2e-docker',
+      relPath: '.cursor/skills/e2e-docker/last-runs.json',
+      extraPaths: ['README.md'],
+      branch: 'main',
+      runGit: (args) => {
+        calls.push(args);
+        if (args[0] === 'status') {
+          return args.at(-1) === 'README.md' ? '' : ' M last-runs.json';
+        }
+        if (args[0] === 'rev-parse') return 'abc123';
+        return '';
+      },
+    });
+    assert.deepEqual(
+      calls.find((args) => args[0] === 'add'),
+      ['add', '--', '.cursor/skills/e2e-docker/last-runs.json'],
+    );
+  });
+});
+
+describe('buildE2eStatus', () => {
+  it('exits 1 when any last-run is not passed', () => {
+    const result = buildE2eStatus({
+      discovered: [feature('login'), feature('search')],
+      lastRunsApps: {
+        'memries-login': { finding: { status: 'passed' } },
+        'memries-search': { finding: { status: 'failed' } },
+      },
+    });
+    assert.equal(result.skill, 'e2e-docker');
+    assert.equal(result.allPassed, false);
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.passed, 1);
+    assert.equal(result.total, 2);
+  });
+
+  it('exits 0 when every last-run passed', () => {
+    const result = buildE2eStatus({
+      discovered: [feature('login')],
+      lastRunsApps: {
+        'memries-login': { finding: { status: 'passed' } },
+      },
+    });
+    assert.equal(result.allPassed, true);
+    assert.equal(result.exitCode, 0);
   });
 });

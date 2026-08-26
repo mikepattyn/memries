@@ -1,6 +1,5 @@
 Feature: Light and dark theme
-  Theme follows the system on a first visit, can be toggled, and is
-  remembered in the library.
+  First visit follows the system. Toggle persists.
 
   Scenario: First visit follows the system
     Given I have no saved theme

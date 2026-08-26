@@ -1,7 +1,6 @@
 Feature: Photo viewer gestures
-  A horizontal swipe past a short threshold moves to the next or
-  previous Photo. A short drag snaps back. A downward drag dismisses
-  the viewer.
+  Swipe past a threshold for next/previous. A short drag snaps back.
+  Drag down dismisses.
 
   Scenario: Swiping left opens the next photo
     Given I am signed in

@@ -1,6 +1,6 @@
-Feature: Motion and reduced motion
-  Open, close, granularity, and scroll motion are visible by default
-  and become instant when reduced motion is preferred.
+Feature: Motion
+  Open, close, granularity, and scroll move by default. Reduced motion
+  makes them instant.
 
   Scenario: Viewer opens from the photo card
     Given I am signed in

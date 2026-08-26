@@ -1,7 +1,6 @@
 Feature: Photo viewer keyboard
-  The viewer is a dialog. Escape closes it, arrows move through the
-  list, F toggles favorite, and Tab stays inside. Closing returns
-  focus to the Photo that opened it.
+  The viewer is a dialog: Escape closes, arrows move, F favorites, Tab
+  stays inside. Close returns focus to the Photo.
 
   Scenario: Escape closes the viewer
     Given I am signed in

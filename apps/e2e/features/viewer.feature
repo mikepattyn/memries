@@ -1,6 +1,5 @@
 Feature: Photo viewer
-  The viewer opens from browse and search, and supports favorite, album,
-  previous/next, and close.
+  Opens from Memories and Search. Favorite, album, next/previous, close.
 
   Scenario Outline: Viewer actions from <origin>
     Given I am signed in

@@ -9,6 +9,7 @@
 #   make e2e-docker        Plan isolated e2e-docker feature runs
 #   make e2e-docker FORCE=1
 #   make e2e-docker-force  Plan a fresh run of every feature
+#   make e2e-last-runs     Fail unless every e2e last-run passed
 #
 # WIPE does not delete bind-mounted ./data/photos (or ./data/cache).
 # db-clear does not delete volumes or bind mounts.
@@ -39,7 +40,7 @@ else
   REQUIRE_ENV := test -f .env || { echo "Missing .env (see README quick start)" >&2; exit 1; }
 endif
 
-.PHONY: help up down down-wipe db-clear build e2e e2e-down e2e-docker e2e-docker-force install-requirements
+.PHONY: help up down down-wipe db-clear build e2e e2e-down e2e-docker e2e-docker-force e2e-last-runs install-requirements
 
 help:
 	$(info make up              Start the stack (docker compose up -d --build))
@@ -54,6 +55,7 @@ help:
 	$(info make e2e-docker      Plan isolated e2e-docker feature runs)
 	$(info make e2e-docker FORCE=1)
 	$(info make e2e-docker-force  Plan a fresh run of every feature (refresh last-runs))
+	$(info make e2e-last-runs   Fail unless every e2e last-run passed)
 	$(info                      Bind-mounted ./data/photos is not removed.)
 	@exit 0
 
@@ -100,3 +102,6 @@ endif
 
 e2e-docker-force:
 	$(MAKE) e2e-docker FORCE=1
+
+e2e-last-runs:
+	$(SCRIPT_RUN) ./apps/scripts/e2e-docker/e2e-docker.$(SCRIPT_EXT) status

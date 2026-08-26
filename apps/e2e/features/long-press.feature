@@ -1,6 +1,6 @@
 Feature: Long-press photo actions
-  A long-press opens album rows with the name on the left and the count on
-  the right. Tapping a row adds the photo once.
+  Long-press offers album rows (name left, count right). Tapping a row
+  adds the Photo once.
 
   Scenario: Album row layout and idempotent add
     Given I am signed in

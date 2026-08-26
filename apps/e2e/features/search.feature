@@ -1,7 +1,7 @@
 Feature: Search
-  Search can narrow the library by capture year, favorites, and smart dates.
-  The Filter control on Memories opens Search. Relative dates use a frozen
-  library clock of 26 August 2026.
+  Filter on Memories opens Search. Smart dates (`yesterday`, `last winter`,
+  `a day in june`) plus year and favorites facets. Library clock is frozen
+  at 26 August 2026.
 
   Scenario: Filter on memories opens search on every viewport
     Given today is 26 August 2026

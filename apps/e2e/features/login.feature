@@ -1,5 +1,5 @@
 Feature: Sign in
-  An owner reaches their library through Dex.
+  Dex login puts the owner on Memories.
 
   Scenario: Admin sees memories after login
     Given I am signed in

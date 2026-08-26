@@ -24,7 +24,7 @@ Progress:
 - [ ] 2. Fan out one worktree agent per launchNow feature (max 4; slice 1.1 only)
 - [ ] 3. Merge each child branch that committed e2e/ files into baseBranch
 - [ ] 4. Close each opened worktree (`close <id>`; `--base-worktree` after the wave)
-- [ ] 5. Record a last-run finding per feature (commits last-runs.json)
+- [ ] 5. Record a last-run finding per feature (commits last-runs.json and the README tag)
 - [ ] 6. Re-plan the next sequential slice (`--wave 1.2`, then `1.3`, …) if deferred is non-empty
 - [ ] 7. Summarize
 ```
@@ -34,7 +34,7 @@ Progress:
 - One feature file per agent. Not the whole suite
 - Setup + run: add or update `apps/e2e/features` and `apps/e2e/steps` when product diffs lack coverage, then start the isolated stack, run that feature, wipe the stack
 - Never push. Do not edit product code under `apps/frontend/` or `apps/backend/`
-- `last-runs.json` is parent-only; the executing parent commits it when `record` adds an id or changes last-run time / lastCommit / finding
+- `last-runs.json` is parent-only; the executing parent commits it (and the README last-runs tag) when `record` adds an id or changes last-run time / lastCommit / finding
 - Children close their worktree with `close --here` before they return. The parent always runs `close` after success or failure
 - Launch **only** `launchNow` (at most **4**, the current slice). Task description = `e2e-docker-<id>`
 - Do **not** invoke `platform-quality`
@@ -112,7 +112,9 @@ Then record the finding (pass **and** fail). `lastCommit` is this repo's SHA and
 node apps/scripts/e2e-docker/e2e-docker.mjs record --commit <sha> --finding "{\"status\":\"passed\",\"summary\":\"12 passed\",\"composeProject\":\"e2e-memries-timeline\",\"suiteCommit\":\"<sha>\"}" memries-timeline
 ```
 
-`record` Conventional-Commits **only** this skill's `last-runs.json` when an id is new or `recordedAt` / `lastCommit` / `finding` changed. Do not leave the file unstaged. Do not `git checkout` the child branch here.
+`record` refreshes the README last-runs tag and catalog, then Conventional-Commits `.cursor/skills/e2e-docker/last-runs.json` and `README.md` when an id is new or `recordedAt` / `lastCommit` / `finding` changed. Do not leave those files unstaged. Do not `git checkout` the child branch here.
+
+`status` (or `make e2e-last-runs`) exits `0` only when every discovered feature has a passed last-run.
 
 ## 4. Summarize
 

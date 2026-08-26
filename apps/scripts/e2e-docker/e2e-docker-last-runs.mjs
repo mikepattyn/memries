@@ -1,6 +1,7 @@
 /**
  * When to Conventional-Commit a skill last-runs.json after `record`.
- * The executing parent owns this file; child worktrees never touch it.
+ * The executing parent owns this file (and the README last-runs tag);
+ * child worktrees never touch them.
  */
 import { join } from 'node:path';
 const AGENT_WORKTREE_BRANCH_RE =
@@ -77,12 +78,22 @@ export function lastRunsCommitTarget({ root, lastRunsPath, suitePath }) {
   return { cwd: root, relPath: rel };
 }
 
+function dirtyGitPaths(paths, runGit) {
+  return paths.filter((rel) => {
+    const status = runGit(['status', '--porcelain', '--untracked-files=normal', '--', rel], {
+      allowFail: true,
+    });
+    return Boolean(status && String(status).trim());
+  });
+}
+
 export function commitLastRunsIfNeeded({
   beforeApps,
   afterApps,
   ids,
   skillId,
   relPath,
+  extraPaths = [],
   branch,
   runGit,
 }) {
@@ -95,15 +106,14 @@ export function commitLastRunsIfNeeded({
   if (isAgentWorktreeBranch(branch)) {
     throw new Error(`refusing to commit last-runs.json on child worktree branch '${branch}'`);
   }
-  const status = runGit(['status', '--porcelain', '--untracked-files=normal', '--', relPath], {
-    allowFail: true,
-  });
-  if (!status || !String(status).trim()) {
+  const paths = [relPath, ...extraPaths.filter(Boolean)];
+  const dirty = dirtyGitPaths(paths, runGit);
+  if (!dirty.length) {
     return { committed: false, reason: 'clean' };
   }
   const message = lastRunsCommitMessage(skillId, ids, beforeApps);
-  runGit(['add', '--', relPath]);
-  runGit(['commit', '--only', '-m', message, '--', relPath]);
+  runGit(['add', '--', ...dirty]);
+  runGit(['commit', '--only', '-m', message, '--', ...dirty]);
   const commit = runGit(['rev-parse', 'HEAD'], { allowFail: true });
   return { committed: true, message, commit: commit || undefined };
 }

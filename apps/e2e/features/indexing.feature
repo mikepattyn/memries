@@ -1,6 +1,5 @@
 Feature: Index run splash
-  Syncing the folder shows the Index run splash, then returns to
-  Memories. A missing Original is pruned; a relocated Photo keeps its
+  Folder Sync shows the Index run, then Memories. A missing Original is pruned; a relocated Photo keeps its
   identity.
 
   Scenario: Sync folder shows the Index run then memories

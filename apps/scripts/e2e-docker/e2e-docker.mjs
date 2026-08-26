@@ -7,6 +7,7 @@
  * Usage:
  *   node apps/scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--wave <n[.n]>] [--base <branch>]
  *   node apps/scripts/e2e-docker/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
+ *   node apps/scripts/e2e-docker/e2e-docker.mjs status
  *   node apps/scripts/e2e-docker/e2e-docker.mjs close --here
  *   node apps/scripts/e2e-docker/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]
  */
@@ -30,10 +31,13 @@ import {
   e2eSequentialWaves,
   parseWaveArg,
 } from './e2e-features.mjs';
+import { applyE2eLastRunsReadme, summarizeE2eLastRuns } from './e2e-last-runs-status.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const LAST_RUNS_REL = '.cursor/skills/e2e-docker/last-runs.json';
 const LAST_RUNS_PATH = join(ROOT, LAST_RUNS_REL);
+const README_REL = 'README.md';
+const README_PATH = join(ROOT, README_REL);
 const SKILL_ID = 'e2e-docker';
 export const MAX_LAUNCH = 4;
 const MAX_CHANGED_FILES = 40;
@@ -145,6 +149,7 @@ function usage() {
   console.error(`Usage:
   node apps/scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--wave <n[.n]>] [--base <branch>]
   node apps/scripts/e2e-docker/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
+  node apps/scripts/e2e-docker/e2e-docker.mjs status
   node apps/scripts/e2e-docker/e2e-docker.mjs close --here
   node apps/scripts/e2e-docker/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]`);
   process.exit(2);
@@ -196,6 +201,32 @@ function listFeatureFiles(dir) {
   const abs = join(ROOT, dir);
   if (!existsSync(abs)) return [];
   return readdirSync(abs).filter((name) => name.endsWith('.feature'));
+}
+
+function discoveredFeatures() {
+  return discoverE2eFeatures({ suites: SUITES, listFeatures: listFeatureFiles });
+}
+
+function refreshReadmeFromLastRuns(discovered, lastRunsApps) {
+  const current = readFileSync(README_PATH, 'utf8');
+  const applied = applyE2eLastRunsReadme({
+    markdown: current,
+    discovered,
+    lastRunsApps,
+    readFeature: (row) => readFileSync(join(ROOT, row.path), 'utf8'),
+  });
+  const changed = applied.markdown !== current;
+  if (changed) writeFileSync(README_PATH, applied.markdown, 'utf8');
+  return { changed, summary: applied.summary };
+}
+
+export function buildE2eStatus({ discovered, lastRunsApps = {} }) {
+  const summary = summarizeE2eLastRuns({ discovered, lastRunsApps });
+  return {
+    skill: SKILL_ID,
+    ...summary,
+    exitCode: summary.allPassed ? 0 : 1,
+  };
 }
 
 function loadLastRuns() {
@@ -267,10 +298,7 @@ function plan(opts) {
   const suiteHead = git(['rev-parse', 'HEAD'], { allowFail: true });
   const lastRuns = loadLastRuns();
   const wanted = new Set(opts.apps);
-  const discovered = discoverE2eFeatures({
-    suites: SUITES,
-    listFeatures: listFeatureFiles,
-  }).filter((row) => !wanted.size || wanted.has(row.id));
+  const discovered = discoveredFeatures().filter((row) => !wanted.size || wanted.has(row.id));
 
   return planE2eFeatures({
     discovered,
@@ -296,9 +324,7 @@ function plan(opts) {
 function record(ids, opts) {
   if (!ids.length) usage();
   const finding = parseFinding(opts.finding);
-  const discovered = new Map(
-    discoverE2eFeatures({ suites: SUITES, listFeatures: listFeatureFiles }).map((a) => [a.id, a]),
-  );
+  const discovered = new Map(discoveredFeatures().map((a) => [a.id, a]));
   const lastRuns = loadLastRuns();
   const beforeApps = structuredClone(lastRuns.apps);
   const recordedAt = new Date().toISOString();
@@ -318,12 +344,14 @@ function record(ids, opts) {
 
   mkdirSync(dirname(LAST_RUNS_PATH), { recursive: true });
   writeFileSync(LAST_RUNS_PATH, `${JSON.stringify(lastRuns, null, 2)}\n`, 'utf8');
+  const readme = refreshReadmeFromLastRuns([...discovered.values()], lastRuns.apps);
   const lastRunsCommit = commitLastRunsIfNeeded({
     beforeApps,
     afterApps: lastRuns.apps,
     ids,
     skillId: SKILL_ID,
     relPath: LAST_RUNS_REL,
+    extraPaths: [README_REL],
     branch: git(['rev-parse', '--abbrev-ref', 'HEAD'], { allowFail: true }),
     runGit: (args, options) => git(args, options),
   });
@@ -333,11 +361,21 @@ function record(ids, opts) {
     commit: sha,
     ids,
     lastRunsCommitted: lastRunsCommit.committed,
+    readmeUpdated: readme.changed,
+    allPassed: readme.summary.allPassed,
   };
   if (finding) result.finding = finding;
   if (lastRunsCommit.message) result.lastRunsMessage = lastRunsCommit.message;
   if (lastRunsCommit.commit) result.lastRunsCommit = lastRunsCommit.commit;
   return result;
+}
+
+function status() {
+  const lastRuns = loadLastRuns();
+  return buildE2eStatus({
+    discovered: discoveredFeatures(),
+    lastRunsApps: lastRuns.apps,
+  });
 }
 
 function closeHelpers() {
@@ -401,6 +439,7 @@ export function main(argv = process.argv.slice(2)) {
   let result;
   if (cmd === 'plan') result = plan(opts);
   else if (cmd === 'record') result = record(ids, opts);
+  else if (cmd === 'status') result = status();
   else if (cmd === 'close') result = opts.here ? closeHere() : closeSkill(ids, opts);
   else usage();
   console.log(JSON.stringify(result, null, 2));
@@ -441,5 +480,6 @@ function parseArgs(argv) {
 const isMain = Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
 
 if (isMain) {
-  main();
+  const result = main();
+  if (result?.exitCode) process.exit(result.exitCode);
 }

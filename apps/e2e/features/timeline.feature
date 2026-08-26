@@ -1,6 +1,6 @@
 Feature: Timeline periods
-  Year, month, week, and day headings match capture time. The pinned
-  current-period label follows the first visible section. Weeks are Monday–Sunday.
+  Year / month / week / day headings follow capture time. The pinned
+  label follows the first visible Timeline Group.
 
   Scenario: Granularity headings include an ISO week range
     Given I am signed in

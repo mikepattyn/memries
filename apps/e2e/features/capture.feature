@@ -1,6 +1,6 @@
 Feature: Capture time
-  Indexed photos sort by capture time, newest first. EXIF DateTimeOriginal
-  wins; a file with no EXIF falls back to filesystem time.
+  Newest first. EXIF DateTimeOriginal wins; no EXIF uses file time.
+  Sync keeps favorites and album membership.
 
   Scenario: EXIF order is newest first and no-EXIF uses file time
     Given I am signed in

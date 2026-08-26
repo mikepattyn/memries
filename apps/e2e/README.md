@@ -22,6 +22,7 @@ pnpm --filter @memries/e2e test
 
 `make e2e` from the app root is the same as `pnpm --filter @memries/e2e test`.
 `make e2e-docker-force` plans a fresh isolated stack per feature so `/e2e-docker --force` can refresh last-runs.
+What each feature proves — and whether its last-run passed — is on the [main README](../../README.md#end-to-end-tests). `make e2e-last-runs` fails unless every last-run is green.
 
 Login is Dex `admin@example.com` / `password`. Fixture JPEGs live in `apps/e2e/.work/photos/admin@example.com/` and are regenerated before every `stack:up`.
 

@@ -1,7 +1,7 @@
 Feature: Albums
-  An owner can create an album, add a photo, and see the count after reload.
-  Opening an album shows its photos on an album page.
-  The Albums tab announces when there are no albums yet.
+  Create, add a Photo, count survives reload. Opening an Album shows
+  its Photos. Long-press on the Album page unmembers; the Photo stays
+  in the library.
 
   Scenario: Albums tab explains when there are none
     Given I am signed in

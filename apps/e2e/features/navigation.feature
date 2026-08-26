@@ -1,7 +1,6 @@
 Feature: Library navigation
-  Wide viewports use a side nav. Narrow viewports use a bottom bar.
-  Re-opening Albums leaves an Album page. Today returns to the newest
-  Timeline Group.
+  Side nav on wide viewports, bottom bar on narrow. Re-opening Albums
+  leaves an Album page. Today jumps to the newest Timeline Group.
 
   Scenario: Navigation matches the viewport
     Given I am signed in
