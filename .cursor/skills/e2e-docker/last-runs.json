@@ -102,13 +102,13 @@
     },
     "memries-navigation": {
       "path": "apps/e2e/features/navigation.feature",
-      "recordedAt": "2026-08-26T11:38:16.651Z",
-      "lastCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73",
+      "recordedAt": "2026-08-26T12:45:23.791Z",
+      "lastCommit": "9f3563ddcf1381aa7c69d2e101e4d0e7294134bd",
       "finding": {
         "status": "passed",
-        "summary": "6 passed (22.5s)",
+        "summary": "6 passed",
         "composeProject": "e2e-memries-navigation",
-        "suiteCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73"
+        "suiteCommit": "9f3563ddcf1381aa7c69d2e101e4d0e7294134bd"
       }
     },
     "memries-motion": {
