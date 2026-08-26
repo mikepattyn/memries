@@ -18,7 +18,7 @@ import (
 )
 
 type memPhotos struct {
-	mu   sync.Mutex
+	mu    sync.Mutex
 	byKey map[string]*db.Photo
 }
 

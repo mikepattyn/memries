@@ -13,12 +13,12 @@ type GPS struct {
 }
 
 type EXIF struct {
-	Camera string  `json:"camera,omitempty"`
-	Lens   string  `json:"lens,omitempty"`
-	ISO    int     `json:"iso,omitempty"`
-	FNum   float64 `json:"f_number,omitempty"`
-	Shutter string `json:"shutter,omitempty"`
-	GPS    *GPS    `json:"gps,omitempty"`
+	Camera  string  `json:"camera,omitempty"`
+	Lens    string  `json:"lens,omitempty"`
+	ISO     int     `json:"iso,omitempty"`
+	FNum    float64 `json:"f_number,omitempty"`
+	Shutter string  `json:"shutter,omitempty"`
+	GPS     *GPS    `json:"gps,omitempty"`
 }
 
 type StoragePtr struct {

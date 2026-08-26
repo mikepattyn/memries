@@ -228,16 +228,16 @@ func (i *Indexer) indexOne(ctx context.Context, key, ownerID string, force bool)
 	}
 
 	p := &db.Photo{
-		Key:           keepKey,
-		Kind:          "photo",
-		OwnerID:       ownerID,
-		Storage:       db.StoragePtr{Backend: i.Store.Backend(), Path: key},
-		Hash:          hash,
-		SizeBytes:     size,
-		MIME:          mimeType,
-		Dims:          db.Dims{W: thumbRes.Width, H: thumbRes.Height},
-		Orientation:   exifRes.Orientation,
-		EXIF:          exifRes.EXIF,
+		Key:         keepKey,
+		Kind:        "photo",
+		OwnerID:     ownerID,
+		Storage:     db.StoragePtr{Backend: i.Store.Backend(), Path: key},
+		Hash:        hash,
+		SizeBytes:   size,
+		MIME:        mimeType,
+		Dims:        db.Dims{W: thumbRes.Width, H: thumbRes.Height},
+		Orientation: exifRes.Orientation,
+		EXIF:        exifRes.EXIF,
 		Thumbs: db.Thumbs{
 			S256:  thumbRes.Paths[256],
 			S512:  thumbRes.Paths[512],
@@ -290,7 +290,10 @@ func isMedia(key string) bool {
 	return false
 }
 
-type bytesReadCloser struct{ b []byte; i int }
+type bytesReadCloser struct {
+	b []byte
+	i int
+}
 
 func bytesReader(b []byte) io.Reader { return &bytesReadCloser{b: b} }
 

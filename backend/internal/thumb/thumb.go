@@ -11,9 +11,9 @@ import (
 
 	"github.com/disintegration/imaging"
 
+	_ "golang.org/x/image/webp"
 	_ "image/gif"
 	_ "image/png"
-	_ "golang.org/x/image/webp"
 )
 
 var Sizes = []int{256, 512, 1024}
