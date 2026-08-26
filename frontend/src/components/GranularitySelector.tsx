@@ -1,12 +1,12 @@
-import { useRef } from "react";
-import { useSlidingHighlight } from "../hooks/useSlidingHighlight";
-import type { Granularity } from "../models/photo";
+import { useRef } from 'react';
+import { useSlidingHighlight } from '../hooks/useSlidingHighlight';
+import type { Granularity } from '../models/photo';
 
 const OPTIONS: { value: Granularity; label: string }[] = [
-  { value: "year", label: "Year" },
-  { value: "month", label: "Month" },
-  { value: "week", label: "Week" },
-  { value: "day", label: "Day" },
+  { value: 'year', label: 'Year' },
+  { value: 'month', label: 'Month' },
+  { value: 'week', label: 'Week' },
+  { value: 'day', label: 'Day' },
 ];
 
 export function GranularitySelector({
@@ -54,25 +54,25 @@ export function GranularitySelector({
             tabIndex={checked ? 0 : -1}
             onClick={() => onChange(option.value)}
             onKeyDown={(event) => {
-              if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+              if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
                 event.preventDefault();
                 move(index + 1);
               }
-              if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+              if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
                 event.preventDefault();
                 move(index - 1);
               }
-              if (event.key === "Home") {
+              if (event.key === 'Home') {
                 event.preventDefault();
                 move(0);
               }
-              if (event.key === "End") {
+              if (event.key === 'End') {
                 event.preventDefault();
                 move(OPTIONS.length - 1);
               }
             }}
             className={`relative z-10 min-h-11 rounded-full px-2 text-sm font-medium transition-colors duration-200 ${
-              checked ? "text-plum" : "text-ink/60 hover:text-plum"
+              checked ? 'text-plum' : 'text-ink/60 hover:text-plum'
             }`}
           >
             {option.label}

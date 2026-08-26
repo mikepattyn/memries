@@ -8,17 +8,17 @@
     <script>
       (function () {
         try {
-          var stored = localStorage.getItem("memries-theme");
+          var stored = localStorage.getItem('memries-theme');
           var theme =
-            stored === "light" || stored === "dark"
+            stored === 'light' || stored === 'dark'
               ? stored
-              : window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light";
-          if (theme === "dark") document.documentElement.classList.add("dark");
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          if (theme === 'dark') document.documentElement.classList.add('dark');
           document.documentElement.dataset.theme = theme;
           var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute("content", theme === "dark" ? "#1A1916" : "#F4F1EA");
+          if (meta) meta.setAttribute('content', theme === 'dark' ? '#1A1916' : '#F4F1EA');
         } catch (error) {}
       })();
     </script>

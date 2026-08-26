@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchIndexStatus, startIndex } from "../lib/api";
+import { useEffect, useRef } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchIndexStatus, startIndex } from '../lib/api';
 import {
   canRetryIndex,
   isIndexReady,
@@ -8,10 +8,10 @@ import {
   shouldInvalidatePhotos,
   shouldPoll,
   type IndexStatus,
-} from "../lib/indexStatus";
-import { photoQueryKey } from "./usePhotos";
+} from '../lib/indexStatus';
+import { photoQueryKey } from './usePhotos';
 
-export const indexQueryKey = ["index", "status"] as const;
+export const indexQueryKey = ['index', 'status'] as const;
 
 export function useIndex() {
   const queryClient = useQueryClient();
@@ -74,7 +74,10 @@ export function useIndex() {
     isError: (statusQuery.isError && !status) || startMutation.isError,
     error: startMutation.error ?? statusQuery.error,
     isReadyForPhotos: !!status && isIndexReady(status),
-    canRetry: (!!status && canRetryIndex(status)) || startMutation.isError || (statusQuery.isError && !status),
+    canRetry:
+      (!!status && canRetryIndex(status)) ||
+      startMutation.isError ||
+      (statusQuery.isError && !status),
     retry,
     rescan,
     retrying: startMutation.isPending,

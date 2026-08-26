@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
-import { canRetryIndex, indexStatusCopy, type IndexStatus } from "../lib/indexStatus";
+import { useEffect } from 'react';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { canRetryIndex, indexStatusCopy, type IndexStatus } from '../lib/indexStatus';
 
 export function IndexingScreen({
   status,
@@ -19,10 +19,10 @@ export function IndexingScreen({
 }) {
   const reducedMotion = usePrefersReducedMotion();
   const copy = loadError
-    ? "We could not reach the library."
+    ? 'We could not reach the library.'
     : status
       ? indexStatusCopy(status)
-      : "Opening your album…";
+      : 'Opening your album…';
   const showRetry = loadError || (!!status && canRetryIndex(status));
   const discovered = status?.discovered ?? 0;
   const processed = status?.processed ?? 0;
@@ -41,7 +41,7 @@ export function IndexingScreen({
   return (
     <div
       className={`fixed inset-0 z-40 grid place-items-center bg-cream px-6 text-plum transition-opacity duration-300 ease-out ${
-        leaving && !reducedMotion ? "opacity-0" : "opacity-100"
+        leaving && !reducedMotion ? 'opacity-0' : 'opacity-100'
       }`}
       data-indexing-splash
       role="status"
@@ -54,7 +54,9 @@ export function IndexingScreen({
           <span className="index-pulse h-8 w-8 rounded-full bg-gradient-to-br from-peach to-blush" />
         </div>
         <p className="sr-only">Indexing files on disk</p>
-        <h2 className="mt-8 font-display text-2xl font-semibold tracking-tight">Indexing your files</h2>
+        <h2 className="mt-8 font-display text-2xl font-semibold tracking-tight">
+          Indexing your files
+        </h2>
         <p className="mt-3 min-h-6 text-sm leading-relaxed text-ink/70">{copy}</p>
         {discovered > 0 && !showRetry && (
           <div
@@ -65,7 +67,10 @@ export function IndexingScreen({
             aria-valuenow={processed}
             aria-label="Indexing progress"
           >
-            <div className="h-full rounded-full bg-peach transition-[width] duration-300" style={{ width: `${progress}%` }} />
+            <div
+              className="h-full rounded-full bg-peach transition-[width] duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         )}
         {showRetry && onRetry && (

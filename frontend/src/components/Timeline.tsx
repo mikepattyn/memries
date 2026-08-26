@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { VList, type VListHandle } from "virtua";
-import { groupPhotos, nearestGroupIndex } from "../lib/groupPhotos";
-import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
-import type { Granularity, Photo } from "../models/photo";
-import { GranularitySelector } from "./GranularitySelector";
-import { PhotoSkeleton } from "./PhotoSkeleton";
-import { TimelineSection } from "./TimelineSection";
-import { FilterIcon, TodayIcon } from "./icons";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { VList, type VListHandle } from 'virtua';
+import { groupPhotos, nearestGroupIndex } from '../lib/groupPhotos';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import type { Granularity, Photo } from '../models/photo';
+import { GranularitySelector } from './GranularitySelector';
+import { PhotoSkeleton } from './PhotoSkeleton';
+import { TimelineSection } from './TimelineSection';
+import { FilterIcon, TodayIcon } from './icons';
 
 export function Timeline({
   photos,
@@ -39,8 +39,8 @@ export function Timeline({
   const groups = useMemo(() => groupPhotos(photos, granularity), [photos, granularity]);
   const listRef = useRef<VListHandle>(null);
   const anchorRef = useRef<string | null>(null);
-  const [activeLabel, setActiveLabel] = useState(groups[0]?.label ?? "");
-  const [periodLabel, setPeriodLabel] = useState(groups[0]?.label ?? "");
+  const [activeLabel, setActiveLabel] = useState(groups[0]?.label ?? '');
+  const [periodLabel, setPeriodLabel] = useState(groups[0]?.label ?? '');
   const [outgoingPeriod, setOutgoingPeriod] = useState<string | null>(null);
   const [showToday, setShowToday] = useState(false);
 
@@ -54,7 +54,7 @@ export function Timeline({
 
   useLayoutEffect(() => {
     const current = groupsRef.current;
-    const nextLabel = current[0]?.label ?? "";
+    const nextLabel = current[0]?.label ?? '';
     setActiveLabel(nextLabel);
     setPeriodLabel(nextLabel);
     setOutgoingPeriod(null);
@@ -62,7 +62,7 @@ export function Timeline({
     const anchor = anchorRef.current;
     if (!anchor || !listRef.current || current.length === 0) return;
     const index = nearestGroupIndex(current, anchor);
-    listRef.current.scrollToIndex(index, { align: "start" });
+    listRef.current.scrollToIndex(index, { align: 'start' });
     if (index > 0) setShowToday(true);
     anchorRef.current = null;
   }, [granularity]);
@@ -106,7 +106,9 @@ export function Timeline({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="px-4 pb-3 min-[640px]:px-6">
         <div className="flex items-start justify-between gap-3">
-          <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Your memries</h1>
+          <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">
+            Your memries
+          </h1>
           {onFilter && (
             <button
               type="button"
@@ -133,23 +135,26 @@ export function Timeline({
               disabled={rescanning}
               className="min-h-9 rounded-full px-3 text-xs font-medium text-ink/60 transition hover:text-plum disabled:opacity-50"
             >
-              {rescanning ? "Syncing…" : "Sync folder"}
+              {rescanning ? 'Syncing…' : 'Sync folder'}
             </button>
           )}
         </div>
         {periodLabel && (
           <div className="relative mt-2 min-h-4 px-1">
             {outgoingPeriod && (
-              <span className="period-out pointer-events-none absolute inset-x-1 text-xs font-medium text-ink/65" aria-hidden>
+              <span
+                className="period-out pointer-events-none absolute inset-x-1 text-xs font-medium text-ink/65"
+                aria-hidden
+              >
                 {outgoingPeriod}
               </span>
             )}
             <p
-              className={`text-xs font-medium text-ink/65 ${reducedMotion || !outgoingPeriod ? "" : "period-in"}`}
+              className={`text-xs font-medium text-ink/65 ${reducedMotion || !outgoingPeriod ? '' : 'period-in'}`}
               aria-live="polite"
               aria-label="Current period"
               data-current-period
-              data-period-motion={outgoingPeriod ? "crossfade" : "idle"}
+              data-period-motion={outgoingPeriod ? 'crossfade' : 'idle'}
             >
               {periodLabel}
             </p>
@@ -168,7 +173,7 @@ export function Timeline({
                 disabled={rescanning}
                 className="mt-5 min-h-11 rounded-full bg-plum px-5 text-sm font-medium text-cream disabled:opacity-60"
               >
-                {rescanning ? "Scanning your folder…" : "Scan your folder"}
+                {rescanning ? 'Scanning your folder…' : 'Scan your folder'}
               </button>
             )}
           </div>
@@ -177,8 +182,8 @@ export function Timeline({
             key={granularity}
             data-timeline
             data-group-count={groups.length}
-            data-timeline-motion={reducedMotion ? "none" : "fade-rise"}
-            className={`h-full ${reducedMotion ? "" : "animate-fade-rise"}`}
+            data-timeline-motion={reducedMotion ? 'none' : 'fade-rise'}
+            className={`h-full ${reducedMotion ? '' : 'animate-fade-rise'}`}
             ref={(node) => {
               if (!node) return;
               Object.assign(node, {
@@ -186,7 +191,7 @@ export function Timeline({
                   const current = groupsRef.current;
                   const max = Math.max(0, current.length - 1);
                   const next = Math.min(Math.max(0, index), max);
-                  listRef.current?.scrollToIndex(next, { align: "start" });
+                  listRef.current?.scrollToIndex(next, { align: 'start' });
                   const label = current[next]?.label;
                   if (label) setActiveLabel(label);
                   setShowToday(next > 0);
@@ -196,7 +201,7 @@ export function Timeline({
           >
             <VList
               ref={listRef}
-              style={{ height: "100%" }}
+              style={{ height: '100%' }}
               onScroll={(offset) => {
                 const handle = listRef.current;
                 const start = handle?.findStartIndex() ?? 0;
@@ -217,7 +222,10 @@ export function Timeline({
                 />
               ))}
               <div className="px-4 pb-8 min-[640px]:px-6">
-                <LoadMoreMarker onVisible={requestNextPage} enabled={!!hasNextPage && !isFetchingNextPage && !fetchError} />
+                <LoadMoreMarker
+                  onVisible={requestNextPage}
+                  enabled={!!hasNextPage && !isFetchingNextPage && !fetchError}
+                />
                 {isFetchingNextPage && (
                   <p className="py-3 text-center text-sm text-ink/60" aria-live="polite">
                     Loading more memories…
@@ -244,9 +252,11 @@ export function Timeline({
         {showToday && (
           <button
             type="button"
-            onClick={() => listRef.current?.scrollToIndex(0, { align: "start", smooth: !reducedMotion })}
+            onClick={() =>
+              listRef.current?.scrollToIndex(0, { align: 'start', smooth: !reducedMotion })
+            }
             className={`absolute bottom-4 right-4 z-20 flex min-h-11 items-center gap-2 rounded-full bg-plum px-4 py-2 text-sm font-medium text-cream shadow-lift transition duration-200 active:scale-95 min-[800px]:bottom-6 min-[800px]:right-6 ${
-              reducedMotion ? "" : "animate-fab-in"
+              reducedMotion ? '' : 'animate-fab-in'
             }`}
             aria-label="Back to today"
             data-today-fab
@@ -269,7 +279,7 @@ function LoadMoreMarker({ onVisible, enabled }: { onVisible: () => void; enabled
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) onVisible();
       },
-      { rootMargin: "320px" },
+      { rootMargin: '320px' },
     );
     observer.observe(node);
     return () => observer.disconnect();

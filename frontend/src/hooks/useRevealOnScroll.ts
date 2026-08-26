@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
+import { useEffect, useRef, useState } from 'react';
+import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
 export function useRevealOnScroll<T extends HTMLElement>() {
   const ref = useRef<T>(null);
@@ -18,7 +18,7 @@ export function useRevealOnScroll<T extends HTMLElement>() {
           observer.disconnect();
         }
       },
-      { threshold: 0.08, rootMargin: "0px 0px -6% 0px" },
+      { threshold: 0.08, rootMargin: '0px 0px -6% 0px' },
     );
     observer.observe(element);
     return () => observer.disconnect();

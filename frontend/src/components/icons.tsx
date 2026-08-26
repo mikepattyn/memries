@@ -1,16 +1,16 @@
-import type { SVGProps } from "react";
+import type { SVGProps } from 'react';
 
 type IconProps = SVGProps<SVGSVGElement>;
 
 function icon(props: IconProps) {
   return {
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
     strokeWidth: 1.7,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    "aria-hidden": true,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
     ...props,
   };
 }
@@ -34,7 +34,7 @@ export function SearchIcon(props: IconProps) {
 
 export function HeartIcon({ filled, ...props }: IconProps & { filled?: boolean }) {
   return (
-    <svg {...icon(props)} fill={filled ? "currentColor" : "none"}>
+    <svg {...icon(props)} fill={filled ? 'currentColor' : 'none'}>
       <path d="M12 20s-7-4.4-9.2-8.2C1.2 8.8 3.2 5 6.8 5c2 0 3.3 1.1 5.2 3.1C13.9 6.1 15.2 5 17.2 5c3.6 0 5.6 3.8 4 6.8C19 15.6 12 20 12 20Z" />
     </svg>
   );

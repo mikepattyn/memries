@@ -1,16 +1,16 @@
-import { useSlidingHighlight } from "../hooks/useSlidingHighlight";
-import type { NavTab } from "../models/photo";
-import { AlbumIcon, FoldersIcon, HeartIcon, SearchIcon } from "./icons";
+import { useSlidingHighlight } from '../hooks/useSlidingHighlight';
+import type { NavTab } from '../models/photo';
+import { AlbumIcon, FoldersIcon, HeartIcon, SearchIcon } from './icons';
 
 type NavItem = { id: NavTab; label: string; icon: typeof AlbumIcon };
 
 const PRIMARY_ITEMS: NavItem[] = [
-  { id: "memories", label: "Memories", icon: AlbumIcon },
-  { id: "favorites", label: "Favorites", icon: HeartIcon },
-  { id: "albums", label: "Albums", icon: FoldersIcon },
+  { id: 'memories', label: 'Memories', icon: AlbumIcon },
+  { id: 'favorites', label: 'Favorites', icon: HeartIcon },
+  { id: 'albums', label: 'Albums', icon: FoldersIcon },
 ];
 
-const SEARCH_ITEM: NavItem = { id: "search", label: "Search", icon: SearchIcon };
+const SEARCH_ITEM: NavItem = { id: 'search', label: 'Search', icon: SearchIcon };
 
 const MOBILE_ITEMS: NavItem[] = [...PRIMARY_ITEMS, SEARCH_ITEM];
 
@@ -25,7 +25,7 @@ function NavButton({
   item: NavItem;
   selected: boolean;
   onChange: (tab: NavTab) => void;
-  layout: "vertical" | "horizontal";
+  layout: 'vertical' | 'horizontal';
   buttonRef?: (node: HTMLButtonElement | null) => void;
   filled?: boolean;
 }) {
@@ -35,18 +35,20 @@ function NavButton({
       ref={buttonRef}
       type="button"
       onClick={() => onChange(item.id)}
-      aria-current={selected ? "page" : undefined}
+      aria-current={selected ? 'page' : undefined}
       className={`relative z-10 flex min-h-11 items-center justify-center gap-2 rounded-2xl px-2 py-2 text-sm font-medium transition duration-200 active:scale-[0.98] ${
-        layout === "vertical" ? "w-full justify-between px-3" : "flex-col gap-0.5 text-[0.7rem] min-[640px]:text-xs"
+        layout === 'vertical'
+          ? 'w-full justify-between px-3'
+          : 'flex-col gap-0.5 text-[0.7rem] min-[640px]:text-xs'
       } ${
         selected && filled
-          ? "bg-surface/80 text-plum shadow-soft"
+          ? 'bg-surface/80 text-plum shadow-soft'
           : selected
-            ? "text-plum"
-            : "text-ink/55 hover:text-plum"
+            ? 'text-plum'
+            : 'text-ink/55 hover:text-plum'
       }`}
     >
-      {item.id === "favorites" ? (
+      {item.id === 'favorites' ? (
         <HeartIcon className="h-5 w-5" filled={selected} />
       ) : (
         <Icon className="h-5 w-5" />
@@ -56,7 +58,11 @@ function NavButton({
   );
 }
 
-function SlidingIndicator({ box }: { box: { left: number; top: number; width: number; height: number } }) {
+function SlidingIndicator({
+  box,
+}: {
+  box: { left: number; top: number; width: number; height: number };
+}) {
   return (
     <div
       aria-hidden
@@ -74,13 +80,13 @@ export function NavButtons({
 }: {
   tab: NavTab;
   onChange: (tab: NavTab) => void;
-  orientation: "horizontal" | "vertical";
+  orientation: 'horizontal' | 'vertical';
 }) {
-  const items = orientation === "vertical" ? PRIMARY_ITEMS : MOBILE_ITEMS;
+  const items = orientation === 'vertical' ? PRIMARY_ITEMS : MOBILE_ITEMS;
   const selected = items.some((item) => item.id === tab) ? tab : items[0].id;
   const { groupRef, setItemRef, box } = useSlidingHighlight(selected);
 
-  if (orientation === "vertical") {
+  if (orientation === 'vertical') {
     return (
       <div ref={groupRef} className="relative flex flex-col gap-1">
         <SlidingIndicator box={box} />
@@ -135,7 +141,13 @@ export function SearchNavButton({
   );
 }
 
-export function BottomNavigation({ tab, onChange }: { tab: NavTab; onChange: (tab: NavTab) => void }) {
+export function BottomNavigation({
+  tab,
+  onChange,
+}: {
+  tab: NavTab;
+  onChange: (tab: NavTab) => void;
+}) {
   return (
     <nav
       data-nav-layout="bottom"
