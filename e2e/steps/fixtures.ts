@@ -84,6 +84,11 @@ export function photoByDay(page: Page, day: string): Locator {
   return page.getByRole('button', { name: new RegExp(`Open (favorited )?photo, ${escapeRegExp(day)}`) });
 }
 
+/** Viewer dialog is labelled by the capture heading, not a fixed "Photo viewer" name. */
+export function photoViewer(page: Page): Locator {
+  return page.locator('[role="dialog"][data-viewer-day]');
+}
+
 type TimelineEl = HTMLElement & { __scrollToGroup?: (index: number) => void };
 
 export async function scrollTimeline(page: Page, dy: number) {

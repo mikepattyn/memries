@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { Given, Then, When, openTab, photoByDay } from './fixtures';
+import { Given, Then, When, openTab, photoByDay, photoViewer } from './fixtures';
 
 const GRANULARITY: Record<string, string> = {
   Year: 'year',
@@ -73,7 +73,7 @@ Then('the photo actions menu is closed', async ({ page }) => {
 });
 
 Then('the viewer shows the photo from {string}', async ({ page }, day: string) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toHaveAttribute('data-viewer-day', day);
+  await expect(photoViewer(page)).toHaveAttribute('data-viewer-day', day);
 });
 
 Then('the viewer photo is a favorite', async ({ page }) => {
@@ -190,7 +190,8 @@ async function dragViewer(page: import('@playwright/test').Page, dx: number, dy:
   if (!box) throw new Error('viewer stage has no box');
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
-  await stage.dispatchEvent('pointerdown', { clientX: x, clientY: y, pointerId: 1, buttons: 1 });
-  await stage.dispatchEvent('pointermove', { clientX: x + dx, clientY: y + dy, pointerId: 1, buttons: 1 });
-  await stage.dispatchEvent('pointerup', { clientX: x + dx, clientY: y + dy, pointerId: 1, buttons: 0 });
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + dx, y + dy, { steps: 8 });
+  await page.mouse.up();
 }
