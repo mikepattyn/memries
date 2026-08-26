@@ -31,12 +31,24 @@ func NewLocal(root string) (*Local, error) {
 func (l *Local) Backend() string { return "local" }
 
 func (l *Local) resolve(key string) (string, error) {
-	clean := filepath.Clean("/" + key)
-	full := filepath.Join(l.root, clean)
-	if !strings.HasPrefix(full, l.root) {
+	key = strings.TrimPrefix(filepath.ToSlash(strings.TrimSpace(key)), "/")
+	if key == "" || key == "." || key == ".." || strings.Contains(key, "..") {
 		return "", fmt.Errorf("path escape: %s", key)
 	}
-	return full, nil
+	full := filepath.Join(l.root, key)
+	absRoot, err := filepath.Abs(l.root)
+	if err != nil {
+		return "", err
+	}
+	absFull, err := filepath.Abs(full)
+	if err != nil {
+		return "", err
+	}
+	rel, err := filepath.Rel(absRoot, absFull)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("path escape: %s", key)
+	}
+	return absFull, nil
 }
 
 func (l *Local) Put(ctx context.Context, key string, r io.Reader) error {
@@ -81,7 +93,7 @@ func (l *Local) Stat(ctx context.Context, key string) (ObjectInfo, error) {
 	if err != nil {
 		return ObjectInfo{}, err
 	}
-	return ObjectInfo{Key: key, Size: st.Size(), ModTime: st.ModTime()}, nil
+	return ObjectInfo{Key: key, Size: st.Size(), ModTime: st.ModTime(), CreatedAt: fileCreatedAt(st)}, nil
 }
 
 func (l *Local) URL(ctx context.Context, key string, ttl time.Duration) (string, error) {
@@ -127,7 +139,7 @@ func (l *Local) Walk(ctx context.Context, prefix string, fn func(ObjectInfo) err
 			return err
 		}
 		key := filepath.ToSlash(rel)
-		return fn(ObjectInfo{Key: key, Size: info.Size(), ModTime: info.ModTime()})
+		return fn(ObjectInfo{Key: key, Size: info.Size(), ModTime: info.ModTime(), CreatedAt: fileCreatedAt(info)})
 	})
 }
 

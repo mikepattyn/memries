@@ -1,8 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { formatCompactDate, formatTime } from "../lib/formatDate";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
-import type { Photo } from "../models/photo";
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, HeartIcon } from "./icons";
+import { formatCompactDate, formatDayLabel, formatTime } from "../lib/formatDate";
+import { viewerFallbackSrc } from "../lib/photoSrc";
+import { resolveViewerGesture } from "../lib/viewerGesture";
+import type { Album, Photo } from "../models/photo";
+import { AlbumIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon, HeartIcon } from "./icons";
+import { PhotoActionsMenu } from "./PhotoActionsMenu";
+
+type ViewerMotion = "opening" | "open" | "navigating" | "closing" | "reduced";
 
 export function PhotoViewer({
   photos,
@@ -11,13 +16,17 @@ export function PhotoViewer({
   onClose,
   onChange,
   onToggleFavorite,
+  albums,
+  onAddToAlbum,
 }: {
   photos: Photo[];
   activeId: string;
   origin: DOMRect | null;
   onClose: () => void;
   onChange: (id: string) => void;
-  onToggleFavorite: (id: string) => void;
+  onToggleFavorite: (id: string, favorite: boolean) => void;
+  albums: Album[];
+  onAddToAlbum: (albumId: string, photoId: string) => void;
 }) {
   const reducedMotion = usePrefersReducedMotion();
   const index = Math.max(0, photos.findIndex((photo) => photo.id === activeId));
@@ -25,8 +34,33 @@ export function PhotoViewer({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
-  const startX = useRef<number | null>(null);
-  const [dragX, setDragX] = useState(0);
+  const originRef = useRef(origin);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+  const dragRef = useRef({ x: 0, y: 0 });
+  const closingRef = useRef(false);
+  const firstPhoto = useRef(true);
+  const [drag, setDrag] = useState({ x: 0, y: 0 });
+  const [src, setSrc] = useState(photo?.imageUrl ?? "");
+  const [albumPickerOpen, setAlbumPickerOpen] = useState(false);
+  const [motion, setMotion] = useState<ViewerMotion>(reducedMotion ? "reduced" : "opening");
+
+  useEffect(() => {
+    setSrc(photo?.imageUrl ?? "");
+    setAlbumPickerOpen(false);
+  }, [photo?.id, photo?.imageUrl]);
+
+  useEffect(() => {
+    if (firstPhoto.current) {
+      firstPhoto.current = false;
+      return;
+    }
+    if (reducedMotion) return;
+    setMotion("navigating");
+    const timer = window.setTimeout(() => {
+      setMotion((current) => (current === "navigating" ? "open" : current));
+    }, 280);
+    return () => window.clearTimeout(timer);
+  }, [photo?.id, reducedMotion]);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -37,17 +71,46 @@ export function PhotoViewer({
     };
   }, []);
 
+  const close = () => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    if (albumPickerOpen) setAlbumPickerOpen(false);
+    if (reducedMotion) {
+      onClose();
+      return;
+    }
+    setMotion("closing");
+    const img = imgRef.current;
+    const card = originRef.current;
+    if (img && card) {
+      const dest = img.getBoundingClientRect();
+      if (dest.width > 0 && dest.height > 0) {
+        const scaleX = card.width / dest.width;
+        const scaleY = card.height / dest.height;
+        const dx = card.left + card.width / 2 - (dest.left + dest.width / 2);
+        const dy = card.top + card.height / 2 - (dest.top + dest.height / 2);
+        img.style.transition = "transform 280ms ease, opacity 240ms ease";
+        img.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
+        img.style.opacity = "0.45";
+      }
+    }
+    window.setTimeout(onClose, 280);
+  };
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        if (albumPickerOpen) setAlbumPickerOpen(false);
+        else close();
+      }
       if (event.key === "ArrowLeft" && index > 0) onChange(photos[index - 1].id);
       if (event.key === "ArrowRight" && index < photos.length - 1) onChange(photos[index + 1].id);
-      if ((event.key === "f" || event.key === "F") && photo) onToggleFavorite(photo.id);
+      if ((event.key === "f" || event.key === "F") && photo) onToggleFavorite(photo.id, !photo.favorite);
       if (event.key === "Tab" && dialogRef.current) {
         const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled])")];
         if (focusable.length === 0) return;
         const first = focusable[0];
-        const last = focusable[focusable.length - 1];
+        const last = focusable[lastIndex(focusable)];
         if (event.shiftKey && document.activeElement === first) {
           event.preventDefault();
           last.focus();
@@ -59,25 +122,38 @@ export function PhotoViewer({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [index, photos, photo, onClose, onChange, onToggleFavorite]);
+  });
 
   useLayoutEffect(() => {
     const img = imgRef.current;
-    if (!img || !origin || reducedMotion) return;
+    const card = originRef.current;
+    if (!img || !card || reducedMotion) {
+      setMotion(reducedMotion ? "reduced" : "open");
+      return;
+    }
     const dest = img.getBoundingClientRect();
-    if (dest.width === 0 || dest.height === 0) return;
-    const scaleX = origin.width / dest.width;
-    const scaleY = origin.height / dest.height;
-    const dx = origin.left + origin.width / 2 - (dest.left + dest.width / 2);
-    const dy = origin.top + origin.height / 2 - (dest.top + dest.height / 2);
+    if (dest.width === 0 || dest.height === 0) {
+      setMotion("open");
+      return;
+    }
+    const scaleX = card.width / dest.width;
+    const scaleY = card.height / dest.height;
+    const dx = card.left + card.width / 2 - (dest.left + dest.width / 2);
+    const dy = card.top + card.height / 2 - (dest.top + dest.height / 2);
     img.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
     img.style.transition = "none";
     const frame = requestAnimationFrame(() => {
       img.style.transition = "transform 280ms ease";
       img.style.transform = "none";
     });
-    return () => cancelAnimationFrame(frame);
-  }, [photo?.id, origin, reducedMotion]);
+    const done = window.setTimeout(() => setMotion("open"), 280);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(done);
+    };
+    // Open FLIP runs once from the card that launched the viewer.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!photo) return null;
 
@@ -85,103 +161,169 @@ export function PhotoViewer({
     const next = index + delta;
     if (next < 0 || next >= photos.length) return;
     onChange(photos[next].id);
-    setDragX(0);
+    setDrag({ x: 0, y: 0 });
   };
 
   const canPrev = index > 0;
   const canNext = index < photos.length - 1;
+  const dismiss = Math.min(1, Math.max(0, drag.y) / 280);
+  const backdrop = 0.8 * (1 - dismiss * 0.65);
+  const dragTransform = drag.y
+    ? `translateY(${drag.y}px) scale(${Math.max(0.88, 1 - drag.y / 900)})`
+    : drag.x
+      ? `translateX(${drag.x}px)`
+      : undefined;
 
   return (
-    <div
-      ref={dialogRef}
-      className="fixed inset-0 z-50 flex flex-col overflow-x-hidden bg-black/80 backdrop-blur-xl"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Photo viewer"
-      onClick={onClose}
-    >
+    <>
       <div
-        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-3 py-3 min-[800px]:px-8 min-[800px]:py-6"
-        onClick={(event) => event.stopPropagation()}
+        ref={dialogRef}
+        className={`fixed inset-0 z-50 flex flex-col overflow-x-hidden backdrop-blur-xl ${
+          reducedMotion ? "" : motion === "opening" ? "viewer-backdrop-in" : ""
+        } ${!reducedMotion && motion === "closing" ? "viewer-backdrop-out" : ""}`}
+        style={{ backgroundColor: `rgba(0, 0, 0, ${motion === "closing" ? 0 : backdrop})` }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Photo viewer"
+        data-viewer-motion={motion}
+        data-viewer-day={formatDayLabel(photo.takenAt)}
+        data-viewer-favorite={photo.favorite ? "true" : "false"}
+        data-reduced-motion={reducedMotion ? "true" : "false"}
+        data-origin={originRef.current ? "card" : "none"}
+        onClick={close}
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 text-white">
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-full bg-white/10 transition duration-200 hover:bg-white/20"
-            aria-label="Close photo"
-          >
-            <CloseIcon className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onToggleFavorite(photo.id)}
-            className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-full bg-white/10 transition duration-200 hover:bg-white/20"
-            aria-label={photo.favorite ? "Remove from favorites" : "Add to favorites"}
-            aria-pressed={photo.favorite}
-          >
-            <HeartIcon className={`h-5 w-5 ${photo.favorite ? "text-peach" : ""}`} filled={photo.favorite} />
-          </button>
-        </div>
-
-        <p className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/60">
-          {formatCompactDate(photo.takenAt)} · {formatTime(photo.takenAt)}
-        </p>
-
-        <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-1 py-3 min-[640px]:gap-3">
-          <button
-            type="button"
-            onClick={() => go(-1)}
-            disabled={!canPrev}
-            className="grid h-11 w-11 min-h-11 min-w-11 shrink-0 self-center place-items-center rounded-full bg-white/10 text-white disabled:opacity-30"
-            aria-label="Previous photo"
-          >
-            <ChevronLeftIcon className="h-5 w-5" />
-          </button>
-          <div
-            className="relative flex min-h-0 min-w-0 flex-1 touch-pan-y items-center justify-center overflow-hidden"
-            onPointerDown={(event) => {
-              startX.current = event.clientX;
-              event.currentTarget.setPointerCapture(event.pointerId);
-            }}
-            onPointerMove={(event) => {
-              if (startX.current === null) return;
-              setDragX(event.clientX - startX.current);
-            }}
-            onPointerUp={() => {
-              if (Math.abs(dragX) > 56) go(dragX > 0 ? -1 : 1);
-              startX.current = null;
-              setDragX(0);
-            }}
-            onPointerCancel={() => {
-              startX.current = null;
-              setDragX(0);
-            }}
-          >
-            <img
-              ref={imgRef}
-              src={photo.imageUrl}
-              alt=""
-              className="max-h-[min(100%,calc(100dvh-12rem))] max-w-full rounded-2xl object-contain shadow-lift"
-              style={{ transform: dragX ? `translateX(${dragX}px)` : undefined }}
-            />
+        <div
+          className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-3 py-3 min-[800px]:px-8 min-[800px]:py-6 ${
+            reducedMotion ? "" : "viewer-chrome-in"
+          }`}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="flex shrink-0 items-center justify-between gap-3 text-white">
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={close}
+              className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-full bg-white/10 transition duration-200 hover:bg-white/20 active:scale-95"
+              aria-label="Close photo"
+            >
+              <CloseIcon className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setAlbumPickerOpen(true)}
+                className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-full bg-white/10 transition duration-200 hover:bg-white/20 active:scale-95"
+                aria-label="Add to album"
+              >
+                <AlbumIcon className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onToggleFavorite(photo.id, !photo.favorite)}
+                className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-full bg-white/10 transition duration-200 hover:bg-white/20 active:scale-95"
+                aria-label={photo.favorite ? "Remove from favorites" : "Add to favorites"}
+                aria-pressed={photo.favorite}
+              >
+                <HeartIcon className={`h-5 w-5 ${photo.favorite ? "text-peach heart-pop" : ""}`} filled={photo.favorite} />
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => go(1)}
-            disabled={!canNext}
-            className="grid h-11 w-11 min-h-11 min-w-11 shrink-0 self-center place-items-center rounded-full bg-white/10 text-white disabled:opacity-30"
-            aria-label="Next photo"
-          >
-            <ChevronRightIcon className="h-5 w-5" />
-          </button>
-        </div>
 
-        <p className="shrink-0 text-center text-xs text-white/55">
-          {index + 1} of {photos.length}
-        </p>
+          <p className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/60">
+            {formatCompactDate(photo.takenAt)} · {formatTime(photo.takenAt)}
+          </p>
+
+          <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-1 py-3 min-[640px]:gap-3">
+            <button
+              type="button"
+              onClick={() => go(-1)}
+              disabled={!canPrev}
+              className="grid h-11 w-11 min-h-11 min-w-11 shrink-0 self-center place-items-center rounded-full bg-white/10 text-white transition duration-200 hover:bg-white/20 disabled:opacity-30"
+              aria-label="Previous photo"
+            >
+              <ChevronLeftIcon className="h-5 w-5" />
+            </button>
+            <div
+              data-viewer-stage
+              className="relative flex min-h-0 min-w-0 flex-1 touch-none items-center justify-center overflow-hidden"
+              onPointerDown={(event) => {
+                if (closingRef.current) return;
+                startRef.current = { x: event.clientX, y: event.clientY };
+                event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerMove={(event) => {
+                if (!startRef.current) return;
+                const next = {
+                  x: event.clientX - startRef.current.x,
+                  y: event.clientY - startRef.current.y,
+                };
+                dragRef.current = next;
+                setDrag(next);
+              }}
+              onPointerUp={() => {
+                const gesture = resolveViewerGesture(dragRef.current.x, dragRef.current.y);
+                if (gesture === "dismiss") close();
+                else if (gesture === "next") go(1);
+                else if (gesture === "prev") go(-1);
+                startRef.current = null;
+                dragRef.current = { x: 0, y: 0 };
+                setDrag({ x: 0, y: 0 });
+              }}
+              onPointerCancel={() => {
+                startRef.current = null;
+                dragRef.current = { x: 0, y: 0 };
+                setDrag({ x: 0, y: 0 });
+              }}
+            >
+              <img
+                key={photo.id}
+                ref={imgRef}
+                src={src}
+                alt=""
+                draggable={false}
+                className={`max-h-[min(100%,calc(100dvh-12rem))] max-w-full rounded-2xl object-contain shadow-lift ${
+                  !reducedMotion && motion === "navigating" ? "photo-crossfade" : ""
+                }`}
+                style={{ transform: dragTransform }}
+                onError={() => {
+                  const fallback = viewerFallbackSrc(photo);
+                  if (src !== fallback) setSrc(fallback);
+                }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => go(1)}
+              disabled={!canNext}
+              className="grid h-11 w-11 min-h-11 min-w-11 shrink-0 self-center place-items-center rounded-full bg-white/10 text-white transition duration-200 hover:bg-white/20 disabled:opacity-30"
+              aria-label="Next photo"
+            >
+              <ChevronRightIcon className="h-5 w-5" />
+            </button>
+          </div>
+
+          <p className="shrink-0 text-center text-xs text-white/55">
+            {index + 1} of {photos.length}
+          </p>
+        </div>
       </div>
-    </div>
+
+      {albumPickerOpen && (
+        <>
+          <div className="fixed inset-0 z-[55] bg-black/40" aria-hidden onClick={() => setAlbumPickerOpen(false)} />
+          <PhotoActionsMenu
+            photo={photo}
+            albums={albums}
+            onClose={() => setAlbumPickerOpen(false)}
+            onToggleFavorite={onToggleFavorite}
+            onAddToAlbum={onAddToAlbum}
+          />
+        </>
+      )}
+    </>
   );
+}
+
+function lastIndex<T>(list: T[]): number {
+  return list.length - 1;
 }

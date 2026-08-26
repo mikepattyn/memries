@@ -7,11 +7,13 @@ export function TimelineSection({
   group,
   granularity,
   onOpen,
+  onActions,
   showHeading,
 }: {
   group: TimelineGroup;
   granularity: Granularity;
   onOpen: (photo: Photo, origin: HTMLElement) => void;
+  onActions?: (photo: Photo, origin: HTMLElement) => void;
   showHeading: boolean;
 }) {
   const reducedMotion = usePrefersReducedMotion();
@@ -27,7 +29,7 @@ export function TimelineSection({
           <p className="mt-0.5 text-sm text-ink/60">{group.sublabel}</p>
         </header>
       )}
-      <PhotoGrid photos={group.photos} granularity={granularity} onOpen={onOpen} />
+      <PhotoGrid photos={group.photos} granularity={granularity} onOpen={onOpen} onActions={onActions} />
     </section>
   );
 }

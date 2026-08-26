@@ -15,6 +15,14 @@ function icon(props: IconProps) {
   };
 }
 
+export function FilterIcon(props: IconProps) {
+  return (
+    <svg {...icon(props)}>
+      <path d="M4 6h16l-6 7.2V19l-4 1.5v-7.3L4 6Z" />
+    </svg>
+  );
+}
+
 export function SearchIcon(props: IconProps) {
   return (
     <svg {...icon(props)}>

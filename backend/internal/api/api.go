@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,22 +13,36 @@ import (
 
 	"github.com/memries/memries/internal/auth"
 	"github.com/memries/memries/internal/db"
+	"github.com/memries/memries/internal/index"
 	"github.com/memries/memries/internal/storage"
 	"github.com/memries/memries/internal/thumb"
 )
 
 type API struct {
-	DB    *db.Client
+	DB    Library
 	Store storage.Storage
 	Thumb *thumb.Generator
+	Index *index.Coordinator
+	E2E   bool
 }
 
 func (a *API) Routes(r chi.Router) {
 	r.Get("/timeline", a.timeline)
 	r.Get("/photos", a.photos)
 	r.Get("/photos/{id}", a.photo)
+	r.Put("/photos/{id}/favorite", a.setFavorite)
+	r.Get("/albums", a.albums)
+	r.Post("/albums", a.createAlbum)
+	r.Get("/albums/{id}", a.album)
+	r.Post("/albums/{id}/photos", a.addAlbumPhoto)
+	r.Delete("/albums/{id}/photos/{photoId}", a.removeAlbumPhoto)
 	r.Get("/thumb/{id}", a.thumb)
 	r.Get("/original/{id}", a.original)
+	r.Get("/index/status", a.indexStatus)
+	r.Post("/index", a.startIndex)
+	if a.E2E {
+		r.Post("/e2e/reset", a.e2eReset)
+	}
 }
 
 func (a *API) timeline(w http.ResponseWriter, r *http.Request) {
@@ -75,8 +90,12 @@ func (a *API) photos(w http.ResponseWriter, r *http.Request) {
 	}
 	limit, _ := strconv.Atoi(q.Get("limit"))
 	cursor := q.Get("cursor")
-	photos, next, err := a.DB.Photos(r.Context(), u.Key, from, to, limit, cursor)
+	photos, next, err := a.DB.PhotosFiltered(r.Context(), u.Key, from, to, limit, cursor, parsePhotoFilter(q))
 	if err != nil {
+		if errors.Is(err, db.ErrBadCursor) {
+			http.Error(w, "bad cursor", http.StatusBadRequest)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -143,6 +162,10 @@ func (a *API) thumb(w http.ResponseWriter, r *http.Request) {
 	}
 	f, err := a.Thumb.Open(rel)
 	if err != nil {
+		if storage.IsNotFound(err) {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
 		http.Error(w, "open thumb", http.StatusInternalServerError)
 		return
 	}
@@ -169,13 +192,28 @@ func (a *API) original(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rc, err := a.Store.Get(r.Context(), p.Storage.Path)
+	ctype := p.MIME
 	if err != nil {
-		http.Error(w, "open original", http.StatusInternalServerError)
-		return
+		slog.Warn("open original", "id", id, "path", p.Storage.Path, "err", err)
+		rel := largestThumb(p.Thumbs)
+		if rel == "" {
+			status := mediaOpenStatus(err)
+			http.Error(w, originalErrorBody(status), status)
+			return
+		}
+		f, terr := a.Thumb.Open(rel)
+		if terr != nil {
+			slog.Error("open original thumb fallback", "id", id, "rel", rel, "err", terr)
+			status := mediaOpenStatus(err)
+			http.Error(w, originalErrorBody(status), status)
+			return
+		}
+		rc = f
+		ctype = "image/jpeg"
 	}
 	defer rc.Close()
-	if p.MIME != "" {
-		w.Header().Set("Content-Type", p.MIME)
+	if ctype != "" {
+		w.Header().Set("Content-Type", ctype)
 	}
 	w.Header().Set("Cache-Control", "private, max-age=86400")
 	_, _ = io.Copy(w, rc)
@@ -183,7 +221,7 @@ func (a *API) original(w http.ResponseWriter, r *http.Request) {
 
 func parseRange(fromStr, toStr string) (time.Time, time.Time, error) {
 	from := time.Time{}
-	to := time.Now().UTC().Add(24 * time.Hour)
+	to := time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)
 	if fromStr != "" {
 		t, err := parseFlexTime(fromStr)
 		if err != nil {

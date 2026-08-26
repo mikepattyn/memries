@@ -11,10 +11,11 @@ import (
 )
 
 type Result struct {
-	TakenAt     time.Time
-	TZOffset    int
-	Orientation int
-	EXIF        db.EXIF
+	TakenAt      time.Time
+	TakenAtLocal string
+	TZOffset     int
+	Orientation  int
+	EXIF         db.EXIF
 }
 
 func Parse(r io.Reader) (Result, error) {
@@ -23,11 +24,7 @@ func Parse(r io.Reader) (Result, error) {
 		return Result{}, err
 	}
 	res := Result{Orientation: 1}
-	if t, err := x.DateTime(); err == nil {
-		res.TakenAt = t.UTC()
-		_, off := t.Zone()
-		res.TZOffset = off
-	}
+	res.TakenAtLocal, res.TakenAt, res.TZOffset = readCaptureClock(x)
 	if tag, err := x.Get(goexif.Orientation); err == nil {
 		if v, err := tag.Int(0); err == nil {
 			res.Orientation = v
@@ -58,4 +55,34 @@ func Parse(r io.Reader) (Result, error) {
 		res.EXIF.GPS = &db.GPS{Lat: lat, Lon: lon}
 	}
 	return res, nil
+}
+
+func readCaptureClock(x *goexif.Exif) (local string, taken time.Time, offset int) {
+	for _, name := range []goexif.FieldName{goexif.DateTimeOriginal, goexif.DateTimeDigitized, goexif.DateTime} {
+		tag, err := x.Get(name)
+		if err != nil {
+			continue
+		}
+		s, err := tag.StringVal()
+		if err != nil {
+			continue
+		}
+		clock, ok := NormalizeExifClock(s)
+		if !ok {
+			continue
+		}
+		local = clock
+		break
+	}
+	if tag, err := x.Get("OffsetTimeOriginal"); err == nil {
+		if s, err := tag.StringVal(); err == nil {
+			if off, ok := ParseTZOffset(strings.TrimSpace(s)); ok {
+				offset = off
+			}
+		}
+	}
+	if local != "" {
+		taken = UTCFromLocal(local, offset)
+	}
+	return local, taken, offset
 }

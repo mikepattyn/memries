@@ -23,7 +23,10 @@ export function AppShell({
       </div>
 
       <div className="relative mx-auto flex h-dvh max-w-6xl min-[800px]:h-auto min-[800px]:min-h-dvh min-[800px]:px-4 min-[800px]:py-6">
-        <aside className="sticky top-6 hidden h-[calc(100dvh-3rem)] w-52 shrink-0 flex-col justify-between rounded-[1.8rem] bg-surface/45 p-5 shadow-soft backdrop-blur-xl min-[800px]:flex">
+        <aside
+          data-nav-layout="side"
+          className="sticky top-6 hidden h-[calc(100dvh-3rem)] w-52 shrink-0 flex-col justify-between rounded-[1.8rem] bg-surface/45 p-5 shadow-soft backdrop-blur-xl min-[800px]:flex"
+        >
           <div>
             <div className="mb-8 flex items-center gap-2">
               <span className="grid h-9 w-9 place-items-center rounded-2xl bg-surface/80 shadow-soft">
@@ -41,7 +44,7 @@ export function AppShell({
 
         <div className="flex h-dvh min-w-0 flex-1 flex-col min-[800px]:ml-5 min-[800px]:h-[calc(100dvh-3rem)] min-[800px]:overflow-hidden min-[800px]:rounded-[1.8rem] min-[800px]:bg-surface/30 min-[800px]:shadow-soft min-[800px]:backdrop-blur-md">
           <TopHeader />
-          <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+          <div className="flex min-h-0 flex-1 flex-col min-[800px]:pt-6">{children}</div>
           <BottomNavigation tab={tab} onChange={onTabChange} />
         </div>
       </div>

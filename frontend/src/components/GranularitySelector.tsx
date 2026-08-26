@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { useSlidingHighlight } from "../hooks/useSlidingHighlight";
 import type { Granularity } from "../models/photo";
 
 const OPTIONS: { value: Granularity; label: string }[] = [
@@ -15,29 +16,8 @@ export function GranularitySelector({
   value: Granularity;
   onChange: (value: Granularity) => void;
 }) {
-  const selected = OPTIONS.findIndex((option) => option.value === value);
-  const groupRef = useRef<HTMLDivElement>(null);
+  const { groupRef, setItemRef, box } = useSlidingHighlight(value);
   const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const [highlight, setHighlight] = useState({ left: 4, width: 0 });
-
-  useLayoutEffect(() => {
-    const measure = () => {
-      const group = groupRef.current;
-      const button = buttonRefs.current[selected];
-      if (!group || !button) return;
-      const groupBox = group.getBoundingClientRect();
-      const buttonBox = button.getBoundingClientRect();
-      setHighlight({ left: buttonBox.left - groupBox.left, width: buttonBox.width });
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    if (groupRef.current) observer.observe(groupRef.current);
-    window.addEventListener("resize", measure);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [selected]);
 
   const move = (nextIndex: number) => {
     const option = OPTIONS[(nextIndex + OPTIONS.length) % OPTIONS.length];
@@ -54,8 +34,10 @@ export function GranularitySelector({
     >
       <div
         aria-hidden
+        data-granularity-indicator
+        data-granularity={value}
         className="pointer-events-none absolute top-1 h-[calc(100%-0.5rem)] rounded-full bg-surface shadow-lift transition-[left,width] duration-300 ease-out motion-reduce:transition-none"
-        style={{ left: highlight.left, width: highlight.width }}
+        style={{ left: box.left, width: box.width }}
       />
       {OPTIONS.map((option, index) => {
         const checked = option.value === value;
@@ -64,6 +46,7 @@ export function GranularitySelector({
             key={option.value}
             ref={(node) => {
               buttonRefs.current[index] = node;
+              setItemRef(option.value)(node);
             }}
             type="button"
             role="radio"

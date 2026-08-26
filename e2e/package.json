@@ -1,0 +1,24 @@
+{
+  "name": "memries-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Isolated Playwright BDD suite against the Memries Docker stack",
+  "type": "module",
+  "scripts": {
+    "test": "bddgen && playwright test",
+    "test:unit": "node --test scripts/stack.test.mjs",
+    "bddgen": "bddgen",
+    "stack:up": "node scripts/stack.mjs up",
+    "stack:down": "node scripts/stack.mjs down",
+    "stack:wipe": "node scripts/stack.mjs down --wipe",
+    "prepare-fixtures": "node scripts/prepare-fixtures.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.0.0",
+    "jpeg-js": "^0.4.4",
+    "piexifjs": "^1.0.6",
+    "playwright-bdd": "^9.2.0",
+    "typescript": "~5.9.0"
+  }
+}

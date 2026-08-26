@@ -7,9 +7,10 @@ import (
 )
 
 type ObjectInfo struct {
-	Key     string
-	Size    int64
-	ModTime time.Time
+	Key       string
+	Size      int64
+	ModTime   time.Time
+	CreatedAt time.Time
 }
 
 type Storage interface {

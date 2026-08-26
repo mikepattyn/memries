@@ -33,15 +33,12 @@ export function groupPhotos(photos: Photo[], granularity: Granularity): Timeline
   }));
 }
 
-export function photoFacets(photos: Photo[]): { places: string[]; years: string[] } {
-  const places = new Set<string>();
+export function photoFacets(photos: Photo[]): { years: string[] } {
   const years = new Set<string>();
   for (const photo of photos) {
-    if (photo.location) places.add(photo.location);
     years.add(photo.takenAt.slice(0, 4));
   }
   return {
-    places: [...places].sort((a, b) => a.localeCompare(b)),
     years: [...years].sort((a, b) => b.localeCompare(a)),
   };
 }
@@ -50,20 +47,18 @@ export function searchPhotos(
   photos: Photo[],
   opts: {
     query: string;
-    places: string[];
+    places?: string[];
     years: string[];
     favoritesOnly: boolean;
   },
 ): Photo[] {
-  const q = opts.query.trim().toLowerCase();
+  const places = opts.places ?? [];
   return photos.filter((photo) => {
     if (opts.favoritesOnly && !photo.favorite) return false;
-    if (opts.places.length && photo.location !== undefined && !opts.places.includes(photo.location)) return false;
-    if (opts.places.length && !photo.location) return false;
+    if (places.length && photo.location !== undefined && !places.includes(photo.location)) return false;
+    if (places.length && !photo.location) return false;
     if (opts.years.length && !opts.years.includes(photo.takenAt.slice(0, 4))) return false;
-    if (!q) return true;
-    const haystack = [photo.location ?? "", photo.takenAt].join(" ").toLowerCase();
-    return haystack.includes(q);
+    return true;
   });
 }
 

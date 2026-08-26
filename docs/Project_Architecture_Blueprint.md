@@ -1,12 +1,12 @@
 # Project Architecture Blueprint — Memries
 
-Generated: 2026-08-25 from the Memries working tree (`apps/memries`, remote [mikepattyn/memries](https://github.com/mikepattyn/memries)).
+Generated: 2026-08-25; refreshed 2026-08-25 after wiring the SPA to the Go indexer and paginated photos API (`apps/memries`, remote [mikepattyn/memries](https://github.com/mikepattyn/memries)).
 
 This is the architecture reference for keeping new work consistent with what the code actually does. Prefer this file over README sketches when they disagree.
 
 **Detected stacks:** Go 1.23 HTTP API (chi) · ArangoDB 3.12 · React 18 + Vite 5 + Tailwind 3 · OIDC (Dex) · Caddy 2 reverse proxy · Docker Compose.
 
-**Detected patterns:** Modular monolith with a plugin storage port; document/graph database with ACL filters in AQL; React composition with a Query cache and a build-time photo library. Not Clean Architecture, not microservices, not platform CDK.
+**Detected patterns:** Modular monolith with a plugin storage port; document/graph database with ACL filters in AQL; React composition with a Query cache over authenticated `/api` pages. Not Clean Architecture, not microservices, not platform CDK.
 
 **Platform context:** Memries is a gitlink (`update = none`), not a mikepattyn Application. It does not use `infra/cdk/`. Start here; the umbrella map is [CONTEXT-MAP.md](../../../CONTEXT-MAP.md) in the parent repo. `apps/memries/CONTEXT.md` is referenced there but is not present in this tree.
 
@@ -41,27 +41,25 @@ This is the architecture reference for keeping new work consistent with what the
 | Area | Evidence | Choice |
 |------|----------|--------|
 | API process | `backend/cmd/server/main.go`, `go.mod` | Go 1.23, chi v5, slog |
-| Indexer process | `backend/cmd/indexer/main.go` | Same module; CLI, not HTTP |
+| Indexer process | `backend/cmd/indexer/main.go`, `internal/index` | CLI plus authenticated HTTP job on the server |
 | Persistence | `backend/internal/db/*`, compose `arangodb:3.12` | ArangoDB document + edge collections |
 | Object storage | `backend/internal/storage` | `Storage` interface; `local` only; `s3` returns “coming in phase 3” |
 | Identity | `backend/internal/auth`, `deploy/dex/config.yaml` | OIDC Authorization Code + cookie session |
 | UI | `frontend/package.json`, `frontend/src/*` | React 18 SPA, Vite, Tailwind, TanStack Query, virtua |
 | Edge | `deploy/caddy/Caddyfile`, `docker-compose.yml` | Caddy `:80` → backend `/api`+`/oauth`, else frontend |
-| Images (dev UI) | `frontend/libraryPhotosPlugin.ts` | Vite plugin walks `data/photos` / `/data/photos` |
+| Images | `GET /api/thumb/{id}`, `GET /api/original/{id}` | Session cookie; thumbs from cache, originals from Storage |
 | Hosting | Dockerfiles + Compose | Local Compose; no K8s, no CDK |
 
 ### Architectural pattern (as implemented)
 
 Memries is a **modular monolith** split into two runtimes that share a Go module:
 
-1. **HTTP server** — config → storage + Arango + thumbs + OIDC → chi router.
-2. **Indexer CLI** — same config and ports; walks storage, hashes, EXIF, thumbs, upserts photos.
+1. **HTTP server** — config → storage + Arango + thumbs + OIDC + index coordinator → chi router.
+2. **Indexer CLI** — same package as the HTTP job; walks storage, hashes, EXIF, thumbs, upserts photos.
 
 The frontend is a **single-page composition** (no router library). Tabs are React state (`memories` / `favorites` / `search`).
 
-**Hybrid that must not be papered over:** README Phase 1 describes a UI that consumes the Go timeline/photos APIs. The current SPA does **not** call those APIs. It loads photos from a Vite virtual module (`virtual:memries-photos`) and an in-memory `mockApi`. Vite still proxies `/api` and `/oauth` to `:8080`, and Caddy still routes them, but `usePhotos` never uses that path.
-
-Treat the Go stack as the **intended persistence architecture** and the Vite library plugin as the **current UI data path**. New features must pick one and not invent a third.
+The SPA loads photos from authenticated `/api/photos` pages. After login it reads `/api/index/status` and `POST`s `/api/index` when the owner has never completed an import. The CLI remains an idempotent fallback. Albums stay in an in-memory store until a later persistence task.
 
 ### Folder conventions
 
@@ -71,21 +69,19 @@ backend/
   cmd/indexer         batch composition root
   internal/
     config            env → Config
-    api               chi handlers (timeline, photos, media)
+    api               chi handlers (timeline, photos, index, media)
     auth              OIDC + cookie session + /api middleware
     db                Arango client, schema, queries, models
     storage           Storage port + local adapter + factory
-    index             walk/hash/EXIF/thumb/upsert pipeline
+    index             walk/hash/EXIF/thumb/upsert pipeline + job coordinator
     exif              EXIF → db.EXIF
     thumb             256/512/1024 JPEG cache
 frontend/
   src/
-    components        shell, timeline, search, viewer
-    hooks             Query + reduced-motion
-    lib               grouping, layout, dates, mock API, media
+    components        shell, timeline, search, viewer, indexing splash
+    hooks             infinite photos query + index status
+    lib               API client, grouping, layout, dates, albums store
     models            Photo / Granularity / SearchState
-    data              maps virtual library → Photo[]
-  libraryPhotosPlugin.ts   Vite plugin (build + /library-photos/)
 deploy/caddy, deploy/dex
 data/photos, data/cache     bind-mounted (gitignored)
 ```
@@ -114,13 +110,13 @@ Guiding principles visible in the code:
 
 | Boundary | How it is enforced |
 |----------|--------------------|
-| Process | Two binaries; indexer does not serve HTTP |
+| Process | Two binaries; HTTP server also runs the indexer package in-process |
 | HTTP API vs UI | Caddy path split; Vite proxy in dev |
 | Authn | chi middleware on `/api`; handlers still check context user |
 | Authz | owner_id on every photo read |
 | Storage keys | `Local.resolve` rejects path escape |
 | Schema | `ensureSchema` on connect (collections + indexes) |
-| Frontend data | currently **inside** the Vite process, not the API |
+| Frontend data | authenticated `/api` (`lib/api.ts`); 401 → `/oauth/login` |
 
 Not enforced: sharing graph, albums, favorites persistence, API versioning, automated architecture tests.
 
@@ -244,11 +240,8 @@ flowchart TB
   Fav["FavoritesView"]
   Search["SearchView"]
   Viewer["PhotoViewer"]
-  Hooks["usePhotos useToggleFavorite"]
-  Mock["mockApi in-memory"]
-  Data["data/photos.ts"]
-  Virtual["virtual:memries-photos"]
-  Plugin["libraryPhotosPlugin"]
+  Hooks["useIndex usePhotos useToggleFavorite"]
+  Api["lib/api authenticated fetch"]
   Group["groupPhotos searchPhotos"]
   Layout["layoutPhotos"]
 
@@ -259,10 +252,7 @@ flowchart TB
   App --> Search
   App --> Viewer
   App --> Hooks
-  Hooks --> Mock
-  Mock --> Data
-  Data --> Virtual
-  Plugin --> Virtual
+  Hooks --> Api
   Timeline --> Group
   Timeline --> Layout
   Fav --> Layout
@@ -297,26 +287,9 @@ sequenceDiagram
   end
 ```
 
-### 3.6 Data flow — browse (current UI vs intended API)
+### 3.6 Data flow — browse
 
-**Current SPA (what `usePhotos` does):**
-
-```mermaid
-sequenceDiagram
-  participant Vite as Vite plugin
-  participant Disk as data/photos
-  participant VM as virtual module
-  participant Mock as mockApi
-  participant App as React views
-
-  Vite->>Disk: walk images EXIF wall-clock
-  Vite->>VM: libraryPhotos JSON
-  App->>Mock: fetchPhotos delay 420ms
-  Mock->>VM: seedPhotos clone
-  App->>App: groupPhotos layoutPhotos client-side
-```
-
-**Intended API (what `api.API` implements, unused by the SPA):**
+The SPA now follows the API path:
 
 ```mermaid
 sequenceDiagram
@@ -348,9 +321,9 @@ sequenceDiagram
 
 **Purpose:** Composition root and process lifecycle.
 
-**Responsibilities:** Load config, construct storage/db/thumbs/auth/API, chi middleware, listen, graceful shutdown on SIGINT/SIGTERM (10s).
+**Responsibilities:** Load config, construct storage/db/thumbs/auth/index coordinator/API, chi middleware, listen, graceful shutdown on SIGINT/SIGTERM (10s). Reconcile interrupted `index_runs` at boot.
 
-**Not responsible for:** Indexing, schema design details, UI.
+**Not responsible for:** Schema design details, UI. The CLI remains the offline fallback indexer.
 
 **Structure:** Single `main`; no subpackages under `cmd/server`.
 
@@ -401,10 +374,12 @@ sequenceDiagram
 | Route | Behavior |
 |-------|----------|
 | `GET /timeline` | `granularity` year/month/week/day (default month); `from`/`to` flexible parse; AQL buckets |
-| `GET /photos` | range + `limit` (1–500, default 200) + `cursor` (`taken_at` RFC3339Nano of last item) |
+| `GET /photos` | range + `limit` (1–500, default 200) + opaque composite `cursor`; `next_cursor` only when another page exists |
 | `GET /photos/{id}` | document if owner |
 | `GET /thumb/{id}?size=` | 256/512/1024 JPEG from cache |
 | `GET /original/{id}` | stream from `Storage.Get` |
+| `GET /index/status` | persisted or live job for the session owner |
+| `POST /index` | `202`; starts/dedupes scan of `data/photos/<email>` |
 
 **Time parse:** RFC3339Nano, RFC3339, `2006-01-02`, `2006-01`, `2006`. Default from = 1970-01-01; default to = now+24h UTC.
 
@@ -421,14 +396,15 @@ sequenceDiagram
 | `photos` | document | yes |
 | `users` | document | yes |
 | `albums` | document | schema only |
+| `index_runs` | document | yes |
 | `owns` | edge | schema only |
 | `shared_with` | edge | schema only |
 | `in_album` | edge | schema only |
 | `album_shared` | edge | schema only |
 
-**Indexes:** `taken_at`; `(owner_id, taken_at)`; unique `hash`; unique `email`.
+**Indexes:** `taken_at`; `(owner_id, taken_at)`; unique `hash`; unique `email`; `index_runs.status`.
 
-**Queries:** `Timeline` COLLECT by formatted date or ISO week expression; `Photos` sort `taken_at DESC` with optional cursor filter `taken_at < @cursor`.
+**Queries:** `Timeline` COLLECT by formatted date or ISO week expression; `Photos` sort `taken_at DESC, _key DESC` with `taken_at < cursorTaken OR (taken_at == cursorTaken AND _key < cursorKey)`.
 
 **User keys:** `sha1(lower(email))` hex — not SHA-256, not Dex `userID`.
 
@@ -458,7 +434,7 @@ sequenceDiagram
 
 **CLI flags:** `-owner` (required email), `-prefix`, `-concurrency`, `-force`.
 
-**Evolution:** Video belongs here (kind, skip JPEG thumbs). Do not start a second walker in the API.
+**Evolution:** Video belongs here (kind, skip JPEG thumbs). The HTTP job must keep using this package — do not add a second walker.
 
 ### 4.8 EXIF (`internal/exif`)
 
@@ -484,7 +460,7 @@ sequenceDiagram
 
 **AppShell** responsive: mobile top header + bottom nav; `min-[800px]` sticky aside. Decorative blobs are `aria-hidden`.
 
-**Timeline** virtualizes **groups** with virtua `VList`, not individual photos. Granularity change preserves approximate scroll via `nearestGroupIndex`. “Today” jumps to index 0.
+**Timeline** virtualizes **groups** with virtua `VList`, not individual photos. Near-end scroll plus a sentinel loads the next `/api/photos` page. Granularity change preserves approximate scroll via `nearestGroupIndex`. “Today” jumps to index 0.
 
 **PhotoGrid / layoutPhotos** density by granularity (year thumbs, day large, week/month mixed rows).
 
@@ -492,17 +468,13 @@ sequenceDiagram
 
 **SearchView** client facets: places, years, favorites, free text on location + takenAt.
 
-**Evolution:** When wiring the API, replace `mockApi` + virtual module at `hooks/usePhotos.ts` and `data/photos.ts`. Keep grouping/layout in `lib/` if the API returns a flat photo list; use `/timeline` only if the UI stops grouping on the client.
+**Evolution:** Keep grouping/layout in `lib/` for a flat photo list. Use `/timeline` only if the UI stops grouping on the client. Persist favorites and albums before growing those tabs.
 
-### 4.11 Vite library photos plugin
+### 4.11 Indexing splash
 
-**Purpose:** Dev/build-time catalog of on-disk originals for the SPA **without** Arango.
+**Purpose:** Gate the gallery on a real owner-scoped import.
 
-**Behaviors:** Virtual module JSON; middleware `GET /library-photos/**` with path-escape guard; chokidar reload unless `CHOKIDAR_USEPOLLING=true` (Docker: restart to see new files).
-
-**Roots:** `/data/photos` if present, else `../data/photos` from `frontend/`.
-
-**Evolution:** This is a **temporary anti-corruption layer** around “UI needs real files now.” Do not add favorites or ACL here. Production nginx cannot serve this plugin.
+**Behaviors:** `GET /api/index/status`; auto `POST /api/index` only for `not_started`; poll while queued/running; show processed/discovered; retry on failure; leave after complete (including empty) once the first photo page settles. 401 redirects to `/oauth/login`.
 
 ---
 
@@ -525,7 +497,7 @@ cmd/server, cmd/indexer
 ### Dependency rules
 
 - `cmd/*` may import any `internal/*`.
-- `api` may import `auth`, `db`, `storage`, `thumb` — not `index` or `exif`.
+- `api` may import `auth`, `db`, `storage`, `thumb`, `index` — not `exif`.
 - `index` may import `db`, `storage`, `thumb`, `exif` — not `api` or `auth`.
 - `auth` may import `db` and `config` — not `api`.
 - `storage` must not import `db`.
@@ -536,7 +508,7 @@ cmd/server, cmd/indexer
 ### Frontend layers
 
 ```text
-components  →  hooks  →  lib/mockApi  →  data/photos  →  virtual module
+components  →  hooks  →  lib/api  →  /api/index + /api/photos
      ↓
    models, lib/groupPhotos, lib/layoutPhotos, lib/formatDate, lib/takenAt
 ```
@@ -547,14 +519,12 @@ No circular imports today. `App.tsx` is the only state owner for tabs/viewer.
 
 | Issue | Detail |
 |-------|--------|
-| Dual catalog | Disk library in Vite vs hash catalog in Arango |
-| Identity of a photo | Path (`id` in UI) vs SHA-256 (`_key` in API) |
-| `takenAt` | Wall clock vs UTC `time.Time` |
-| Unused API | Frontend never calls `/api/photos` |
-| Built frontend image | nginx + `dist`; library plugin absent |
+| Identity of a photo | UI `id` is now the SHA-256 `_key` |
+| `takenAt` | UI prefers `taken_at_local` wall clock |
+| Favorites / albums | Session or in-memory only |
+| `/timeline` unused by SPA | Client still groups loaded pages |
 | `db` types in `exif` | Cross-package model ownership |
 | Edge collections unused | Schema ahead of product |
-| No tests | Rules above are social, not CI |
 
 No Go import cycles detected from package layout.
 
@@ -820,24 +790,20 @@ None. Breaking JSON changes will break any future real client. When wiring the S
 
 ## 11. Testing architecture
 
-**There are no test files** in this repository (no `*_test.go`, no Vitest/Jest, no Playwright). Architecture is unverified by CI.
+Go unit tests cover `index.Coordinator` (prefix, dedupe, retry, reconcile, progress, empty complete) and `db` cursor helpers (`EncodeCursor` / `ClipPage` / `AfterCursor`). Frontend Vitest covers API DTO mapping, page flattening, and index-status decisions. There is still no Playwright suite.
 
-### Recommended seams (when tests are added)
+### Recommended seams
 
 | Layer | What to test | Double |
 |-------|----------------|--------|
+| `index.Coordinator` | job states, owner prefix, retry | fake runner + mem store |
+| `db` cursor helpers | same-timestamp pages | literals |
+| `lib/api` / `lib/indexStatus` | DTO map, start/poll rules | unit, no DOM |
 | `storage.Local` | path escape, Walk prefix, Put atomic rename | temp dir |
-| `index.Indexer` | hash skip, force reindex, non-media skip | fake Storage + fake DB if extracted |
-| `db` AQL | week bucket expression, cursor, owner filter | Arango testcontainer or recorded fixtures |
 | `api` | 401 without cookie, 403 other owner, size whitelist | httptest + fake db |
-| `auth` | bad state, missing email | oidc test provider |
-| `groupPhotos` / `layoutPhotos` / `takenAt` | pure functions | unit, no DOM |
-| Timeline granularity scroll | nearest group | unit |
-| E2E | login + timeline | Playwright against Compose |
+| E2E | login + index + timeline pages | Playwright against Compose |
 
-`mockApi.resetPhotoStore` is the only test-oriented hook today; nothing calls it.
-
-Do not start with UI screenshot tests. Public seams are `storage.Storage`, `db.Client` methods, and `lib/*` pure functions.
+Do not start with UI screenshot tests. Public seams are `index.Coordinator`, `db` cursor helpers, `storage.Storage`, and `lib/*` pure functions.
 
 ---
 
@@ -994,15 +960,16 @@ FILTER p.owner_id == @uid
 
 By-id routes cannot use that pattern (single document read) so they check `p.OwnerID != u.Key` in Go.
 
-### Frontend data access — replace this seam to use the API
+### Frontend data access — authenticated pages
 
 ```ts
 // frontend/src/hooks/usePhotos.ts
-export function usePhotos() {
-  return useQuery({
+export function usePhotos(enabled: boolean) {
+  return useInfiniteQuery({
     queryKey: photoQueryKey,
-    queryFn: fetchPhotos, // mockApi → should become fetch('/api/photos')
-    staleTime: 5 * 60_000,
+    queryFn: ({ pageParam }) => fetchPhotosPage(pageParam),
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    enabled,
   });
 }
 ```
@@ -1020,17 +987,11 @@ onMutate: async (id) => {
 }
 ```
 
-### Build-time catalog (current UI adapter)
+### Owner-scoped index start
 
-```ts
-resolveId(id) {
-  if (id === VIRTUAL_ID) return RESOLVED_ID;
-}
-async load(id) {
-  if (id !== RESOLVED_ID) return;
-  const entries = await buildLibrary(root);
-  return `export const libraryPhotos = ${JSON.stringify(entries)};\n`;
-}
+```go
+prefix, err := PrefixFromEmail(email) // session email, never a client path
+s, err := a.Index.Start(r.Context(), u.Key, u.Email)
 ```
 
 ### Capture-time without timezone shift (UI)
@@ -1046,9 +1007,9 @@ Backend instead does `t.UTC()` from goexif `DateTime()`. Call this out in any sy
 
 ## 15. Architectural decision records
 
-These decisions are inferred from the code and README. They are not numbered files under `docs/adr/` (none exist in this repo).
+Inferred notes below. Numbered files under [`docs/adr/`](adr/) are the source of truth. Stack and process shape is [0003](adr/0003-modular-monolith-compose.md). [0005](adr/0005-capture-time-stable-identity.md) supersedes ADR-M3 and refines ADR-M4.
 
-### ADR-M1 — Modular monolith on Docker Compose, not platform CDK
+### ADR-M1 — Modular monolith on Docker Compose, not platform CDK (accepted as 0003)
 
 - **Context:** Personal photo manager; umbrella CDK is for mikepattyn.nl apps.
 - **Decision:** Own Compose stack (Go, Arango, Dex, Caddy, React). Gitlink, `update = none`.
@@ -1087,18 +1048,21 @@ These decisions are inferred from the code and README. They are not numbered fil
 - **Decision:** `Storage` interface now; S3 factory error.
 - **Consequences:** Indexer/API already storage-agnostic for originals; thumbs are still local FS.
 
-### ADR-M7 — Indexer as CLI, not an API job
+### ADR-M7 — Indexer as CLI plus owner-scoped HTTP job
 
-- **Context:** Bulk import of a tree `data/photos/<email>/...`.
-- **Decision:** Separate binary, operator-run, concurrency flag.
-- **Consequences:** No upload UX; no progress WebSocket; ops knowledge required. Fits MVP; fights “drop files and see them” unless the Vite plugin is used.
+Accepted as [docs/adr/0004-owner-scoped-index-job-and-cursor-photos.md](adr/0004-owner-scoped-index-job-and-cursor-photos.md).
 
-### ADR-M8 — SPA currently catalogs disk via Vite, not the Go API
+- **Context:** Bulk import of a tree `data/photos/<email>/...`, plus a browser splash that should show real progress.
+- **Decision:** Keep the CLI as an idempotent fallback. The HTTP server runs the same `index.Indexer` through a coordinator. `POST /api/index` derives prefix and owner from the session email; the client cannot pass a path.
+- **Consequences:** First login scans that owner's folder; empty successful scans persist so they do not repeat; CLI-populated libraries count as complete; one in-process job slot.
 
-- **Context:** UI work needs real photos and EXIF grouping without waiting on API DTO/auth/thumb URLs.
-- **Decision:** `libraryPhotosPlugin` + `mockApi` + client grouping/search/favorites.
-- **Consequences:** Fast UI iteration; production nginx build does not rescan disk; login unused; duplicate EXIF stacks; README “Phase 1 React timeline API” is only half true.
-- **Follow-up:** Replace `fetchPhotos` with authenticated API mapping; decide whether granularity stays client-side.
+### ADR-M8 — SPA catalogs photos through the Go API
+
+Accepted as [docs/adr/0004-owner-scoped-index-job-and-cursor-photos.md](adr/0004-owner-scoped-index-job-and-cursor-photos.md).
+
+- **Context:** The Vite disk plugin was a temporary anti-corruption layer for UI work.
+- **Decision:** Authenticated `fetch` with cookies; DTO map `_key` → `id` and `/api/thumb` + `/api/original` URLs; TanStack infinite query on composite cursors; client-side `groupPhotos` still owns granularity.
+- **Consequences:** Production nginx builds work without a disk scan. Search and Favorites use the same `/api/photos` cursor with filters. Favorites and Albums persist per Owner ([0005](adr/0005-capture-time-stable-identity.md)).
 
 ### ADR-M9 — chi + manual wiring, not a framework
 
@@ -1133,7 +1097,7 @@ These decisions are inferred from the code and README. They are not numbered fil
 
 - README: runbooks, topology, schema sketch, phases.
 - This blueprint: patterns, dual-path truth, extension map.
-- Missing: `CONTEXT.md` glossary (umbrella points at it), `docs/adr/` files.
+- Glossary: [CONTEXT.md](../CONTEXT.md). Numbered ADRs: [docs/adr/](adr/).
 
 **Review**
 
@@ -1168,15 +1132,9 @@ When adding sharing, S3, video, or API-wired UI, update this file in the same ch
 4. Confirm indexer `Walk` and API `Get`.
 5. Leave thumbs local unless you explicitly move them.
 
-**D. Wire SPA to Go API (recommended next architecture step)**
+**D. Wire SPA to Go API (done)**
 
-1. DTO mapper: Arango photo → `Photo` (`id` from `_key`, URLs from `/api/thumb` and `/api/original`).
-2. `fetch` with `credentials: 'include'`.
-3. Handle 401 → `/oauth/login`.
-4. Cursor pagination: Query infinite query, not one `Photo[]`.
-5. Granularity: either keep `groupPhotos` or render `/timeline` buckets.
-6. Retire virtual module from production path; keep plugin only for offline UI demos if needed.
-7. Favorites need a backend field or they stay fake.
+The SPA uses `lib/api.ts` (`credentials: 'include'`, 401 → `/oauth/login`), `useInfiniteQuery` on `/api/photos`, and `useIndex` for `/api/index`. Granularity stays on `groupPhotos`. Favorites are still session-only.
 
 **E. Video (Phase 2)**
 
@@ -1264,4 +1222,4 @@ Update when any of these change: storage backends, auth, photo identity, fronten
 
 ---
 
-*End of blueprint. Implementation-ready relative to this tree on 2026-08-25; the dual catalog (Vite disk vs Arango API) is the main consistency risk.*
+*End of blueprint. Implementation-ready relative to this tree on 2026-08-25 after the API-wired splash and composite photo cursor; remaining consistency risks are session-only favorites and unused `/timeline` buckets.*

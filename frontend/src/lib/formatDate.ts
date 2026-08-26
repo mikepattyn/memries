@@ -78,8 +78,9 @@ export function formatWeekLabel(key: string): string {
   end.setUTCDate(start.getUTCDate() + 6);
   const startDay = start.getUTCDate();
   const endDay = end.getUTCDate();
-  const startMonth = start.toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
-  const endMonth = end.toLocaleDateString(undefined, { month: "short", timeZone: "UTC" });
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const startMonth = months[start.getUTCMonth()];
+  const endMonth = months[end.getUTCMonth()];
   if (start.getUTCMonth() === end.getUTCMonth() && start.getUTCFullYear() === end.getUTCFullYear()) {
     return `${startDay}–${endDay} ${startMonth} ${year}`;
   }

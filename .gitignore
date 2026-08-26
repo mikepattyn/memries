@@ -8,3 +8,6 @@ backend/indexer
 .DS_Store
 .vscode/
 .idea/
+e2e/.features-gen/
+e2e/.work/
+e2e/node_modules/

@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import type { Album, Photo } from "../models/photo";
+import { compactThumbSize, thumbUrl } from "../lib/photoSrc";
+import { useViewportWidth } from "../hooks/useViewportWidth";
+import type { Album } from "../models/photo";
 import { FoldersIcon, PlusIcon } from "./icons";
 
 export function AlbumsView({
   albums,
-  photos,
   onCreate,
+  onOpen,
   creating,
 }: {
   albums: Album[];
-  photos: Photo[];
   onCreate: (name: string) => void;
+  onOpen: (album: Album) => void;
   creating: boolean;
 }) {
   const [drafting, setDrafting] = useState(false);
@@ -39,7 +41,8 @@ export function AlbumsView({
       <div className="mt-6 grid grid-cols-2 gap-3 min-[800px]:grid-cols-3 min-[1280px]:grid-cols-4">
         {drafting ? (
           <form
-            className="col-span-2 flex min-h-[11.5rem] flex-col justify-between rounded-[1.4rem] bg-surface/70 p-4 shadow-soft min-[800px]:col-span-1"
+            data-album-form
+            className="animate-form-in col-span-2 flex min-h-[11.5rem] flex-col justify-between rounded-[1.4rem] bg-surface/70 p-4 shadow-soft min-[800px]:col-span-1"
             onSubmit={(event) => {
               event.preventDefault();
               submit();
@@ -90,34 +93,41 @@ export function AlbumsView({
         )}
 
         {albums.map((album) => (
-          <AlbumCard key={album.id} album={album} photos={photos} />
+          <AlbumCard key={album.id} album={album} onOpen={onOpen} />
         ))}
       </div>
     </div>
   );
 }
 
-function AlbumCard({ album, photos }: { album: Album; photos: Photo[] }) {
-  const cover = photos.find((photo) => album.photoIds.includes(photo.id));
-  const count = album.photoIds.length;
+function AlbumCard({ album, onOpen }: { album: Album; onOpen: (album: Album) => void }) {
+  const coverId = album.coverPhotoId ?? album.photoIds[0];
+  const count = album.photoCount;
+  const countLabel = `${count} ${count === 1 ? "photo" : "photos"}`;
+  const coverSize = compactThumbSize(useViewportWidth());
 
   return (
-    <article className="overflow-hidden rounded-[1.4rem] bg-surface/70 shadow-soft">
-      <div className="relative aspect-[4/3] overflow-hidden bg-blush/50">
-        {cover ? (
-          <img src={cover.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="grid h-full place-items-center text-peach">
-            <FoldersIcon className="h-8 w-8" />
-          </div>
-        )}
-      </div>
-      <div className="px-3 py-3">
-        <h3 className="truncate text-sm font-semibold text-plum">{album.name}</h3>
-        <p className="mt-0.5 text-xs text-ink/60">
-          {count} {count === 1 ? "photo" : "photos"}
-        </p>
-      </div>
+    <article data-album-card className="album-card overflow-hidden rounded-[1.4rem] bg-surface/70 shadow-soft">
+      <button
+        type="button"
+        onClick={() => onOpen(album)}
+        className="block w-full text-left transition duration-200 hover:bg-cream/40 active:scale-[0.99]"
+        aria-label={`Open album ${album.name}, ${countLabel}`}
+      >
+        <div className="relative aspect-[4/3] overflow-hidden bg-blush/50">
+          {coverId ? (
+            <img src={thumbUrl(coverId, coverSize)} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="grid h-full place-items-center text-peach">
+              <FoldersIcon className="h-8 w-8" />
+            </div>
+          )}
+        </div>
+        <div className="px-3 py-3">
+          <h3 className="truncate text-sm font-semibold text-plum">{album.name}</h3>
+          <p className="mt-0.5 text-xs text-ink/60">{countLabel}</p>
+        </div>
+      </button>
     </article>
   );
 }

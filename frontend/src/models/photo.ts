@@ -6,6 +6,8 @@ export interface Album {
   id: string;
   name: string;
   createdAt: string;
+  photoCount: number;
+  coverPhotoId?: string;
   photoIds: string[];
 }
 
@@ -30,11 +32,10 @@ export interface TimelineGroup {
   photos: Photo[];
 }
 
-export type SearchCategory = "places" | "years" | "favorites";
+export type SearchCategory = "years" | "favorites";
 
 export interface SearchState {
   query: string;
-  places: string[];
   years: string[];
   favoritesOnly: boolean;
   openCategory: SearchCategory | null;

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "apps": {
+    "memries-albums": {
+      "path": "e2e/features/albums.feature",
+      "recordedAt": "2026-08-26T03:00:41.056Z",
+      "lastCommit": "5eacd564a0973f4f016d20ddb7f6c33b7c261a68",
+      "finding": {
+        "status": "passed",
+        "summary": "8 passed",
+        "composeProject": "e2e-memries-albums",
+        "suiteCommit": "5eacd564a0973f4f016d20ddb7f6c33b7c261a68"
+      }
+    },
+    "memries-empty-states": {
+      "path": "e2e/features/empty-states.feature",
+      "recordedAt": "2026-08-26T03:00:41.456Z",
+      "lastCommit": "5eacd564a0973f4f016d20ddb7f6c33b7c261a68",
+      "finding": {
+        "status": "passed",
+        "summary": "4 passed",
+        "composeProject": "e2e-memries-empty-states",
+        "suiteCommit": "5eacd564a0973f4f016d20ddb7f6c33b7c261a68"
+      }
+    },
+    "memries-capture": {
+      "path": "e2e/features/capture.feature",
+      "recordedAt": "2026-08-26T03:02:29.638Z",
+      "lastCommit": "5eacd564a0973f4f016d20ddb7f6c33b7c261a68",
+      "finding": {
+        "status": "passed",
+        "summary": "4 passed",
+        "composeProject": "e2e-memries-capture",
+        "suiteCommit": "e8142d5058e7eafd18b95e8e5c5322566da71129"
+      }
+    },
+    "memries-indexing": {
+      "path": "e2e/features/indexing.feature",
+      "recordedAt": "2026-08-26T03:02:30.036Z",
+      "lastCommit": "5eacd564a0973f4f016d20ddb7f6c33b7c261a68",
+      "finding": {
+        "status": "passed",
+        "summary": "2 passed",
+        "composeProject": "e2e-memries-indexing",
+        "suiteCommit": "e8142d5058e7eafd18b95e8e5c5322566da71129"
+      }
+    }
+  }
+}

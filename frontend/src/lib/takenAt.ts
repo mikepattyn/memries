@@ -2,7 +2,7 @@
  * Capture-time helpers. Prefer EXIF wall-clock strings and never run them
  * through `Date` / the machine timezone (that shifts e.g. 17:34 into 15:34Z).
  *
- * Tag order used by the Vite library plugin:
+ * Tag order used when reading EXIF wall clocks:
  *   1. DateTimeOriginal
  *   2. CreateDate
  *   3. DateTimeDigitized

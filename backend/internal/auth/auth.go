@@ -185,6 +185,10 @@ func UserFromContext(ctx context.Context) (*SessionUser, bool) {
 	return u, ok && u != nil
 }
 
+func WithUser(ctx context.Context, u *SessionUser) context.Context {
+	return context.WithValue(ctx, userKey, u)
+}
+
 func randomString(n int) (string, error) {
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {

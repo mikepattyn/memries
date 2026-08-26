@@ -1,0 +1,196 @@
+import { expect } from '@playwright/test';
+import { Given, Then, When, openTab, photoByDay } from './fixtures';
+
+const GRANULARITY: Record<string, string> = {
+  Year: 'year',
+  Month: 'month',
+  Week: 'week',
+  Day: 'day',
+};
+
+Given('I prefer reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+});
+
+Given('I prefer a dark color scheme', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+});
+
+Given('I prefer a light color scheme', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+});
+
+Given('I have no saved theme', async ({ page }) => {
+  await page.addInitScript(() => {
+    const flag = 'memries-theme-cleared-once';
+    if (!sessionStorage.getItem(flag)) {
+      localStorage.removeItem('memries-theme');
+      sessionStorage.setItem(flag, '1');
+    }
+  });
+});
+
+When('I press {string}', async ({ page }, key: string) => {
+  await page.keyboard.press(key);
+});
+
+When('I open the viewer album picker', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add to album', exact: true }).click();
+});
+
+When('I swipe the viewer left', async ({ page }) => {
+  await dragViewer(page, -90, 0);
+});
+
+When('I drag the viewer a short way left', async ({ page }) => {
+  await dragViewer(page, -24, 0);
+});
+
+When('I drag the viewer down to dismiss', async ({ page }) => {
+  await dragViewer(page, 0, 130);
+});
+
+When('I switch the theme', async ({ page }) => {
+  const toggle = page.locator('[data-theme-toggle]').filter({ visible: true });
+  const next = (await toggle.getAttribute('aria-label'))?.includes('dark') ? 'dark' : 'light';
+  await toggle.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', next);
+});
+
+When('I start a folder sync', async ({ page }) => {
+  await openTab(page, 'Memories');
+  await page.getByRole('button', { name: 'Sync folder' }).click();
+  await expect(page.locator('[data-indexing-splash]')).toBeVisible();
+});
+
+When('I start a new album', async ({ page }) => {
+  await openTab(page, 'Albums');
+  await page.getByRole('button', { name: 'New album' }).click();
+});
+
+Then('the photo actions menu is closed', async ({ page }) => {
+  await expect(page.getByRole('menu', { name: 'Photo actions' })).toHaveCount(0);
+});
+
+Then('the viewer shows the photo from {string}', async ({ page }, day: string) => {
+  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toHaveAttribute('data-viewer-day', day);
+});
+
+Then('the viewer photo is a favorite', async ({ page }) => {
+  const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
+  await expect(viewer).toHaveAttribute('data-viewer-favorite', 'true');
+  await expect(page.getByRole('button', { name: 'Remove from favorites' })).toBeVisible();
+});
+
+Then('the viewer photo is not a favorite', async ({ page }) => {
+  const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
+  await expect(viewer).toHaveAttribute('data-viewer-favorite', 'false');
+  await expect(page.getByRole('button', { name: 'Add to favorites' })).toBeVisible();
+});
+
+Then('focus stays inside the photo viewer', async ({ page }) => {
+  const inside = await page.evaluate(() => {
+    const dialog = document.querySelector('[role="dialog"][aria-label="Photo viewer"]');
+    return !!dialog && dialog.contains(document.activeElement);
+  });
+  expect(inside).toBe(true);
+});
+
+Then('the photo from {string} is focused', async ({ page }, day: string) => {
+  await expect(photoByDay(page, day).first()).toBeFocused();
+});
+
+Then('the photo viewer opened from a photo card', async ({ page }) => {
+  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toHaveAttribute('data-origin', 'card');
+});
+
+Then('the photo viewer should skip motion', async ({ page }) => {
+  const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
+  await expect(viewer).toHaveAttribute('data-reduced-motion', 'true');
+  await expect(viewer).toHaveAttribute('data-viewer-motion', 'reduced');
+});
+
+Then('the timeline should skip motion', async ({ page }) => {
+  await expect(page.locator('[data-timeline]')).toHaveAttribute('data-timeline-motion', 'none');
+});
+
+Then('I should see the Today control', async ({ page }) => {
+  await expect(page.getByRole('button', { name: 'Back to today' })).toBeVisible();
+});
+
+Then('the library is in dark mode', async ({ page }) => {
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('html')).toHaveClass(/dark/);
+});
+
+Then('the library is in light mode', async ({ page }) => {
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('html')).not.toHaveClass(/dark/);
+});
+
+Then('I should see the Index run splash', async ({ page }) => {
+  await expect(page.locator('[data-indexing-splash]')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Indexing your files' })).toBeVisible();
+});
+
+Then('the main navigation should match this viewport', async ({ page }) => {
+  const width = await page.evaluate(() => window.innerWidth);
+  if (width >= 800) {
+    await expect(page.locator('[data-nav-layout="side"]')).toBeVisible();
+  } else {
+    await expect(page.locator('[data-nav-layout="bottom"]')).toBeVisible();
+  }
+});
+
+Then('I should not see the album page', async ({ page }) => {
+  await expect(page.getByRole('button', { name: 'Back to albums' })).toHaveCount(0);
+});
+
+Then('I should see the empty favorites state', async ({ page }) => {
+  await expect(page.locator('[data-empty="favorites"]')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Nothing starred yet' })).toBeVisible();
+});
+
+Then('the search suggestion chips should be ready', async ({ page }) => {
+  await expect(page.locator('[data-suggestion-chip]')).toHaveCount(8);
+});
+
+Then('the year facet {string} is selected', async ({ page }, year: string) => {
+  await expect(page.getByRole('button', { name: year, exact: true })).toHaveAttribute('aria-pressed', 'true');
+});
+
+Then('the year facet {string} is not selected', async ({ page }, year: string) => {
+  await expect(page.getByRole('button', { name: year, exact: true })).toHaveAttribute('aria-pressed', 'false');
+});
+
+Then('the album name field is focused', async ({ page }) => {
+  await expect(page.getByLabel('Album name')).toBeFocused();
+});
+
+Then('the granularity highlight should be on {string}', async ({ page }, label: string) => {
+  const value = GRANULARITY[label];
+  expect(value, `unknown granularity ${label}`).toBeTruthy();
+  await expect(page.getByRole('radio', { name: label, exact: true })).toHaveAttribute('aria-checked', 'true');
+  const indicator = page.locator('[data-granularity-indicator]');
+  await expect(indicator).toHaveAttribute('data-granularity', value);
+  await expect
+    .poll(async () => {
+      const radioBox = await page.getByRole('radio', { name: label, exact: true }).boundingBox();
+      const pillBox = await indicator.boundingBox();
+      if (!radioBox || !pillBox) return Number.POSITIVE_INFINITY;
+      return Math.abs(radioBox.x - pillBox.x);
+    })
+    .toBeLessThan(12);
+});
+
+async function dragViewer(page: import('@playwright/test').Page, dx: number, dy: number) {
+  const stage = page.locator('[data-viewer-stage]');
+  await expect(stage).toBeVisible();
+  const box = await stage.boundingBox();
+  if (!box) throw new Error('viewer stage has no box');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await stage.dispatchEvent('pointerdown', { clientX: x, clientY: y, pointerId: 1, buttons: 1 });
+  await stage.dispatchEvent('pointermove', { clientX: x + dx, clientY: y + dy, pointerId: 1, buttons: 1 });
+  await stage.dispatchEvent('pointerup', { clientX: x + dx, clientY: y + dy, pointerId: 1, buttons: 0 });
+}

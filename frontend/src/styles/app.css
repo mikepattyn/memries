@@ -99,6 +99,7 @@
     transition:
       opacity 520ms ease,
       transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
   }
 
   .index-spin {
@@ -113,6 +114,60 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.25rem;
+  }
+
+  .viewer-backdrop-in {
+    animation: fade-in 220ms ease both;
+  }
+
+  .viewer-backdrop-out {
+    animation: fade-out 260ms ease both;
+  }
+
+  .viewer-chrome-in {
+    animation: fade-rise 320ms ease both;
+  }
+
+  .photo-crossfade {
+    animation: photo-crossfade 280ms ease both;
+  }
+
+  .period-in {
+    display: inline-block;
+    animation: period-in 280ms ease both;
+  }
+
+  .period-out {
+    animation: period-out 280ms ease both;
+  }
+
+  .animate-chip-in {
+    animation: chip-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-fab-in {
+    animation: fab-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-form-in {
+    animation: form-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .heart-pop {
+    animation: heart-pop 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .album-card {
+    transition:
+      transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 300ms ease;
+  }
+
+  @media (min-width: 800px) {
+    .album-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lift);
+    }
   }
 }
 
@@ -161,11 +216,104 @@
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes photo-crossfade {
+  from {
+    opacity: 0.35;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes period-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes period-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+@keyframes fab-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.86);
+  }
+}
+
+@keyframes form-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+@keyframes heart-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  55% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton::after,
   .animate-fade-rise,
   .index-spin,
-  .index-pulse {
+  .index-pulse,
+  .viewer-backdrop-in,
+  .viewer-backdrop-out,
+  .viewer-chrome-in,
+  .photo-crossfade,
+  .period-in,
+  .period-out,
+  .animate-chip-in,
+  .animate-fab-in,
+  .animate-form-in,
+  .heart-pop {
     animation: none;
   }
 
@@ -174,5 +322,15 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .album-card,
+  .album-card:hover {
+    transform: none;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }

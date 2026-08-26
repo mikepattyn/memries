@@ -16,6 +16,7 @@
                 ? "dark"
                 : "light";
           if (theme === "dark") document.documentElement.classList.add("dark");
+          document.documentElement.dataset.theme = theme;
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) meta.setAttribute("content", theme === "dark" ? "#1A1916" : "#F4F1EA");
         } catch (error) {}

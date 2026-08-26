@@ -39,7 +39,9 @@ type Photo struct {
 	OwnerID       string     `json:"owner_id"`
 	TakenAt       time.Time  `json:"taken_at"`
 	TakenAtLocal  string     `json:"taken_at_local,omitempty"`
+	TakenAtSource string     `json:"taken_at_source,omitempty"`
 	TZOffset      int        `json:"tz_offset"`
+	Favorite      bool       `json:"favorite"`
 	Storage       StoragePtr `json:"storage"`
 	Hash          string     `json:"hash"`
 	SizeBytes     int64      `json:"size_bytes"`
@@ -72,4 +74,20 @@ type ShareEdge struct {
 	From string `json:"_from"`
 	To   string `json:"_to"`
 	Role string `json:"role"`
+}
+
+type IndexRun struct {
+	Key        string     `json:"_key"`
+	OwnerID    string     `json:"owner_id"`
+	Prefix     string     `json:"prefix"`
+	Status     string     `json:"status"`
+	Discovered int        `json:"discovered"`
+	Processed  int        `json:"processed"`
+	Indexed    int        `json:"indexed"`
+	Skipped    int        `json:"skipped"`
+	Failed     int        `json:"failed"`
+	Error      string     `json:"error,omitempty"`
+	StartedAt  *time.Time `json:"started_at,omitempty"`
+	FinishedAt *time.Time `json:"finished_at,omitempty"`
+	UpdatedAt  time.Time  `json:"updated_at"`
 }

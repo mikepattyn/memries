@@ -58,7 +58,7 @@ func main() {
 		os.Exit(1)
 	}
 	idx := &index.Indexer{Store: store, DB: dbc, Thumb: tg, Log: log}
-	if err := idx.Run(ctx, index.Options{OwnerID: user.Key, Prefix: *prefix, Concurrency: *conc, Force: *force}); err != nil {
+	if _, err := idx.Run(ctx, index.Options{OwnerID: user.Key, Prefix: *prefix, Concurrency: *conc, Force: *force}); err != nil {
 		log.Error("index", "err", err)
 		os.Exit(1)
 	}

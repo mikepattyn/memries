@@ -14,6 +14,7 @@ const (
 	ColPhotos      = "photos"
 	ColUsers       = "users"
 	ColAlbums      = "albums"
+	ColIndexRuns   = "index_runs"
 	ColOwns        = "owns"
 	ColSharedWith  = "shared_with"
 	ColInAlbum     = "in_album"
@@ -60,7 +61,7 @@ func Connect(ctx context.Context, cfg *config.Config) (*Client, error) {
 func (c *Client) DB() driver.Database { return c.db }
 
 func (c *Client) ensureSchema(ctx context.Context) error {
-	docCols := []string{ColPhotos, ColUsers, ColAlbums}
+	docCols := []string{ColPhotos, ColUsers, ColAlbums, ColIndexRuns}
 	for _, name := range docCols {
 		if err := ensureCollection(ctx, c.db, name, false); err != nil {
 			return err
@@ -82,8 +83,19 @@ func (c *Client) ensureSchema(ctx context.Context) error {
 	if _, _, err := photos.EnsurePersistentIndex(ctx, []string{"hash"}, &driver.EnsurePersistentIndexOptions{Unique: true, Name: "idx_hash"}); err != nil {
 		return err
 	}
+	if _, _, err := photos.EnsurePersistentIndex(ctx, []string{"owner_id", "storage.path"}, &driver.EnsurePersistentIndexOptions{Name: "idx_owner_storage_path"}); err != nil {
+		return err
+	}
+	albums, _ := c.db.Collection(ctx, ColAlbums)
+	if _, _, err := albums.EnsurePersistentIndex(ctx, []string{"owner_id"}, &driver.EnsurePersistentIndexOptions{Name: "idx_album_owner"}); err != nil {
+		return err
+	}
 	users, _ := c.db.Collection(ctx, ColUsers)
 	if _, _, err := users.EnsurePersistentIndex(ctx, []string{"email"}, &driver.EnsurePersistentIndexOptions{Unique: true, Name: "idx_email"}); err != nil {
+		return err
+	}
+	runs, _ := c.db.Collection(ctx, ColIndexRuns)
+	if _, _, err := runs.EnsurePersistentIndex(ctx, []string{"status"}, &driver.EnsurePersistentIndexOptions{Name: "idx_index_run_status"}); err != nil {
 		return err
 	}
 	return nil
