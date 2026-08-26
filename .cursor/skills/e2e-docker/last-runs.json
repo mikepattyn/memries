@@ -2,14 +2,14 @@
   "version": 1,
   "apps": {
     "memries-albums": {
-      "path": "e2e/features/albums.feature",
-      "recordedAt": "2026-08-26T08:19:10.670Z",
+      "path": "apps/e2e/features/albums.feature",
+      "recordedAt": "2026-08-26T11:24:09.401Z",
       "lastCommit": "83c62fc739d759fdf7f1d447a32646b91523d82a",
       "finding": {
-        "status": "passed",
-        "summary": "8 passed",
+        "status": "failed",
+        "summary": "0 passed (compose build failed: frontend Node 20 vs jest-dom engines >=22)",
         "composeProject": "e2e-memries-albums",
-        "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
+        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
       }
     },
     "memries-empty-states": {
