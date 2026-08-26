@@ -1,0 +1,7 @@
+node_modules/
+.features-gen/
+.work/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

@@ -1,0 +1,70 @@
+# Memries
+
+Owner-scoped photo library: date-scroll browsing, named Albums, and thumbs from disk cache rather than Arango blobs.
+
+## Language
+
+**Photo**:
+An indexed still image owned by one Owner. `_key` is stable identity (kept on folder Sync when the owner path still matches). `hash` is the content fingerprint and may change when the file is rewritten.
+_Avoid_: memory (UI copy only), file, original (that is the source bytes)
+
+**Owner**:
+The signed-in user whose key must match `photo.owner_id` / `album.owner_id`.
+
+**Album**:
+A named, owner-scoped set of Photos joined by `in_album` edges.
+_Avoid_: group, folder, collection
+
+**Album page**:
+The in-tab view of one Album’s Photos, reached by opening an Album card.
+_Avoid_: album route, album URL
+
+**Timeline Group**:
+A date bucket of Photos (year / month / week / day) produced by `groupPhotos`.
+_Avoid_: album, album page
+
+**Thumb**:
+A 256, 512, or 1024 JPEG in the cache; Arango stores only the path.
+_Avoid_: thumbnail URL as if it were pixels in Arango, original
+
+**Original**:
+The source file on Storage, streamed by `/api/original/{id}` only in the photo viewer.
+_Avoid_: full image from Arango
+
+**TakenAt**:
+Capture clock used for Timeline Groups: EXIF `DateTimeOriginal` (then digitized / `DateTime`), else filesystem birth time, else mtime. The UI buckets on `taken_at_local`. Search smart dates use the same wall clock. See [docs/adr/0005-capture-time-stable-identity.md](docs/adr/0005-capture-time-stable-identity.md).
+
+**Smart date**:
+A typed or suggested calendar phrase on Search (`yesterday`, `last winter`, `a day in june`) parsed in the SPA and applied as `/api/photos` filters. Not a second catalog.
+
+**Granularity**:
+`year` / `month` / `week` / `day` for Timeline Groups.
+
+**Index run**:
+A persisted, owner-scoped scan of Storage under the Owner’s email prefix that upserts Photos.
+_Avoid_: vite catalog, import script (as the only start path), sync (that is folder Sync in [0005](docs/adr/0005-capture-time-stable-identity.md))
+
+## Relationships
+
+- An **Owner** owns many **Photos** and many **Albums**
+- An **Owner** has at most one **Index run** (`_key` = owner id); the run walks `data/photos/<email>`
+- An **Album** contains zero or more **Photos** via `in_album`; removing a Photo from an Album does not delete the Photo
+- A **Timeline Group** is not an **Album**; it is a date bucket on the Memories tab
+- A **Thumb** is derived from a **Photo**; an **Original** is the Photo’s source file
+
+## Example dialogue
+
+> **Dev:** "When I open an Album, is that a Timeline Group I can manage?"
+> **Domain expert:** "No. The **Album page** shows Photos in that **Album**. A **Timeline Group** is only a date bucket on Memories. Long-press on the Album page unmembers the Photo; it stays in the library."
+
+> **Dev:** "After indexing, do we load the Original from Arango into the grid?"
+> **Domain expert:** "Arango never holds pixels. Grids request a **Thumb**. The **Original** loads only when the viewer opens."
+
+> **Dev:** "Do I run an import script before opening the app?"
+> **Domain expert:** "No. Login starts an **Index run** for that Owner’s folder. The CLI is a fallback. A library already in Arango counts as complete."
+
+## Flagged ambiguities
+
+- "group" was used for both a Timeline Group and an Album — resolved: Album is the named set; Timeline Group is the date bucket.
+- "full image from Arango" — resolved: metadata lives in Arango; bytes come from cache (Thumb) or Storage (Original).
+- "sync" vs **Index run** — resolved: Sync is path/identity refresh ([0005](docs/adr/0005-capture-time-stable-identity.md)); an Index run is the job the splash starts.

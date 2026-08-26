@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "apps": {
+    "backend": {
+      "path": "backend",
+      "lastCommit": "b842b4a14b8421cf5586650aaf4650634c06c39b",
+      "recordedAt": "2026-08-26T09:25:43.217Z"
+    }
+  }
+}
