@@ -66,6 +66,17 @@
         "composeProject": "e2e-memries-timeline",
         "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
       }
+    },
+    "memries-theme": {
+      "path": "e2e/features/theme.feature",
+      "recordedAt": "2026-08-26T07:57:31.804Z",
+      "lastCommit": "7ae2da729abb18f7361195cf90eea87cf513bb32",
+      "finding": {
+        "status": "passed",
+        "summary": "4 passed (13.7s)",
+        "composeProject": "e2e-memries-theme",
+        "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
+      }
     }
   }
 }
