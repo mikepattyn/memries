@@ -17,7 +17,7 @@ ADR 0001 said not to copy a global skill into this tree. That still holds for `c
 ## Decision
 
 1. The skill shelf is [`.cursor/skills/e2e-docker/`](../../.cursor/skills/e2e-docker/). Plan, record, and close run as `node apps/scripts/e2e-docker/e2e-docker.mjs`. `/platform-quality` wave 1 uses the same `planE2eFeatures` via `apps/scripts/app-fanout/app-fanout.mjs`.
-2. Isolation is `MEMRIES_E2E_PROJECT`, `MEMRIES_E2E_FEATURE`, and the `*_HOST_PORT` band starting at 19000. Defaults in `apps/e2e/scripts/stack.mjs` stay on `memries-e2e` / 18080 for `make e2e`. Fan-out caps at **20** stacks (stride 20).
+2. Isolation is `MEMRIES_E2E_PROJECT`, `MEMRIES_E2E_FEATURE`, and the `*_HOST_PORT` band starting at 19000. Defaults in `apps/e2e/scripts/stack.mjs` stay on `memries-e2e` / 18080 for `make e2e`. Fan-out caps at **4** stacks at a time (stride 20). Remaining features run as sequential slices **1.1**, **1.2**, **1.3**, … — never in parallel. Each slice reuses the 19000 band after the previous stacks are down.
 3. Children may author or update `apps/e2e/features` and `apps/e2e/steps` for that feature, then run it. They never edit `apps/frontend/` or `apps/backend/`. The parent merges `apps/e2e/` commits even when the run failed so lint/format can see the setup.
 4. `lastCommit` is this repo's SHA and only advances when the finding passed.
 5. The Platform umbrella may reference this path and record into this `last-runs.json`.

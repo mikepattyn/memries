@@ -2,8 +2,8 @@
 name: e2e-docker
 description: >-
   Orchestrates one Docker Playwright BDD feature per isolated worktree in
-  this Memries repo. Diffs this checkout, fans out at most 20 stacks on the
-  19000 port band, and lets children author or update that feature plus steps
+  this Memries repo. Diffs this checkout, fans out at most 4 stacks on the
+  19000 port band (sequential slices 1.1, 1.2, 1.3, …), and lets children author or update that feature plus steps
   before running it. The parent merges apps/e2e/ commits. Use when the user wants
   /e2e-docker, /e2e-docker --force (fresh run of every feature and last-runs),
   or the e2e wave of /platform-quality. Do not invoke platform-quality from
@@ -21,11 +21,11 @@ Planning uses [`apps/scripts/e2e-docker/e2e-docker.mjs`](../../../apps/scripts/e
 ```
 Progress:
 - [ ] 1. Plan (discover feature files + git diff)
-- [ ] 2. Fan out one worktree agent per launchNow feature (max 20)
+- [ ] 2. Fan out one worktree agent per launchNow feature (max 4; slice 1.1 only)
 - [ ] 3. Merge each child branch that committed e2e/ files into baseBranch
 - [ ] 4. Close each opened worktree (`close <id>`; `--base-worktree` after the wave)
 - [ ] 5. Record a last-run finding per feature (commits last-runs.json)
-- [ ] 6. Re-plan the same wave if deferred is non-empty
+- [ ] 6. Re-plan the next sequential slice (`--wave 1.2`, then `1.3`, …) if deferred is non-empty
 - [ ] 7. Summarize
 ```
 
@@ -36,9 +36,10 @@ Progress:
 - Never push. Do not edit product code under `apps/frontend/` or `apps/backend/`
 - `last-runs.json` is parent-only; the executing parent commits it when `record` adds an id or changes last-run time / lastCommit / finding
 - Children close their worktree with `close --here` before they return. The parent always runs `close` after success or failure
-- Launch **only** `launchNow` (at most **20**). Task description = `e2e-docker-<id>`
+- Launch **only** `launchNow` (at most **4**, the current slice). Task description = `e2e-docker-<id>`
 - Do **not** invoke `platform-quality`
-- If `deferred` is non-empty, merge + close + record the finished slice and re-plan the same wave
+- Features come in sequential slices of 4: **1.1**, then **1.2**, then **1.3**, …. Never start the next slice while this one is running
+- If `deferred` is non-empty, merge + close + record the finished slice and re-plan `--wave 1.2` (then `1.3`, …). Do not launch preview slices from the same plan
 - Docker Desktop must be running. The plan skips with `docker-unavailable` when it is not
 - Merge e2e/ commits even when the run failed so lint/format can see the setup. `lastCommit` still advances **only on pass**
 - `/e2e-docker --force` (or “fresh / all features / prove the suite”) re-runs **every** discovered feature in its own stack, including passed `no-diff` rows, then records last-runs again
@@ -66,7 +67,9 @@ node apps/scripts/e2e-docker/e2e-docker.mjs plan --force
 Wrappers: `./apps/scripts/e2e-docker/e2e-docker.sh plan` or `./apps/scripts/e2e-docker/e2e-docker.ps1 plan`.
 Make: `make e2e-docker` or `make e2e-docker-force` (`make e2e-docker FORCE=1`).
 
-Optional: `--force`, repeatable `--app <id>` (slug like `memries-timeline`), `--base <branch>`.
+Optional: `--force`, repeatable `--app <id>` (slug like `memries-timeline`), `--wave 1.2` (label the next remaining batch), `--base <branch>`.
+
+The plan's `launchNow` is slice **1.1** (at most 4). Later slices appear on `waves` as a preview only. After this slice is merged, closed, and recorded, re-plan with `--wave 1.2` so the next remaining four are labeled 1.2.
 
 `--force` marks every discovered feature `needs-run` (reason `force`), including rows that would otherwise be `up-to-date` (`no-diff` after a passed finding). Each feature still gets its own worktree and Compose project. After each child, record last-runs as usual so `recordedAt` / `lastCommit` / `finding` refresh. `--force --app memries-timeline` refreshes one feature only.
 
@@ -76,7 +79,7 @@ Each `launchNow` row includes `featureFile`, `suiteCommit`, `composeProject`, `o
 
 ## 2. Fan out (Multitask + worktrees)
 
-- One Task per `launchNow` id, one message, `best-of-n-runner`, `environment: local`, background when two or more. Never more than 20.
+- One Task per `launchNow` id, one message, `best-of-n-runner`, `environment: local`, background when two or more. Never more than 4. Do not launch `waves[1]` / 1.2 in the same turn.
 - Task `description`: `agentName` (e.g. `e2e-docker-memries-timeline`).
 - Do not poll. Do not mix format/lint children.
 - Child prompt: [agent-prompt.md](agent-prompt.md). Pass `{{BASE_BRANCH}}` and the isolation fields from the plan.

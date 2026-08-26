@@ -4,8 +4,8 @@ description: >-
   User-invoked umbrella only. Sequences page accessibility, then e2e-docker,
   then lint, then format across the Memries frontend, backend, e2e, and
   scripts trees. One agent per tree or feature per step, worktrees from the
-  current local branch, merge into that branch between quality waves, max 40
-  per wave (e2e caps at 20). Use only when the user typed /platform-quality
+  current local branch, merge into that branch between quality waves, max 4
+  agents per wave (e2e runs sequential slices 1.1, 1.2, 1.3, …). Use only when the user typed /platform-quality
   or asked to run all quality workflows. Never start this skill from
   frontend-format, frontend-lint, e2e-docker, or any other orchestrator.
 ---
@@ -26,11 +26,11 @@ New scripts follow the dual-shell Cursor rule.
 Progress:
 - [ ] 1. Confirm the user invoked this skill directly
 - [ ] 2. Plan the current wave (re-plan after each merge)
-- [ ] 3. Fan out one agent per launchNow row (max 40; e2e max 20)
+- [ ] 3. Fan out one agent per launchNow row (max 4; e2e slice 1.1 only)
 - [ ] 4. Merge child branches into baseBranch
 - [ ] 5. Close each opened worktree (nested `close --skill …`; `--base-worktree` after the wave)
 - [ ] 6. Record each nested skill using that branch's new SHA (commits last-runs.json)
-- [ ] 7. Next wave, or stop if deferred / empty
+- [ ] 7. Next wave (e2e: `--wave 1.2`, then `1.3`, …), or stop if deferred / empty
 - [ ] 8. Summarize
 ```
 
@@ -39,15 +39,15 @@ Progress:
 Same-tree lint and format must not run in parallel. E2E setup runs before lint/format so new `apps/e2e/` files get both.
 
 1. **page-accessibility** — `frontend-page-accessibility` only
-2. **e2e** — `e2e-docker` only (one feature file per Docker stack, max 20; setup + run + merge `apps/e2e/` commits)
+2. **e2e** — `e2e-docker` only, sequential slices of 4: **1.1**, then **1.2**, then **1.3**, … (one feature file per Docker stack; setup + run + merge `apps/e2e/` commits). Never run two e2e slices in parallel
 3. **lint** — `frontend-lint` + `backend-lint` + `platform-lint`
 4. **format** — `frontend-format` + `backend-format` + `platform-format`
 
-Re-run `plan --skill platform-quality --wave <n>` after each wave's merges so diffs see the new `baseBranch` tip. After page-accessibility merges: `--wave 1` (e2e). After e2e merges: `--wave 2` (lint). After lint merges: `--wave 3` (format).
+Re-run `plan --skill platform-quality --wave <n>` after each wave's merges so diffs see the new `baseBranch` tip. After page-accessibility merges: `--wave 1` (e2e 1.1). After that e2e slice: `--wave 1.2`, then `--wave 1.3`, … until e2e `launchNow` is empty. Then `--wave 2` (lint). After lint merges: `--wave 3` (format).
 
 ## Defaults
 
-- Cap **40** agents per wave (shared across nested skills, not 40 each). The e2e wave caps at **20**
+- Cap **4** agents per wave (shared across nested skills, not 4 each). E2E launches only the current slice (1.1, then 1.2, …)
 - Task `description` = plan `agentName` (`frontend-page-accessibility-frontend`)
 - `best-of-n-runner`, `environment: local`, background when two or more
 - Do not poll. End the turn after launch
@@ -70,17 +70,17 @@ Re-run `plan --skill platform-quality --wave <n>` after each wave's merges so di
 node apps/scripts/app-fanout/app-fanout.mjs plan --skill platform-quality --wave 0
 ```
 
-After page-accessibility merges: `--wave 1` (e2e). After e2e merges: `--wave 2` (lint). After lint merges: `--wave 3` (format).
+After page-accessibility merges: `--wave 1` (e2e **1.1**). After that slice is merged, closed, and recorded: `--wave 1.2`, then `--wave 1.3`, …. After the last e2e slice: `--wave 2` (lint). After lint merges: `--wave 3` (format).
 
 Optional: `--force`, repeatable `--app <id>`, `--base <branch>` (default is the current checkout).
 
 When the user asked to force, refresh, or prove every quality wave, pass `--force` on each `plan` so skipped `no-diff` rows run again — including every e2e feature, each in its own stack — and last-runs refresh after record.
 
-If the current wave's `launchNow` is empty (`no-diff` / skipped), skip to the next wave. If every remaining wave is empty, stop. If `deferred` is non-empty, finish this slice, then re-plan the same wave.
+If the current wave's `launchNow` is empty (`no-diff` / skipped), skip to the next wave. If every remaining wave is empty, stop. The e2e plan may list later slices (`1.2`, `1.3`, …) as a preview — launch **only** the first returned e2e slice. After that slice finishes, re-plan `--wave 1.2` (then `1.3`, …). Do not start the next e2e slice in the same turn.
 
 ## 2. Fan out
 
-- One Task per `launchNow` row, one message, never more than 40 (20 on the e2e wave)
+- One Task per `launchNow` row, one message, never more than 4. On e2e, that is the current slice only (1.1, then 1.2, …)
 - Fill the **nested skill's** agent prompt (`frontend-page-accessibility/agent-prompt.md`, `e2e-docker/agent-prompt.md`, etc.) including `{{BASE_BRANCH}}` from the plan
 - E2E rows follow [e2e-docker](../e2e-docker/SKILL.md). Use that child prompt and the row's `featureFile`, `suiteCommit`, `composeProject`, `origin`, and `ports`. Merge `apps/e2e/` commits. Record `--finding` into `e2e-docker` `last-runs.json` (pass and fail). `lastCommit` only advances on pass.
 - Link each agent as `[agentName](id)`

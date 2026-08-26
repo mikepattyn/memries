@@ -5,7 +5,7 @@
  * The parent merges apps/e2e/ commits; lastCommit advances only on pass.
  *
  * Usage:
- *   node apps/scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--base <branch>]
+ *   node apps/scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--wave <n[.n]>] [--base <branch>]
  *   node apps/scripts/e2e-docker/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
  *   node apps/scripts/e2e-docker/e2e-docker.mjs close --here
  *   node apps/scripts/e2e-docker/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]
@@ -22,18 +22,19 @@ import {
   parseFinding,
 } from './e2e-docker-last-runs.mjs';
 import {
-  applyIsolation,
   composeProjectForId,
   decideE2eFeatureStatus,
   discoverE2eFeatures,
   e2eDiffPaths,
+  e2eSequentialWaves,
+  parseWaveArg,
 } from './e2e-features.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const LAST_RUNS_REL = '.cursor/skills/e2e-docker/last-runs.json';
 const LAST_RUNS_PATH = join(ROOT, LAST_RUNS_REL);
 const SKILL_ID = 'e2e-docker';
-export const MAX_LAUNCH = 20;
+export const MAX_LAUNCH = 4;
 const MAX_CHANGED_FILES = 40;
 const SUITES = [{ id: 'memries', path: '', featuresDir: 'apps/e2e/features', gitlink: false }];
 
@@ -47,6 +48,7 @@ export function planE2eFeatures({
   commitExists = () => false,
   changedFilesFor = () => [],
   maxLaunch = MAX_LAUNCH,
+  waveSlice = null,
   baseBranch,
   skillId = SKILL_ID,
 }) {
@@ -90,7 +92,12 @@ export function planE2eFeatures({
   }
 
   const needsRun = apps.filter((a) => a.status === 'needs-run');
-  const launchSlice = applyIsolation(needsRun.slice(0, maxLaunch));
+  const waves = e2eSequentialWaves(needsRun, {
+    maxLaunch,
+    startSlice: Number(waveSlice) > 0 ? Number(waveSlice) : 1,
+    waveIndex: 1,
+  });
+  const launchSlice = waves[0]?.rows ?? [];
   const isolatedById = new Map(launchSlice.map((row) => [row.id, row]));
   for (const app of apps) {
     const extra = isolatedById.get(app.id);
@@ -116,6 +123,12 @@ export function planE2eFeatures({
     needsRun: needsRun.map((a) => a.id),
     launchNow,
     deferred: needsRun.slice(maxLaunch).map((a) => a.id),
+    waves: waves.map((wave) => ({
+      label: wave.label,
+      slice: wave.slice,
+      sequential: true,
+      launchNow: wave.rows.map((row) => row.id),
+    })),
     upToDate,
     skipped: apps.filter((a) => a.status === 'skipped').map((a) => a.id),
   };
@@ -127,7 +140,7 @@ export function planE2eFeatures({
 
 function usage() {
   console.error(`Usage:
-  node apps/scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--base <branch>]
+  node apps/scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--wave <n[.n]>] [--base <branch>]
   node apps/scripts/e2e-docker/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
   node apps/scripts/e2e-docker/e2e-docker.mjs close --here
   node apps/scripts/e2e-docker/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]`);
@@ -260,6 +273,7 @@ function plan(opts) {
         e2eDiffPaths(row.featuresDir, row.featureFile),
       ),
     maxLaunch: MAX_LAUNCH,
+    waveSlice: opts.wave?.slice,
     baseBranch: branch,
   });
 }
@@ -383,6 +397,7 @@ function parseArgs(argv) {
     base: null,
     here: false,
     baseWorktree: false,
+    wave: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -393,7 +408,11 @@ function parseArgs(argv) {
     else if (arg === '--commit') opts.commit = argv[++i];
     else if (arg === '--finding') opts.finding = argv[++i];
     else if (arg === '--base') opts.base = argv[++i];
-    else if (arg.startsWith('-')) usage();
+    else if (arg === '--wave') {
+      const parsed = parseWaveArg(argv[++i]);
+      if (!parsed) usage();
+      opts.wave = parsed;
+    } else if (arg.startsWith('-')) usage();
     else positional.push(arg);
   }
   return { cmd: positional[0], ids: positional.slice(1), opts };

@@ -24,7 +24,8 @@ describe('app-fanout.config', () => {
     );
     assert.deepEqual(waves[1].skills, ['e2e-docker']);
     assert.equal(config.skills['scripts-to-node'], undefined);
-    assert.equal(config.skills['e2e-docker'].maxLaunch, 20);
+    assert.equal(config.skills['e2e-docker'].maxLaunch, 4);
+    assert.equal(config.skills['platform-quality'].maxLaunch, 4);
     assert.equal(config.maxLaunch, 40);
   });
 
@@ -40,7 +41,8 @@ describe('app-fanout.config', () => {
 
 describe('maxLaunchOf', () => {
   it('uses the skill cap when it is lower than the global cap', () => {
-    assert.equal(maxLaunchOf(config, config.skills['e2e-docker']), 20);
+    assert.equal(maxLaunchOf(config, config.skills['e2e-docker']), 4);
+    assert.equal(maxLaunchOf(config, config.skills['platform-quality']), 4);
     assert.equal(maxLaunchOf(config, config.skills['frontend-lint']), 40);
   });
 });
@@ -164,13 +166,14 @@ describe('planUmbrellaWaves', () => {
     });
     assert.deepEqual(plan.steps, ['page-accessibility', 'e2e', 'lint', 'format']);
     assert.equal(plan.waves[1].step, 'e2e');
+    assert.equal(plan.waves[1].label, '1.1');
     assert.equal(plan.waves[1].launchNow[0].featureFile, 'login.feature');
     assert.equal(plan.waves[1].launchNow[0].composeProject, 'e2e-memries-login');
     assert.equal(plan.waves[2].step, 'lint');
   });
 
-  it('caps an e2e wave at 20 and defers the rest', () => {
-    const apps = Array.from({ length: 21 }, (_, i) => ({
+  it('splits e2e into sequential slices of 4 labeled 1.1, 1.2, 1.3', () => {
+    const apps = Array.from({ length: 9 }, (_, i) => ({
       id: `memries-f${i}`,
       skill: 'e2e-docker',
       status: 'needs-run',
@@ -182,23 +185,83 @@ describe('planUmbrellaWaves', () => {
       suiteCommit: 'abc',
     }));
     const plan = planUmbrellaWaves({
-      waves: [{ step: 'e2e', skills: ['e2e-docker'] }],
+      waves: [
+        { step: 'page-accessibility', skills: ['frontend-page-accessibility'] },
+        { step: 'e2e', skills: ['e2e-docker'] },
+      ],
       nestedBySkill: {
+        'frontend-page-accessibility': {
+          apps: [],
+          steps: ['page-accessibility'],
+          lastRunsPath: '.cursor/skills/frontend-page-accessibility/last-runs.json',
+        },
         'e2e-docker': {
           apps,
           steps: ['e2e'],
           lastRunsPath: '.cursor/skills/e2e-docker/last-runs.json',
+          maxLaunch: 4,
         },
       },
-      maxLaunch: 20,
-      waveFilter: 0,
+      maxLaunch: 4,
+      waveFilter: 1,
       baseBranch: 'main',
       head: 'abc',
     });
-    assert.equal(plan.waves[0].launchNow.length, 20);
-    assert.equal(plan.waves[0].deferred.length, 1);
+    assert.deepEqual(
+      plan.waves.map((w) => w.label),
+      ['1.1', '1.2', '1.3'],
+    );
+    assert.equal(plan.waves[0].launchNow.length, 4);
+    assert.equal(plan.waves[1].launchNow.length, 4);
+    assert.equal(plan.waves[2].launchNow.length, 1);
+    assert.equal(plan.waves[0].deferred.length, 5);
     assert.equal(plan.waves[0].launchNow[0].ports.caddy, 19000);
-    assert.equal(plan.waves[0].launchNow[19].ports.caddy, 19380);
+    assert.equal(plan.waves[0].launchNow[3].ports.caddy, 19060);
+    assert.equal(plan.waves[1].launchNow[0].ports.caddy, 19000);
+    assert.equal(plan.waves[0].sequential, true);
+  });
+
+  it('relabels the next remaining e2e batch as 1.2 when that slice is requested', () => {
+    const apps = Array.from({ length: 5 }, (_, i) => ({
+      id: `memries-f${i}`,
+      skill: 'e2e-docker',
+      status: 'needs-run',
+      agentName: `e2e-docker-memries-f${i}`,
+      worktreeBranch: `e2e-docker-memries-f${i}`,
+      baseBranch: 'main',
+      path: `e2e/features/f${i}.feature`,
+      featureFile: `f${i}.feature`,
+      suiteCommit: 'abc',
+    }));
+    const plan = planUmbrellaWaves({
+      waves: [
+        { step: 'page-accessibility', skills: ['frontend-page-accessibility'] },
+        { step: 'e2e', skills: ['e2e-docker'] },
+      ],
+      nestedBySkill: {
+        'frontend-page-accessibility': {
+          apps: [],
+          steps: ['page-accessibility'],
+          lastRunsPath: 'x',
+        },
+        'e2e-docker': {
+          apps,
+          steps: ['e2e'],
+          lastRunsPath: '.cursor/skills/e2e-docker/last-runs.json',
+          maxLaunch: 4,
+        },
+      },
+      maxLaunch: 4,
+      waveFilter: { index: 1, slice: 2 },
+      baseBranch: 'main',
+      head: 'abc',
+    });
+    assert.deepEqual(
+      plan.waves.map((w) => w.label),
+      ['1.2', '1.3'],
+    );
+    assert.equal(plan.waves[0].launchNow.length, 4);
+    assert.equal(plan.waves[1].launchNow.length, 1);
   });
 });
 

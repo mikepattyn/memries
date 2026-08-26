@@ -21,20 +21,25 @@ const discovered = Array.from({ length: MAX_LAUNCH + 1 }, (_, i) =>
 );
 
 describe('planE2eFeatures', () => {
-  it('launches at most twenty never-run features and defers the rest', () => {
+  it('launches at most four never-run features as wave 1.1 and previews later slices', () => {
     const plan = planE2eFeatures({
       discovered,
       suiteHead: 'abc',
       baseBranch: 'feature/design',
     });
-    assert.equal(plan.maxLaunch, 20);
-    assert.equal(plan.launchNow.length, 20);
-    assert.deepEqual(plan.deferred, ['memries-f20']);
+    assert.equal(plan.maxLaunch, 4);
+    assert.equal(plan.launchNow.length, 4);
+    assert.deepEqual(plan.deferred, ['memries-f04']);
+    assert.deepEqual(
+      plan.waves.map((w) => w.label),
+      ['1.1', '1.2'],
+    );
+    assert.deepEqual(plan.waves[0].launchNow, plan.launchNow);
     assert.equal(plan.apps[0].composeProject, 'e2e-memries-f00');
     assert.equal(plan.apps[0].ports.caddy, 19000);
     assert.equal(plan.apps[1].ports.caddy, 19020);
-    assert.equal(plan.apps[19].origin, 'http://localhost:19380');
-    assert.equal(plan.apps[20].composeProject, undefined);
+    assert.equal(plan.apps[3].origin, 'http://localhost:19060');
+    assert.equal(plan.apps[4].composeProject, undefined);
   });
 
   it('skips a passed feature with no suite diff', () => {

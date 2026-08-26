@@ -1,6 +1,6 @@
 # Child agent prompt (e2e-docker)
 
-Parent fills every `{{…}}` field from `node apps/scripts/e2e-docker/e2e-docker.mjs plan` JSON (or the e2e row from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill platform-quality --wave 1`).
+Parent fills every `{{…}}` field from `node apps/scripts/e2e-docker/e2e-docker.mjs plan` JSON (or the e2e row from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill platform-quality --wave 1` / `--wave 1.2`).
 
 ```
 You are the e2e-docker agent for one feature file in the Memries repo.

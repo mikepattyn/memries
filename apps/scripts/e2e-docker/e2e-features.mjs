@@ -74,6 +74,38 @@ export function applyIsolation(rows) {
   });
 }
 
+export function parseWaveArg(value) {
+  const raw = String(value ?? '').trim();
+  if (/^\d+$/.test(raw)) return { index: Number(raw), slice: null };
+  const matched = /^(\d+)\.(\d+)$/.exec(raw);
+  if (!matched) return null;
+  return { index: Number(matched[1]), slice: Number(matched[2]) };
+}
+
+export function e2eSequentialWaves(
+  needsRun,
+  { maxLaunch = 4, startSlice = 1, waveIndex = 1 } = {},
+) {
+  const size = Number(maxLaunch) > 0 ? Number(maxLaunch) : 4;
+  const start = Number(startSlice) > 0 ? Number(startSlice) : 1;
+  const index = Number.isInteger(Number(waveIndex)) ? Number(waveIndex) : 1;
+  const rows = Array.isArray(needsRun) ? needsRun : [];
+  if (!rows.length) {
+    return [{ label: `${index}.${start}`, slice: start, sequential: true, rows: [] }];
+  }
+  const waves = [];
+  for (let i = 0; i < rows.length; i += size) {
+    const slice = start + waves.length;
+    waves.push({
+      label: `${index}.${slice}`,
+      slice,
+      sequential: true,
+      rows: applyIsolation(rows.slice(i, i + size)),
+    });
+  }
+  return waves;
+}
+
 export function decideE2eFeatureStatus({
   gitlinkPinned = true,
   pathExists = true,

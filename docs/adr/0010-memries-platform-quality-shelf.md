@@ -18,7 +18,7 @@ The umbrella still points at Memries for e2e last-runs. This repo now also seque
 
 1. The skill shelf under [`.cursor/skills/`](../../.cursor/skills/) includes `page-accessibility`, `frontend-page-accessibility`, `frontend-lint`, `frontend-format`, `backend-lint`, `backend-format`, `platform-lint`, `platform-format`, `e2e-docker`, and user-invoked `platform-quality`.
 2. Planning is [`apps/scripts/app-fanout/app-fanout.mjs`](../../apps/scripts/app-fanout/app-fanout.mjs) with hardcoded trees (`apps/frontend`, `apps/backend`, `apps/e2e`, `apps/scripts`). Frontend children use React/Vite/Tailwind tools. Backend children use `gofmt` / `go vet`, not dotnet.
-3. Wave order: **0** page-accessibility, **1** e2e (setup + run + merge `apps/e2e/` only, cap 20), **2** lint, **3** format. E2E sits before lint/format so new feature and step files get both.
+3. Wave order: **0** page-accessibility, **1** e2e (setup + run + merge `apps/e2e/` only, cap 4 per sequential slice **1.1**, **1.2**, **1.3**, …), **2** lint, **3** format. `/platform-quality` itself caps at **4** agents per wave. E2E sits before lint/format so new feature and step files get both. Never launch two e2e slices in the same turn.
 4. `/e2e-docker` standalone uses the same setup + run + merge behavior.
 5. New scripts live in `apps/scripts/<name>/` as a unit-tested Node `.mjs` plus `.sh` / `.ps1` wrappers ([`.cursor/rules/dual-shell-scripts.mdc`](../../.cursor/rules/dual-shell-scripts.mdc)). Do not add a scripts-to-node orchestrator.
 

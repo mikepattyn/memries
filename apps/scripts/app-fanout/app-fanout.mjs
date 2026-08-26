@@ -6,7 +6,7 @@
  *
  * Usage:
  *   node apps/scripts/app-fanout/app-fanout.mjs list
- *   node apps/scripts/app-fanout/app-fanout.mjs plan --skill <id> [--force] [--app <id> ...] [--wave <n>] [--base <branch>]
+ *   node apps/scripts/app-fanout/app-fanout.mjs plan --skill <id> [--force] [--app <id> ...] [--wave <n[.n]>] [--base <branch>]
  *   node apps/scripts/app-fanout/app-fanout.mjs record --skill <id> [--commit <sha>] [--base <branch>]
  *     [--incomplete-pages <csv>] [--incomplete-files <csv>] [--finding <json>] <id> [<id> ...]
  *   node apps/scripts/app-fanout/app-fanout.mjs close --here
@@ -22,7 +22,11 @@ import {
   isAgentWorktreeBranch,
 } from '../e2e-docker/e2e-docker-last-runs.mjs';
 import { buildE2ePlan, recordE2eFindings } from '../e2e-docker/e2e-docker.mjs';
-import { applyIsolation, composeProjectForId } from '../e2e-docker/e2e-features.mjs';
+import {
+  composeProjectForId,
+  e2eSequentialWaves,
+  parseWaveArg,
+} from '../e2e-docker/e2e-features.mjs';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(SCRIPT_DIR, '..', '..', '..');
@@ -178,6 +182,51 @@ function launchRow(app, branch) {
   return row;
 }
 
+function waveFilterParts(filter) {
+  if (filter == null) return null;
+  if (typeof filter === 'number') return { index: filter, slice: null };
+  const index = Number(filter.index);
+  if (!Number.isInteger(index) || index < 0) return null;
+  const slice = filter.slice == null ? null : Number(filter.slice);
+  return { index, slice: Number.isInteger(slice) && slice > 0 ? slice : null };
+}
+
+function collectNestedApps(wave, nestedBySkill) {
+  const nestedApps = [];
+  for (const nestedId of wave.skills) {
+    const nested = nestedBySkill[nestedId];
+    if (!nested) throw new Error(`missing nested plan for '${nestedId}'`);
+    for (const app of nested.apps ?? []) {
+      nestedApps.push({
+        ...app,
+        skill: nestedId,
+        steps: nested.steps,
+        lastRunsPath: nested.lastRunsPath,
+      });
+    }
+  }
+  return nestedApps;
+}
+
+function waveMaxOf(wave, nestedBySkill, maxLaunch) {
+  return Math.min(
+    maxLaunch,
+    ...wave.skills.map((nestedId) => {
+      const nested = nestedBySkill[nestedId];
+      const local = Number(nested?.maxLaunch);
+      return local > 0 ? Math.min(maxLaunch, local) : maxLaunch;
+    }),
+  );
+}
+
+function waveStatusLists(nestedApps, needsRun) {
+  return {
+    needsRun: needsRun.map((a) => a.agentName),
+    upToDate: nestedApps.filter((a) => a.status === 'up-to-date').map((a) => a.agentName),
+    skipped: nestedApps.filter((a) => a.status === 'skipped').map((a) => a.agentName),
+  };
+}
+
 export function planUmbrellaWaves({
   waves,
   nestedBySkill,
@@ -191,50 +240,49 @@ export function planUmbrellaWaves({
   if (!Array.isArray(waves) || !waves.length) {
     throw new Error(`umbrella '${skillId}' requires a non-empty waves array`);
   }
-  const planned = waves
-    .map((wave, index) => {
-      if (waveFilter !== null && index !== waveFilter) return null;
-      if (!Array.isArray(wave.skills) || !wave.skills.length) {
-        throw new Error(`umbrella wave ${index} needs a skills array`);
-      }
-      const nestedApps = [];
-      const waveMax = Math.min(
-        maxLaunch,
-        ...wave.skills.map((nestedId) => {
-          const nested = nestedBySkill[nestedId];
-          const local = Number(nested?.maxLaunch);
-          return local > 0 ? Math.min(maxLaunch, local) : maxLaunch;
-        }),
-      );
-      for (const nestedId of wave.skills) {
-        const nested = nestedBySkill[nestedId];
-        if (!nested) throw new Error(`missing nested plan for '${nestedId}'`);
-        for (const app of nested.apps ?? []) {
-          nestedApps.push({
-            ...app,
-            skill: nestedId,
-            steps: nested.steps,
-            lastRunsPath: nested.lastRunsPath,
-          });
-        }
-      }
-      const needsRun = nestedApps.filter((a) => a.status === 'needs-run');
-      const launchSlice = needsRun.slice(0, waveMax);
-      const e2eWave = wave.skills.includes('e2e-docker');
-      const launchNow = e2eWave ? applyIsolation(launchSlice) : launchSlice;
-      return {
-        index,
-        step: wave.step,
-        skills: wave.skills,
-        apps: nestedApps,
-        needsRun: needsRun.map((a) => a.agentName),
-        launchNow: launchNow.map((a) => launchRow(a, baseBranch)),
-        deferred: needsRun.slice(waveMax).map((a) => a.agentName),
-        upToDate: nestedApps.filter((a) => a.status === 'up-to-date').map((a) => a.agentName),
-        skipped: nestedApps.filter((a) => a.status === 'skipped').map((a) => a.agentName),
-      };
-    })
-    .filter(Boolean);
+  const filter = waveFilterParts(waveFilter);
+  const planned = [];
+  waves.forEach((wave, index) => {
+    if (filter && filter.index !== index) return;
+    if (!Array.isArray(wave.skills) || !wave.skills.length) {
+      throw new Error(`umbrella wave ${index} needs a skills array`);
+    }
+    const nestedApps = collectNestedApps(wave, nestedBySkill);
+    const waveMax = waveMaxOf(wave, nestedBySkill, maxLaunch);
+    const needsRun = nestedApps.filter((a) => a.status === 'needs-run');
+    const lists = waveStatusLists(nestedApps, needsRun);
+    if (wave.skills.includes('e2e-docker')) {
+      const slices = e2eSequentialWaves(needsRun, {
+        maxLaunch: waveMax,
+        startSlice: filter?.slice ?? 1,
+        waveIndex: index,
+      });
+      slices.forEach((slice, slicePos) => {
+        planned.push({
+          index,
+          slice: slice.slice,
+          label: slice.label,
+          step: wave.step,
+          skills: wave.skills,
+          sequential: true,
+          apps: nestedApps,
+          ...lists,
+          launchNow: slice.rows.map((a) => launchRow(a, baseBranch)),
+          deferred: needsRun.slice(slicePos * waveMax + slice.rows.length).map((a) => a.agentName),
+        });
+      });
+      return;
+    }
+    planned.push({
+      index,
+      step: wave.step,
+      skills: wave.skills,
+      apps: nestedApps,
+      ...lists,
+      launchNow: needsRun.slice(0, waveMax).map((a) => launchRow(a, baseBranch)),
+      deferred: needsRun.slice(waveMax).map((a) => a.agentName),
+    });
+  });
 
   return {
     skill: skillId,
@@ -283,7 +331,7 @@ export function loadConfig(path = CONFIG_PATH) {
 function usage(exit = 1) {
   console.error(`Usage:
   node apps/scripts/app-fanout/app-fanout.mjs list
-  node apps/scripts/app-fanout/app-fanout.mjs plan --skill <id> [--force] [--app <id> ...] [--wave <n>] [--base <branch>]
+  node apps/scripts/app-fanout/app-fanout.mjs plan --skill <id> [--force] [--app <id> ...] [--wave <n[.n]>] [--base <branch>]
   node apps/scripts/app-fanout/app-fanout.mjs record --skill <id> [--commit <sha>] [--base <branch>]
     [--incomplete-pages <csv>] [--incomplete-files <csv>] [--finding <json>] <id> [<id> ...]
   node apps/scripts/app-fanout/app-fanout.mjs close --here
@@ -442,8 +490,8 @@ function plan(skillId, opts, config) {
   return planUmbrellaWaves({
     waves: skill.waves,
     nestedBySkill,
-    maxLaunch: maxLaunchOf(config),
-    waveFilter: Number.isInteger(opts.wave) ? opts.wave : null,
+    maxLaunch: maxLaunchOf(config, skill),
+    waveFilter: opts.wave ?? null,
     baseBranch: branch,
     head,
     force: Boolean(opts.force),
@@ -607,9 +655,9 @@ function parseArgs(argv) {
     else if (arg === '--here') opts.here = true;
     else if (arg === '--base-worktree') opts.baseWorktree = true;
     else if (arg === '--wave') {
-      const n = Number(argv[++i]);
-      if (!Number.isInteger(n) || n < 0) usage();
-      opts.wave = n;
+      const parsed = parseWaveArg(argv[++i]);
+      if (!parsed) usage();
+      opts.wave = parsed;
     } else if (arg === '--base') opts.base = argv[++i];
     else if (arg === '--help' || arg === '-h') usage(0);
     else if (arg.startsWith('-')) usage();

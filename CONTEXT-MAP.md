@@ -14,8 +14,8 @@ Stay in this repository. Do not read or edit parent directories.
 | [0006](docs/adr/0006-truncate-arango-for-resync.md) | Truncate Arango for resync; keep photo volumes |
 | [0007](docs/adr/0007-viewport-forced-compact-thumbs.md) | Compact grids: 256 at viewport ≥1280px, else 512; no `srcset` |
 | [0008](docs/adr/0008-smart-date-search.md) | Search smart dates are SPA-parsed; `/api/photos` gets `month` / `local_from` / `local_to`; Filter opens Search |
-| [0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md) | `/e2e-docker` lives here: one feature file, one Compose project, setup + merge of `apps/e2e/`, cap 20, last-runs in this repo; `--force` reruns every feature |
-| [0010](docs/adr/0010-memries-platform-quality-shelf.md) | Local `/platform-quality`: a11y → e2e → lint → format; no scripts-to-node; dual-shell script rule |
+| [0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md) | `/e2e-docker` lives here: one feature file, one Compose project, setup + merge of `apps/e2e/`, cap 4 per sequential slice (1.1, 1.2, …), last-runs in this repo; `--force` reruns every feature |
+| [0010](docs/adr/0010-memries-platform-quality-shelf.md) | Local `/platform-quality`: a11y → e2e slices 1.1/1.2/… (max 4) → lint → format; no scripts-to-node; dual-shell script rule |
 | [0011](docs/adr/0011-turborepo-pnpm-workspace.md) | pnpm + Turbo workspace under `apps/`; prune + fill-extras in Docker; quality shelf paths retargeted |
 
 ## Contexts

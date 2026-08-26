@@ -9,9 +9,11 @@ import {
   decideE2eFeatureStatus,
   discoverE2eFeatures,
   e2eDiffPaths,
+  e2eSequentialWaves,
   featureId,
   featureRelPath,
   isolationForLaunchIndex,
+  parseWaveArg,
 } from './e2e-features.mjs';
 
 const localSuite = {
@@ -144,6 +146,43 @@ describe('applyIsolation', () => {
     assert.equal(rows[0].composeProject, 'e2e-memries-viewer');
     assert.equal(rows[0].ports.caddy, 19000);
     assert.equal(rows[1].ports.caddy, 19020);
+  });
+});
+
+describe('parseWaveArg', () => {
+  it('reads a quality-wave index and an optional e2e slice', () => {
+    assert.deepEqual(parseWaveArg('0'), { index: 0, slice: null });
+    assert.deepEqual(parseWaveArg('1'), { index: 1, slice: null });
+    assert.deepEqual(parseWaveArg('1.1'), { index: 1, slice: 1 });
+    assert.deepEqual(parseWaveArg('1.2'), { index: 1, slice: 2 });
+    assert.equal(parseWaveArg('e2e'), null);
+  });
+});
+
+describe('e2eSequentialWaves', () => {
+  it('chunks features into sequential slices of four and reuses the 19000 band', () => {
+    const rows = Array.from({ length: 9 }, (_, i) => ({ id: `memries-f${i}` }));
+    const waves = e2eSequentialWaves(rows, { maxLaunch: 4, waveIndex: 1 });
+    assert.deepEqual(
+      waves.map((w) => w.label),
+      ['1.1', '1.2', '1.3'],
+    );
+    assert.equal(waves[0].rows.length, 4);
+    assert.equal(waves[1].rows.length, 4);
+    assert.equal(waves[2].rows.length, 1);
+    assert.equal(waves[0].rows[0].ports.caddy, 19000);
+    assert.equal(waves[0].rows[3].ports.caddy, 19060);
+    assert.equal(waves[1].rows[0].ports.caddy, 19000);
+    assert.equal(waves[0].sequential, true);
+  });
+
+  it('starts labels at the requested slice so 1.2 is the next remaining batch', () => {
+    const rows = Array.from({ length: 5 }, (_, i) => ({ id: `memries-f${i}` }));
+    const waves = e2eSequentialWaves(rows, { maxLaunch: 4, waveIndex: 1, startSlice: 2 });
+    assert.deepEqual(
+      waves.map((w) => w.label),
+      ['1.2', '1.3'],
+    );
   });
 });
 

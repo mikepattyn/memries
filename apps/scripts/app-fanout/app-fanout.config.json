@@ -69,7 +69,7 @@
       "lastRunsPath": ".cursor/skills/e2e-docker/last-runs.json",
       "incompleteField": null,
       "steps": ["e2e"],
-      "maxLaunch": 20,
+      "maxLaunch": 4,
       "suites": [
         {
           "id": "memries",
@@ -82,6 +82,7 @@
       "kind": "umbrella",
       "userInvokedOnly": true,
       "cohort": "all",
+      "maxLaunch": 4,
       "waves": [
         {
           "step": "page-accessibility",
