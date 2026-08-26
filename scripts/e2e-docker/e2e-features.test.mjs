@@ -166,4 +166,32 @@ describe('decideE2eFeatureStatus', () => {
       { status: 'up-to-date', reason: 'no-diff' },
     );
   });
+
+  it('needs a run when force is set even after a passed finding', () => {
+    assert.deepEqual(
+      decideE2eFeatureStatus({
+        pathExists: true,
+        lastCommit: 'abc',
+        commitExists: true,
+        findingStatus: 'passed',
+        changedFiles: [],
+        force: true,
+      }),
+      { status: 'needs-run', reason: 'force' },
+    );
+  });
+
+  it('still skips when docker is unavailable even if force is set', () => {
+    assert.deepEqual(
+      decideE2eFeatureStatus({
+        pathExists: true,
+        dockerAvailable: false,
+        force: true,
+        lastCommit: 'abc',
+        commitExists: true,
+        findingStatus: 'passed',
+      }),
+      { status: 'skipped', reason: 'docker-unavailable' },
+    );
+  });
 });

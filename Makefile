@@ -4,7 +4,10 @@
 #   make down         Stop; keep volumes
 #   make down WIPE=1  Stop; delete Compose volumes
 #   make down-wipe    Same as WIPE=1
-#   make db-clear     Empty Arango collections; restart API
+#   make db-clear          Empty Arango collections; restart API
+#   make e2e-docker        Plan isolated e2e-docker feature runs
+#   make e2e-docker FORCE=1
+#   make e2e-docker-force  Plan a fresh run of every feature
 #
 # WIPE does not delete bind-mounted ./data/photos (or ./data/cache).
 # db-clear does not delete volumes or bind mounts.
@@ -35,7 +38,7 @@ else
   REQUIRE_ENV := test -f .env || { echo "Missing .env (see README quick start)" >&2; exit 1; }
 endif
 
-.PHONY: help up down down-wipe db-clear e2e e2e-down
+.PHONY: help up down down-wipe db-clear e2e e2e-down e2e-docker e2e-docker-force
 
 help:
 	$(info make up              Start the stack (docker compose up -d --build))
@@ -45,6 +48,9 @@ help:
 	$(info make db-clear        Empty Arango collections; restart the API)
 	$(info make e2e             Playwright BDD against the isolated memries-e2e stack)
 	$(info make e2e-down        Stop the isolated e2e stack; keep volumes)
+	$(info make e2e-docker      Plan isolated e2e-docker feature runs)
+	$(info make e2e-docker FORCE=1)
+	$(info make e2e-docker-force  Plan a fresh run of every feature (refresh last-runs))
 	$(info                      Bind-mounted ./data/photos is not removed.)
 	@exit 0
 
@@ -74,3 +80,14 @@ e2e:
 e2e-down:
 	$(REQUIRE_ENV)
 	npm --prefix e2e run stack:down
+
+e2e-docker:
+	$(REQUIRE_ENV)
+ifeq ($(FORCE),1)
+	$(SCRIPT_RUN) ./scripts/e2e-docker/e2e-docker.$(SCRIPT_EXT) plan --force
+else
+	$(SCRIPT_RUN) ./scripts/e2e-docker/e2e-docker.$(SCRIPT_EXT) plan
+endif
+
+e2e-docker-force:
+	$(MAKE) e2e-docker FORCE=1

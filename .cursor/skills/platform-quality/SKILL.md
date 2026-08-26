@@ -74,6 +74,8 @@ After page-accessibility merges: `--wave 1` (e2e). After e2e merges: `--wave 2` 
 
 Optional: `--force`, repeatable `--app <id>`, `--base <branch>` (default is the current checkout).
 
+When the user asked to force, refresh, or prove every quality wave, pass `--force` on each `plan` so skipped `no-diff` rows run again — including every e2e feature, each in its own stack — and last-runs refresh after record.
+
 If the current wave's `launchNow` is empty (`no-diff` / skipped), skip to the next wave. If every remaining wave is empty, stop. If `deferred` is non-empty, finish this slice, then re-plan the same wave.
 
 ## 2. Fan out

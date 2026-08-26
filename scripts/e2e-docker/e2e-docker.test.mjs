@@ -53,6 +53,39 @@ describe('planE2eFeatures', () => {
     });
     assert.deepEqual(plan.upToDate, ['memries-f00']);
     assert.deepEqual(plan.launchNow, []);
+    assert.equal(
+      plan.hint,
+      'pass --force to rerun every feature and refresh last-runs',
+    );
+  });
+
+  it('force-relaunches passed features so last-runs can refresh', () => {
+    const plan = planE2eFeatures({
+      discovered: discovered.slice(0, 2),
+      lastRunsApps: {
+        'memries-f00': {
+          lastCommit: 'abc',
+          finding: { status: 'passed', summary: '8 passed' },
+        },
+        'memries-f01': {
+          lastCommit: 'abc',
+          finding: { status: 'passed', summary: '4 passed' },
+        },
+      },
+      suiteHead: 'abc',
+      force: true,
+      commitExists: () => true,
+      changedFilesFor: () => [],
+      baseBranch: 'feature/design',
+    });
+    assert.equal(plan.force, true);
+    assert.deepEqual(plan.upToDate, []);
+    assert.deepEqual(plan.launchNow, ['memries-f00', 'memries-f01']);
+    assert.equal(plan.apps[0].reason, 'force');
+    assert.equal(plan.apps[1].reason, 'force');
+    assert.equal(plan.apps[0].composeProject, 'e2e-memries-f00');
+    assert.equal(plan.apps[1].composeProject, 'e2e-memries-f01');
+    assert.equal(plan.hint, undefined);
   });
 });
 

@@ -73,6 +73,7 @@ Isolated Playwright BDD against Compose project `memries-e2e` (ports 18080/18081
 cd e2e && npm install && npx playwright install chromium
 make e2e          # first compose build can take several minutes
 make e2e-down     # stop; keep e2e volumes
+make e2e-docker-force  # plan a fresh isolated run of every feature
 ```
 
 See [e2e/README.md](e2e/README.md) for reuse of a running stack, wipe, and cleanup of `.work/`.

@@ -5,8 +5,9 @@ description: >-
   this Memries repo. Diffs this checkout, fans out at most 20 stacks on the
   19000 port band, and lets children author or update that feature plus steps
   before running it. The parent merges e2e/ commits. Use when the user wants
-  /e2e-docker or the e2e wave of /platform-quality. Do not invoke
-  platform-quality from here.
+  /e2e-docker, /e2e-docker --force (fresh run of every feature and last-runs),
+  or the e2e wave of /platform-quality. Do not invoke platform-quality from
+  here.
 ---
 
 # E2E Docker
@@ -40,6 +41,7 @@ Progress:
 - If `deferred` is non-empty, merge + close + record the finished slice and re-plan the same wave
 - Docker Desktop must be running. The plan skips with `docker-unavailable` when it is not
 - Merge e2e/ commits even when the run failed so lint/format can see the setup. `lastCommit` still advances **only on pass**
+- `/e2e-docker --force` (or “fresh / all features / prove the suite”) re-runs **every** discovered feature in its own stack, including passed `no-diff` rows, then records last-runs again
 
 ## Parent checkout (do not move it)
 
@@ -55,11 +57,20 @@ Progress:
 node scripts/e2e-docker/e2e-docker.mjs plan
 ```
 
+When the user asked to force, refresh, rerun all features, or prove the suite:
+
+```
+node scripts/e2e-docker/e2e-docker.mjs plan --force
+```
+
 Wrappers: `./scripts/e2e-docker/e2e-docker.sh plan` or `./scripts/e2e-docker/e2e-docker.ps1 plan`.
+Make: `make e2e-docker` or `make e2e-docker-force` (`make e2e-docker FORCE=1`).
 
 Optional: `--force`, repeatable `--app <id>` (slug like `memries-timeline`), `--base <branch>`.
 
-Treat `status: "needs-run"` as work. Skip `up-to-date` (`no-diff` after a passed finding) and `skipped` (`docker-unavailable`, missing path). If `launchNow` is empty, report that and stop. Fill `{{BASE_BRANCH}}` from the plan.
+`--force` marks every discovered feature `needs-run` (reason `force`), including rows that would otherwise be `up-to-date` (`no-diff` after a passed finding). Each feature still gets its own worktree and Compose project. After each child, record last-runs as usual so `recordedAt` / `lastCommit` / `finding` refresh. `--force --app memries-timeline` refreshes one feature only.
+
+Treat `status: "needs-run"` as work. Skip `up-to-date` (`no-diff` after a passed finding) and `skipped` (`docker-unavailable`, missing path) unless the plan was forced. If `launchNow` is empty, report that (and the plan `hint` if present) and stop. Fill `{{BASE_BRANCH}}` from the plan.
 
 Each `launchNow` row includes `featureFile`, `suiteCommit`, `composeProject`, `origin`, and `ports`. Pass those into the child prompt.
 

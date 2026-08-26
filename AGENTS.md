@@ -69,7 +69,7 @@ There is no test suite yet. New tests belong next to those seams (`*_test.go` / 
 - `frontend-page-accessibility` / `frontend-lint` / `frontend-format` — React + Vite + Tailwind tree under `frontend/`
 - `backend-lint` / `backend-format` — Go (`gofmt` / `go vet`) under `backend/`
 - `platform-lint` / `platform-format` — `e2e/` and `scripts/`
-- `e2e-docker` — one Docker Playwright feature per worktree (max 20 stacks; setup + run + merge `e2e/` only). Shelf: [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/)
+- `e2e-docker` — one Docker Playwright feature per worktree (max 20 stacks; setup + run + merge `e2e/` only). `--force` reruns every feature and refreshes last-runs. Shelf: [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/)
 - `platform-quality` — user-invoked only: page-accessibility → e2e-docker → lint → format. No scripts-to-node wave
 
 ## Scripts

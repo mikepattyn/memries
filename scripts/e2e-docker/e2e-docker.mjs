@@ -100,7 +100,9 @@ export function planE2eFeatures({
     app.ports = extra.ports;
   }
 
-  return {
+  const launchNow = launchSlice.map((a) => a.id);
+  const upToDate = apps.filter((a) => a.status === 'up-to-date').map((a) => a.id);
+  const plan = {
     skill: skillId,
     kind: 'atomic',
     cohort: 'e2e',
@@ -112,11 +114,15 @@ export function planE2eFeatures({
     maxLaunch,
     apps,
     needsRun: needsRun.map((a) => a.id),
-    launchNow: launchSlice.map((a) => a.id),
+    launchNow,
     deferred: needsRun.slice(maxLaunch).map((a) => a.id),
-    upToDate: apps.filter((a) => a.status === 'up-to-date').map((a) => a.id),
+    upToDate,
     skipped: apps.filter((a) => a.status === 'skipped').map((a) => a.id),
   };
+  if (!force && launchNow.length === 0 && upToDate.length) {
+    plan.hint = 'pass --force to rerun every feature and refresh last-runs';
+  }
+  return plan;
 }
 
 function usage() {

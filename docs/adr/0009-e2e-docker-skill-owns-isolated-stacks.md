@@ -21,6 +21,7 @@ ADR 0001 said not to copy a global skill into this tree. That still holds for `c
 3. Children may author or update `e2e/features` and `e2e/steps` for that feature, then run it. They never edit `frontend/` or `backend/`. The parent merges `e2e/` commits even when the run failed so lint/format can see the setup.
 4. `lastCommit` is this repo's SHA and only advances when the finding passed.
 5. The Platform umbrella may reference this path and record into this `last-runs.json`.
+6. `--force` re-runs every discovered feature (still one stack each), including passed `no-diff` rows, and records last-runs again.
 
 ## Consequences
 

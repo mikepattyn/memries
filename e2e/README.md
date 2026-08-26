@@ -22,6 +22,7 @@ npm test
 ```
 
 `make e2e` from the app root is the same as `npm test` in `e2e/`.
+`make e2e-docker-force` plans a fresh isolated stack per feature so `/e2e-docker --force` can refresh last-runs.
 
 Login is Dex `admin@example.com` / `password`. Fixture JPEGs live in `e2e/.work/photos/admin@example.com/` and are regenerated before every `stack:up`.
 
