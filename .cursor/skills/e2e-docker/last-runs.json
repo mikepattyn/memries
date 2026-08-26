@@ -80,13 +80,13 @@
     },
     "memries-long-press": {
       "path": "apps/e2e/features/long-press.feature",
-      "recordedAt": "2026-08-26T11:24:04.654Z",
-      "lastCommit": "1abf1ba3cb3faffb2db9826c346e614a6c14644a",
+      "recordedAt": "2026-08-26T12:05:12.792Z",
+      "lastCommit": "dceec58fbc2702a64c2e80810784e4257cc9d8b8",
       "finding": {
         "status": "passed",
-        "summary": "2 passed (25.1s)",
+        "summary": "2 passed",
         "composeProject": "e2e-memries-long-press",
-        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
+        "suiteCommit": "b91594080216838da34cd0730a7aff5151610acd"
       }
     },
     "memries-viewer-gestures": {
