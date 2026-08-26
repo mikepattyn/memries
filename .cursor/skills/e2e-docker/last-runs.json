@@ -88,6 +88,17 @@
         "composeProject": "e2e-memries-long-press",
         "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
       }
+    },
+    "memries-viewer-gestures": {
+      "path": "e2e/features/viewer-gestures.feature",
+      "recordedAt": "2026-08-26T08:01:13.053Z",
+      "lastCommit": "e10ef97365bcb50ce1da06ced5037b8b6c14e94e",
+      "finding": {
+        "status": "passed",
+        "summary": "6 passed",
+        "composeProject": "e2e-memries-viewer-gestures",
+        "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
+      }
     }
   }
 }
