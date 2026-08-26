@@ -102,13 +102,13 @@
     },
     "memries-navigation": {
       "path": "apps/e2e/features/navigation.feature",
-      "recordedAt": "2026-08-26T11:24:06.965Z",
-      "lastCommit": "e10ef97365bcb50ce1da06ced5037b8b6c14e94e",
+      "recordedAt": "2026-08-26T11:38:16.651Z",
+      "lastCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73",
       "finding": {
-        "status": "failed",
-        "summary": "0 passed (stack up failed: frontend Docker build Node 20 vs jest-dom 7 requires >=22)",
+        "status": "passed",
+        "summary": "6 passed (22.5s)",
         "composeProject": "e2e-memries-navigation",
-        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
+        "suiteCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73"
       }
     },
     "memries-motion": {
