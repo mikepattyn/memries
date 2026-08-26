@@ -124,7 +124,7 @@ Then('I should see the heading {string}', async ({ page }, name: string) => {
 });
 
 Then('I should see the search suggestions', async ({ page }) => {
-  await expect(page.getByRole('group', { name: 'Search suggestions' })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Search suggestions' })).toBeVisible();
 });
 
 Then('the search should read {string}', async ({ page }, reading: string) => {
