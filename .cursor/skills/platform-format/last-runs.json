@@ -1,4 +1,10 @@
 {
   "version": 1,
-  "apps": {}
+  "apps": {
+    "scripts": {
+      "path": "scripts",
+      "lastCommit": "00040ac819ba06b1a136ab7a27916dad65846a5a",
+      "recordedAt": "2026-08-26T09:13:35.815Z"
+    }
+  }
 }
