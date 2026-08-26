@@ -245,7 +245,7 @@ When('I add the viewer photo to favorites', async ({ page }) => {
 
 When('I add the viewer photo to album {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'Add to album', exact: true }).click();
-  await page.getByRole('menuitem', { name: new RegExp(`Add to album ${name}`) }).click();
+  await photoActionsDialog(page).getByRole('button', { name: new RegExp(`Add to album ${name}`) }).click();
 });
 
 When('I go to the next photo', async ({ page }) => {
