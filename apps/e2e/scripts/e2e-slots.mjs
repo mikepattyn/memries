@@ -180,10 +180,7 @@ export function applyBusySlotGate(plan, busySlots) {
   };
 }
 
-export function stopFanoutProject(
-  project,
-  { composeDown, leaseRoot = defaultLeaseRoot() } = {},
-) {
+export function stopFanoutProject(project, { composeDown, leaseRoot = defaultLeaseRoot() } = {}) {
   const result = { project, ok: true, error: null, released: false };
   try {
     if (typeof composeDown === 'function') composeDown(project);
@@ -233,4 +230,3 @@ function tryListen(port) {
     return false;
   }
 }
-

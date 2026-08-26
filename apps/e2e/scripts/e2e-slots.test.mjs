@@ -46,9 +46,18 @@ describe('isolationForSlot', () => {
 describe('slotForPorts', () => {
   it('matches a complete slot set and rejects custom ports', () => {
     assert.equal(slotForPorts(isolationForSlot(3).ports), 3);
-    assert.equal(slotForPorts({ caddy: 18080, backend: 18081, frontend: 15173, arango: 18529, dex: 15556 }), null);
-    assert.equal(slotForPorts({ caddy: 19080, backend: 19081, frontend: 19082, arango: 19083, dex: 19084 }), null);
-    assert.equal(slotForPorts({ caddy: 19000, backend: 19001, frontend: 19002, arango: 19003, dex: 19999 }), null);
+    assert.equal(
+      slotForPorts({ caddy: 18080, backend: 18081, frontend: 15173, arango: 18529, dex: 15556 }),
+      null,
+    );
+    assert.equal(
+      slotForPorts({ caddy: 19080, backend: 19081, frontend: 19082, arango: 19083, dex: 19084 }),
+      null,
+    );
+    assert.equal(
+      slotForPorts({ caddy: 19000, backend: 19001, frontend: 19002, arango: 19003, dex: 19999 }),
+      null,
+    );
   });
 });
 
@@ -98,10 +107,7 @@ describe('claimSlot / releaseSlot', () => {
   it('releases only when the caller is the owner', () => {
     const root = leaseRoot();
     claimSlot({ slot: 1, project: 'e2e-memries-indexing', leaseRoot: root });
-    assert.equal(
-      releaseSlot({ slot: 1, project: 'e2e-memries-viewer', leaseRoot: root }),
-      false,
-    );
+    assert.equal(releaseSlot({ slot: 1, project: 'e2e-memries-viewer', leaseRoot: root }), false);
     assert.throws(
       () =>
         claimSlot({

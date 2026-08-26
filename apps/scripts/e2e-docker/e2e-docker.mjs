@@ -22,7 +22,11 @@ import {
   isAgentWorktreeBranch,
   parseFinding,
 } from './e2e-docker-last-runs.mjs';
-import { applyBusySlotGate, listActiveSlots, stopFanoutProject } from '../../e2e/scripts/e2e-slots.mjs';
+import {
+  applyBusySlotGate,
+  listActiveSlots,
+  stopFanoutProject,
+} from '../../e2e/scripts/e2e-slots.mjs';
 import {
   composeProjectForId,
   decideE2eFeatureStatus,

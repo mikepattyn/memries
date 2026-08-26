@@ -69,10 +69,7 @@ describe('renderE2eLastRunsTag', () => {
       total: 14,
       rows: [],
     });
-    assert.equal(
-      tag,
-      '[**E2E last-runs:** ✅ all 14 passed](#end-to-end-tests)',
-    );
+    assert.equal(tag, '[**E2E last-runs:** ✅ all 14 passed](#end-to-end-tests)');
   });
 
   it('names the stems that kept the tag from going green', () => {

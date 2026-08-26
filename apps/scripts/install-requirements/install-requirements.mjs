@@ -7,7 +7,14 @@ import { pipeline } from 'node:stream/promises';
 import { pathToFileURL } from 'node:url';
 import { installLinux } from './install-linux.mjs';
 import { installWindows } from './install-windows.mjs';
-import { GO_VERSION, NODE_VERSION, PNPM_VERSION, goSatisfies, nodeSatisfies, parseGoVersion } from './versions.mjs';
+import {
+  GO_VERSION,
+  NODE_VERSION,
+  PNPM_VERSION,
+  goSatisfies,
+  nodeSatisfies,
+  parseGoVersion,
+} from './versions.mjs';
 
 export function spawnToolOptions(platform = process.platform) {
   return platform === 'win32' ? { shell: true } : {};
@@ -37,7 +44,6 @@ export function createDeps(overrides = {}) {
     log: (...args) => console.log(...args),
     nodeDistVersion: NODE_VERSION,
     goDistVersion: GO_VERSION,
-    pnpmVersion: PNPM_VERSION,
     prefix() {
       return this.env.MEMRIES_TOOL_PREFIX || join(homedir(), '.local');
     },
@@ -115,7 +121,11 @@ export function createDeps(overrides = {}) {
         const detail = enable.error?.message || `status ${enable.status}`;
         throw new Error(`corepack enable failed: ${detail}`);
       }
-      const prepare = spawnImpl('corepack', ['prepare', `pnpm@${PNPM_VERSION}`, '--activate'], spawnOpts);
+      const prepare = spawnImpl(
+        'corepack',
+        ['prepare', `pnpm@${PNPM_VERSION}`, '--activate'],
+        spawnOpts,
+      );
       if ((prepare.status ?? 1) !== 0) {
         const detail = prepare.error?.message || `status ${prepare.status}`;
         throw new Error(`corepack prepare pnpm@${PNPM_VERSION} failed: ${detail}`);

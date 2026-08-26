@@ -150,9 +150,7 @@ export function SearchView({
                     category.id === 'years' ? search.openCategory === 'years' : undefined
                   }
                   className={`min-h-11 rounded-full px-4 text-sm font-medium transition duration-200 ${
-                    active
-                      ? 'bg-plum text-cream shadow-lift'
-                      : 'bg-surface/70 text-ink shadow-soft'
+                    active ? 'bg-plum text-cream shadow-lift' : 'bg-surface/70 text-ink shadow-soft'
                   }`}
                 >
                   {category.label}

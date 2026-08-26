@@ -175,11 +175,20 @@ describe('fan-out lease lifecycle', () => {
       },
     });
     assert.equal(wiped, true);
-    assert.deepEqual(listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }), []);
-    assert.equal(beginFanoutUp(resolveStackConfig({
-      ...FANOUT_ENV,
-      MEMRIES_E2E_PROJECT: 'e2e-memries-search',
-    }), deps), 3);
+    assert.deepEqual(
+      listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }),
+      [],
+    );
+    assert.equal(
+      beginFanoutUp(
+        resolveStackConfig({
+          ...FANOUT_ENV,
+          MEMRIES_E2E_PROJECT: 'e2e-memries-search',
+        }),
+        deps,
+      ),
+      3,
+    );
   });
 
   it('releases only after a wipe down', () => {
@@ -188,9 +197,15 @@ describe('fan-out lease lifecycle', () => {
     const deps = { leaseRoot: root, projectAlive: () => false, portsFree: () => true };
     beginFanoutUp(config, deps);
     finishFanoutDown(config, { ...deps, wipe: false });
-    assert.equal(listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }).length, 1);
+    assert.equal(
+      listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }).length,
+      1,
+    );
     finishFanoutDown(config, { ...deps, wipe: true });
-    assert.equal(listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }).length, 0);
+    assert.equal(
+      listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }).length,
+      0,
+    );
   });
 
   it('fails immediately when another project holds the slot', () => {
@@ -227,13 +242,22 @@ describe('up', () => {
           projectAlive: () => false,
           portsFree: () => true,
           runDocker: async (_cmd, args) => {
-            commands.push(args.at(-2) === 'up' || args.includes('up') ? 'up' : args.includes('down') ? 'down' : args.join(' '));
+            commands.push(
+              args.at(-2) === 'up' || args.includes('up')
+                ? 'up'
+                : args.includes('down')
+                  ? 'down'
+                  : args.join(' '),
+            );
             if (args.includes('up')) throw new Error('compose failed');
           },
         }),
       /compose failed/,
     );
     assert.deepEqual(commands, ['up', 'down']);
-    assert.deepEqual(listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }), []);
+    assert.deepEqual(
+      listActiveSlots({ leaseRoot: root, projectAlive: () => true, portsFree: () => false }),
+      [],
+    );
   });
 });

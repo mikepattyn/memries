@@ -76,10 +76,7 @@ describe('planE2eFeatures', () => {
     });
     assert.deepEqual(plan.upToDate, ['memries-f00']);
     assert.deepEqual(plan.launchNow, []);
-    assert.equal(
-      plan.hint,
-      'pass --force to rerun every feature and refresh last-runs',
-    );
+    assert.equal(plan.hint, 'pass --force to rerun every feature and refresh last-runs');
   });
 
   it('force-relaunches passed features so last-runs can refresh', () => {

@@ -578,7 +578,6 @@ function record(skillId, ids, opts, config) {
   return result;
 }
 
-
 function closeHelpers() {
   return {
     removeDir: (p) => rmSync(p, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 }),

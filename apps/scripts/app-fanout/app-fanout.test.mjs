@@ -30,8 +30,12 @@ describe('app-fanout.config', () => {
   });
 
   it('pins local trees only', () => {
-    assert.deepEqual(config.skills['frontend-lint'].trees, [{ id: 'frontend', path: 'apps/frontend' }]);
-    assert.deepEqual(config.skills['backend-format'].trees, [{ id: 'backend', path: 'apps/backend' }]);
+    assert.deepEqual(config.skills['frontend-lint'].trees, [
+      { id: 'frontend', path: 'apps/frontend' },
+    ]);
+    assert.deepEqual(config.skills['backend-format'].trees, [
+      { id: 'backend', path: 'apps/backend' },
+    ]);
     assert.deepEqual(
       config.skills['platform-lint'].trees.map((t) => t.id),
       ['e2e', 'scripts'],
@@ -261,10 +265,7 @@ describe('planUmbrellaWaves', () => {
     });
     assert.deepEqual(plan.waves[0].launchNow, []);
     assert.deepEqual(plan.waves[1].launchNow, []);
-    assert.equal(
-      plan.waves[0].hint,
-      'band held by e2e-memries-navigation; close that slice first',
-    );
+    assert.equal(plan.waves[0].hint, 'band held by e2e-memries-navigation; close that slice first');
     assert.equal(plan.waves[0].deferred.length, 5);
   });
 
