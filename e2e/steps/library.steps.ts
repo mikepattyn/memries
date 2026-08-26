@@ -156,7 +156,7 @@ When('I create an album named {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'New album' }).click();
   await page.getByLabel('Album name').fill(name);
   await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: new RegExp(`Open album ${name}`) })).toBeVisible();
 });
 
 When('I open the album named {string}', async ({ page }, name: string) => {
@@ -207,8 +207,10 @@ When('I remove the photo from this album', async ({ page }) => {
 
 Then('the album {string} should have {int} photos', async ({ page }, name: string, count: number) => {
   await openTab(page, 'Albums');
-  const card = page.locator('article').filter({ has: page.getByRole('heading', { name, exact: true }) });
   const label = count === 1 ? '1 photo' : `${count} photos`;
+  const card = page.locator('article').filter({
+    has: page.getByRole('button', { name: new RegExp(`Open album ${name}, ${label}`) }),
+  });
   await expect(card.getByText(label, { exact: true })).toBeVisible();
 });
 
@@ -257,6 +259,10 @@ When('I close the photo viewer', async ({ page }) => {
   await page.getByRole('button', { name: 'Close photo' }).click();
 });
 
+function photoActionsDialog(page: Page) {
+  return page.getByRole('dialog', { name: 'Photo actions' });
+}
+
 When('I long-press the photo from {string}', async ({ page }, day: string) => {
   const photo = await revealPhoto(page, day);
   const box = await photo.boundingBox();
@@ -267,7 +273,7 @@ When('I long-press the photo from {string}', async ({ page }, day: string) => {
   await page.mouse.down();
   await page.waitForTimeout(650);
   await page.mouse.up();
-  const menu = page.getByRole('menu', { name: 'Photo actions' });
+  const menu = photoActionsDialog(page);
   if (!(await menu.isVisible().catch(() => false))) {
     await photo.click({ button: 'right' });
   }
@@ -275,18 +281,24 @@ When('I long-press the photo from {string}', async ({ page }, day: string) => {
 });
 
 Then('the photo actions menu is visible', async ({ page }) => {
-  await expect(page.getByRole('menu', { name: 'Photo actions' })).toBeVisible();
+  await expect(photoActionsDialog(page)).toBeVisible();
 });
 
 Then('album {string} in the actions menu shows {int} on the right', async ({ page }, name: string, count: number) => {
-  const item = page.getByRole('menuitem', { name: new RegExp(`Add to album ${name}, ${count} photo`) });
+  const item = photoActionsDialog(page).getByRole('button', {
+    name: new RegExp(`Add to album ${name}, ${count} photo`),
+  });
   await expect(item).toBeVisible();
   await expect(item).toContainText(name);
   await expect(item).toContainText(String(count));
+  const nameBox = await item.locator('span').filter({ hasText: name }).first().boundingBox();
+  const countBox = await item.locator('span').filter({ hasText: String(count) }).last().boundingBox();
+  if (!nameBox || !countBox) throw new Error(`missing layout boxes for album ${name}`);
+  expect(countBox.x, 'album count should sit to the right of the name').toBeGreaterThan(nameBox.x);
 });
 
 When('I choose album {string} in the actions menu', async ({ page }, name: string) => {
-  await page.getByRole('menuitem', { name: new RegExp(`Add to album ${name}`) }).click();
+  await photoActionsDialog(page).getByRole('button', { name: new RegExp(`Add to album ${name}`) }).click();
 });
 
 When('I change the capture date of {string} to {string}', async ({ page }, file: string, datetime: string) => {
