@@ -28,7 +28,8 @@ Feature: Albums
   Scenario: New album focuses the name field
     Given I am signed in
     When I open the "Albums" tab
-    And I start a new album
+    Then I should see the heading "Albums"
+    When I start a new album
     Then the album name field is focused
 
   Scenario: Long-press on the album page removes the photo from the album

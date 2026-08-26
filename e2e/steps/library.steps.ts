@@ -3,6 +3,7 @@ import {
   Given,
   Then,
   When,
+  albumOpenButton,
   collectTimelineLabels,
   markFixturesDirty,
   openTab,
@@ -158,12 +159,12 @@ When('I create an album named {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'New album' }).click();
   await page.getByLabel('Album name').fill(name);
   await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await expect(page.getByRole('button', { name: new RegExp(`Open album ${name}`) })).toBeVisible();
+  await expect(albumOpenButton(page, name)).toBeVisible();
 });
 
 When('I open the album named {string}', async ({ page }, name: string) => {
   await openTab(page, 'Albums');
-  await page.getByRole('button', { name: new RegExp(`Open album ${name}`) }).click();
+  await albumOpenButton(page, name).click();
   await expect(page.getByRole('button', { name: 'Back to albums' })).toBeVisible();
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
 });
@@ -199,12 +200,12 @@ Then('the original image is requested', async ({ page }) => {
 });
 
 Then('the actions menu offers to remove from this album', async ({ page }) => {
-  await expect(page.getByRole('menuitem', { name: 'Remove from this album' })).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Add to album' })).toHaveCount(0);
+  await expect(photoActionsDialog(page).getByRole('button', { name: 'Remove from this album' })).toBeVisible();
+  await expect(photoActionsDialog(page).getByRole('group', { name: 'Add to album' })).toHaveCount(0);
 });
 
 When('I remove the photo from this album', async ({ page }) => {
-  await page.getByRole('menuitem', { name: 'Remove from this album' }).click();
+  await photoActionsDialog(page).getByRole('button', { name: 'Remove from this album' }).click();
 });
 
 Then('the album {string} should have {int} photos', async ({ page }, name: string, count: number) => {
@@ -246,7 +247,8 @@ When('I add the viewer photo to favorites', async ({ page }) => {
 
 When('I add the viewer photo to album {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'Add to album', exact: true }).click();
-  await page.getByRole('menuitem', { name: new RegExp(`Add to album ${name}`) }).click();
+  await expect(photoActionsDialog(page)).toBeVisible();
+  await photoActionsDialog(page).getByRole('button', { name: new RegExp(`Add to album ${name}`) }).click();
 });
 
 When('I go to the next photo', async ({ page }) => {
