@@ -25,7 +25,23 @@ export function PhotoActionsMenu({
   useEffect(() => {
     firstItemRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !menuRef.current) return;
+      const focusable = [...menuRef.current.querySelectorAll<HTMLElement>("button:not([disabled])")];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -44,15 +60,18 @@ export function PhotoActionsMenu({
   return (
     <div
       ref={menuRef}
-      role="menu"
-      aria-label="Photo actions"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="photo-actions-title"
       className="fixed inset-x-0 bottom-0 z-[60] rounded-t-[1.6rem] bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-lift min-[640px]:inset-auto min-[640px]:bottom-auto min-[640px]:left-1/2 min-[640px]:top-1/2 min-[640px]:w-[min(22rem,calc(100vw-2rem))] min-[640px]:-translate-x-1/2 min-[640px]:-translate-y-1/2 min-[640px]:rounded-[1.4rem] min-[640px]:pb-4"
     >
       <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-ink/15 min-[640px]:hidden" aria-hidden />
+      <h2 id="photo-actions-title" className="px-3 pb-1 text-sm font-semibold text-plum">
+        Photo actions
+      </h2>
       <button
         ref={firstItemRef}
         type="button"
-        role="menuitem"
         onClick={() => {
           onToggleFavorite(photo.id, nextFavorite);
           onClose();
@@ -66,7 +85,6 @@ export function PhotoActionsMenu({
         <div role="group" aria-label="Remove from album" className="mt-1 border-t border-plum/10 pt-1">
           <button
             type="button"
-            role="menuitem"
             onClick={() => {
               onRemoveFromAlbum?.();
               onClose();
@@ -87,7 +105,6 @@ export function PhotoActionsMenu({
                 <li key={album.id}>
                   <button
                     type="button"
-                    role="menuitem"
                     onClick={() => {
                       onAddToAlbum(album.id, photo.id);
                       onClose();

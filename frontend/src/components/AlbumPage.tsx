@@ -29,8 +29,14 @@ export function AlbumPage({
         Back to albums
       </button>
 
+      {query.isPending && (
+        <p className="mt-10 text-center text-sm text-ink/60" role="status" aria-live="polite">
+          Opening this album…
+        </p>
+      )}
+
       {query.isError && (
-        <div className="mt-10 text-center">
+        <div className="mt-10 text-center" role="alert">
           <p className="font-display text-2xl font-semibold tracking-tight text-plum">We could not open this album</p>
           <button
             type="button"
@@ -44,7 +50,7 @@ export function AlbumPage({
 
       {query.isSuccess && album && (
         <>
-          <h2 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">{album.name}</h2>
+          <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">{album.name}</h1>
           <p className="mt-1 text-sm text-ink/60">
             {album.photoCount} {album.photoCount === 1 ? "photo" : "photos"}
           </p>

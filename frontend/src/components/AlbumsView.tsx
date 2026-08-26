@@ -33,7 +33,7 @@ export function AlbumsView({
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 min-[640px]:px-6">
-      <h2 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Albums</h2>
+      <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Albums</h1>
       <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink/70">
         Gather a handful of days into a set you can return to.
       </p>
@@ -124,7 +124,7 @@ function AlbumCard({ album, onOpen }: { album: Album; onOpen: (album: Album) => 
           )}
         </div>
         <div className="px-3 py-3">
-          <h3 className="truncate text-sm font-semibold text-plum">{album.name}</h3>
+          <p className="truncate text-sm font-semibold text-plum">{album.name}</p>
           <p className="mt-0.5 text-xs text-ink/60">{countLabel}</p>
         </div>
       </button>

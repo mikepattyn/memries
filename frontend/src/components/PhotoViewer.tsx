@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { formatCompactDate, formatDayLabel, formatTime } from "../lib/formatDate";
+import { photoViewerAlt } from "../lib/photoName";
 import { viewerFallbackSrc } from "../lib/photoSrc";
 import { resolveViewerGesture } from "../lib/viewerGesture";
 import type { Album, Photo } from "../models/photo";
@@ -106,7 +107,7 @@ export function PhotoViewer({
       if (event.key === "ArrowLeft" && index > 0) onChange(photos[index - 1].id);
       if (event.key === "ArrowRight" && index < photos.length - 1) onChange(photos[index + 1].id);
       if ((event.key === "f" || event.key === "F") && photo) onToggleFavorite(photo.id, !photo.favorite);
-      if (event.key === "Tab" && dialogRef.current) {
+      if (event.key === "Tab" && dialogRef.current && !albumPickerOpen) {
         const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled])")];
         if (focusable.length === 0) return;
         const first = focusable[0];
@@ -184,7 +185,8 @@ export function PhotoViewer({
         style={{ backgroundColor: `rgba(0, 0, 0, ${motion === "closing" ? 0 : backdrop})` }}
         role="dialog"
         aria-modal="true"
-        aria-label="Photo viewer"
+        aria-labelledby="viewer-title"
+        aria-hidden={albumPickerOpen || undefined}
         data-viewer-motion={motion}
         data-viewer-day={formatDayLabel(photo.takenAt)}
         data-viewer-favorite={photo.favorite ? "true" : "false"}
@@ -229,9 +231,9 @@ export function PhotoViewer({
             </div>
           </div>
 
-          <p className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/60">
+          <h2 id="viewer-title" className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/60">
             {formatCompactDate(photo.takenAt)} · {formatTime(photo.takenAt)}
-          </p>
+          </h2>
 
           <div className="flex min-h-0 min-w-0 flex-1 items-stretch gap-1 py-3 min-[640px]:gap-3">
             <button
@@ -279,7 +281,7 @@ export function PhotoViewer({
                 key={photo.id}
                 ref={imgRef}
                 src={src}
-                alt=""
+                alt={photoViewerAlt(photo)}
                 draggable={false}
                 className={`max-h-[min(100%,calc(100dvh-12rem))] max-w-full rounded-2xl object-contain shadow-lift ${
                   !reducedMotion && motion === "navigating" ? "photo-crossfade" : ""
@@ -302,7 +304,7 @@ export function PhotoViewer({
             </button>
           </div>
 
-          <p className="shrink-0 text-center text-xs text-white/55">
+          <p className="shrink-0 text-center text-xs text-white/55" role="status" aria-live="polite">
             {index + 1} of {photos.length}
           </p>
         </div>

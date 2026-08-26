@@ -82,7 +82,7 @@ export function NavButtons({
 
   if (orientation === "vertical") {
     return (
-      <div ref={groupRef} role="navigation" aria-label="Main" className="relative flex flex-col gap-1">
+      <div ref={groupRef} className="relative flex flex-col gap-1">
         <SlidingIndicator box={box} />
         {PRIMARY_ITEMS.map((item) => (
           <NavButton
@@ -101,7 +101,7 @@ export function NavButtons({
   return (
     <div ref={groupRef} className="relative">
       <SlidingIndicator box={box} />
-      <div role="navigation" aria-label="Main" className="nav-bar-mobile">
+      <div className="nav-bar-mobile">
         {MOBILE_ITEMS.map((item) => (
           <NavButton
             key={item.id}
@@ -139,6 +139,7 @@ export function BottomNavigation({ tab, onChange }: { tab: NavTab; onChange: (ta
   return (
     <nav
       data-nav-layout="bottom"
+      aria-label="Main"
       className="border-t border-plum/10 bg-cream/80 px-2 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl min-[800px]:hidden"
     >
       <NavButtons tab={tab} onChange={onChange} orientation="horizontal" />

@@ -3,7 +3,7 @@ import { usePhotoPress } from "../hooks/usePhotoPress";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { useViewportWidth } from "../hooks/useViewportWidth";
 import { useVisibleRowRange } from "../hooks/useVisibleRowRange";
-import { formatDayLabel, formatTime } from "../lib/formatDate";
+import { photoOpenLabel } from "../lib/photoName";
 import { photoFacets } from "../lib/groupPhotos";
 import { chunkIntoRows, rowWindow, searchGridColumns } from "../lib/keepWindow";
 import { parseSmartDate, SEARCH_SUGGESTIONS } from "../lib/parseSmartDate";
@@ -72,7 +72,7 @@ export function SearchView({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="px-4 pb-3 min-[640px]:px-6">
-        <h2 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Search</h2>
+        <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Search</h1>
         <label className="mt-4 flex min-h-12 items-center gap-3 rounded-full bg-surface/70 px-4 shadow-soft backdrop-blur-md">
           <SearchIcon className="h-5 w-5 shrink-0 text-ink/45" />
           <span className="sr-only">Search memories</span>
@@ -119,7 +119,7 @@ export function SearchView({
           </div>
         )}
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Search filters">
           {CATEGORIES.map((category) => {
             const active =
               category.id === "favorites"
@@ -131,6 +131,7 @@ export function SearchView({
                 type="button"
                 onClick={() => toggleCategory(category.id)}
                 aria-pressed={active}
+                aria-expanded={category.id === "years" ? search.openCategory === "years" : undefined}
                 className={`min-h-11 rounded-full px-4 text-sm font-medium transition duration-200 ${
                   active ? "bg-plum text-cream shadow-lift" : "bg-surface/70 text-ink/70 shadow-soft"
                 }`}
@@ -142,7 +143,7 @@ export function SearchView({
         </div>
 
         {facetOptions.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Years">
             {facetOptions.map((option) => {
               const selected = selectedFacets.includes(option);
               return (
@@ -177,7 +178,7 @@ export function SearchView({
           </div>
         ) : (
           <>
-            <p className="mb-3 text-sm text-ink/55">
+            <p className="mb-3 text-sm text-ink/55" role="status">
               {results.length} {results.length === 1 ? "result" : "results"}
             </p>
             <SearchResultGrid
@@ -244,11 +245,7 @@ function SearchResultButton({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const viewportWidth = useViewportWidth();
   const box = compactThumbSize(viewportWidth);
-  const day = formatDayLabel(photo.takenAt);
-  const time = formatTime(photo.takenAt);
-  const ariaLabel = photo.favorite
-    ? `Open favorited photo, ${day}, ${time}`
-    : `Open photo, ${day}, ${time}`;
+  const ariaLabel = photoOpenLabel(photo);
 
   const press = usePhotoPress({
     onOpen: () => {

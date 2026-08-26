@@ -7,7 +7,7 @@ export function TopHeader() {
         <span className="grid h-9 w-9 place-items-center rounded-2xl bg-surface/70 shadow-soft backdrop-blur-md" aria-hidden>
           <span className="h-4 w-4 rounded-full bg-gradient-to-br from-peach to-blush" />
         </span>
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-plum">Memries</h1>
+        <p className="font-display text-2xl font-semibold tracking-tight text-plum">Memries</p>
       </div>
       <ThemeToggle compact />
     </header>

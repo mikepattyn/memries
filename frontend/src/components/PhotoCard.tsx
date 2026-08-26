@@ -3,7 +3,7 @@ import { usePhotoPress } from "../hooks/usePhotoPress";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 import { useViewportWidth } from "../hooks/useViewportWidth";
-import { formatDayLabel, formatTime } from "../lib/formatDate";
+import { photoOpenLabel } from "../lib/photoName";
 import { compactThumbSize, timelineSrc, type PhotoDensity } from "../lib/photoSrc";
 import type { Photo } from "../models/photo";
 import { FavoriteBadge } from "./FavoriteBadge";
@@ -52,11 +52,7 @@ export function PhotoCard({
   const radius =
     density === "thumb" ? "rounded-xl" : density === "day" ? "rounded-[1.6rem]" : "rounded-2xl";
 
-  const day = formatDayLabel(photo.takenAt);
-  const time = formatTime(photo.takenAt);
-  const ariaLabel = photo.favorite
-    ? `Open favorited photo, ${day}, ${time}`
-    : `Open photo, ${day}, ${time}`;
+  const ariaLabel = photoOpenLabel(photo);
 
   return (
     <figure

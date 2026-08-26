@@ -142,8 +142,8 @@ export default function App() {
       {showGallery && (
         <AppShell tab={tab} onTabChange={changeTab}>
           {activeQuery.isError && (
-            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-              <p className="font-display text-2xl font-semibold tracking-tight">We could not open the album</p>
+            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center" role="alert">
+              <p className="font-display text-2xl font-semibold tracking-tight">We could not load your photos</p>
               <p className="mt-2 max-w-xs text-sm text-ink/65">
                 Something went quietly wrong. You can try again in a moment.
               </p>

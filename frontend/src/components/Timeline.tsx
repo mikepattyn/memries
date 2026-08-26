@@ -100,7 +100,7 @@ export function Timeline({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="px-4 pb-3 min-[640px]:px-6">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Your memries</h2>
+          <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Your memries</h1>
           {onFilter && (
             <button
               type="button"
@@ -153,7 +153,7 @@ export function Timeline({
 
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {groups.length === 0 ? (
-          <div className="flex flex-col items-center px-6 py-12 text-center">
+          <div className="flex flex-col items-center px-6 py-12 text-center" role="status">
             <p className="text-ink/70">No memories here yet.</p>
             {onRescan && (
               <button
@@ -218,7 +218,7 @@ export function Timeline({
                   </p>
                 )}
                 {fetchError && (
-                  <div className="flex flex-col items-center gap-3 py-4 text-center">
+                  <div className="flex flex-col items-center gap-3 py-4 text-center" role="alert">
                     <p className="text-sm text-ink/65">More memories did not load.</p>
                     <button
                       type="button"
