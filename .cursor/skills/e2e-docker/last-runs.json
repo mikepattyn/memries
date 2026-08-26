@@ -36,13 +36,13 @@
     },
     "memries-indexing": {
       "path": "apps/e2e/features/indexing.feature",
-      "recordedAt": "2026-08-26T11:50:39.372Z",
-      "lastCommit": "f9fe477a136506f811c0c2654bb628f176a5cdbb",
+      "recordedAt": "2026-08-26T12:27:59.931Z",
+      "lastCommit": "76dc26ecc4b02da9a154dbd42adc44233bbf374b",
       "finding": {
         "status": "passed",
-        "summary": "6 passed (33.8s)",
+        "summary": "6 passed",
         "composeProject": "e2e-memries-indexing",
-        "suiteCommit": "66b7e1a3240099a8b8211096052fac11060898d4"
+        "suiteCommit": "76dc26ecc4b02da9a154dbd42adc44233bbf374b"
       }
     },
     "memries-login": {
