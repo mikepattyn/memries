@@ -1,6 +1,6 @@
 Feature: Empty library states
-  Favorites and Search explain themselves when they have nothing to
-  show.
+  Favorites, Search, and a new Album explain themselves when they have
+  nothing to show.
 
   Scenario: Favorites explains an empty heart list
     Given I am signed in
@@ -14,6 +14,11 @@ Feature: Empty library states
     And I search for "next christmas"
     Then I should see no matching search results
     And I should see the search suggestions
+
+  Scenario: A new album explains it has no photos yet
+    Given I am signed in
+    When I open an empty album named "Holiday"
+    Then I should see the empty album state
 
   @future @skip
   Scenario: An empty library offers to scan the folder

@@ -151,6 +151,20 @@ Then('I should see the empty favorites state', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Nothing starred yet' })).toBeVisible();
 });
 
+When('I open an empty album named {string}', async ({ page }, name: string) => {
+  await openTab(page, 'Albums');
+  await page.getByRole('button', { name: 'New album' }).click();
+  await page.getByLabel('Album name').fill(name);
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await page.getByRole('button', { name: new RegExp(`Open album ${name}`) }).click();
+  await expect(page.getByRole('button', { name: 'Back to albums' })).toBeVisible();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+});
+
+Then('I should see the empty album state', async ({ page }) => {
+  await expect(page.getByText('No photos in this album yet.', { exact: true })).toBeVisible();
+});
+
 Then('the search suggestion chips should be ready', async ({ page }) => {
   await expect(page.locator('[data-suggestion-chip]')).toHaveCount(8);
 });
