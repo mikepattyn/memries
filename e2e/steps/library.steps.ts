@@ -6,6 +6,7 @@ import {
   collectTimelineLabels,
   markFixturesDirty,
   openTab,
+  photoActionsDialog,
   photoByDay,
   photoViewer,
   revealPhoto,
@@ -259,10 +260,6 @@ When('I go to the previous photo', async ({ page }) => {
 When('I close the photo viewer', async ({ page }) => {
   await page.getByRole('button', { name: 'Close photo' }).click();
 });
-
-function photoActionsDialog(page: Page) {
-  return page.getByRole('dialog', { name: 'Photo actions' });
-}
 
 When('I long-press the photo from {string}', async ({ page }, day: string) => {
   const photo = await revealPhoto(page, day);

@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { Given, Then, When, openTab, photoByDay, photoViewer } from './fixtures';
+import { Given, Then, When, openTab, photoActionsDialog, photoByDay, photoViewer } from './fixtures';
 
 const GRANULARITY: Record<string, string> = {
   Year: 'year',
@@ -69,7 +69,7 @@ When('I start a new album', async ({ page }) => {
 });
 
 Then('the photo actions menu is closed', async ({ page }) => {
-  await expect(page.getByRole('menu', { name: 'Photo actions' })).toHaveCount(0);
+  await expect(photoActionsDialog(page)).toHaveCount(0);
 });
 
 Then('the viewer shows the photo from {string}', async ({ page }, day: string) => {
@@ -77,20 +77,20 @@ Then('the viewer shows the photo from {string}', async ({ page }, day: string) =
 });
 
 Then('the viewer photo is a favorite', async ({ page }) => {
-  const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
+  const viewer = photoViewer(page);
   await expect(viewer).toHaveAttribute('data-viewer-favorite', 'true');
   await expect(page.getByRole('button', { name: 'Remove from favorites' })).toBeVisible();
 });
 
 Then('the viewer photo is not a favorite', async ({ page }) => {
-  const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
+  const viewer = photoViewer(page);
   await expect(viewer).toHaveAttribute('data-viewer-favorite', 'false');
   await expect(page.getByRole('button', { name: 'Add to favorites' })).toBeVisible();
 });
 
 Then('focus stays inside the photo viewer', async ({ page }) => {
   const inside = await page.evaluate(() => {
-    const dialog = document.querySelector('[role="dialog"][aria-label="Photo viewer"]');
+    const dialog = document.querySelector('[role="dialog"][data-viewer-day]');
     return !!dialog && dialog.contains(document.activeElement);
   });
   expect(inside).toBe(true);
@@ -101,11 +101,11 @@ Then('the photo from {string} is focused', async ({ page }, day: string) => {
 });
 
 Then('the photo viewer opened from a photo card', async ({ page }) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toHaveAttribute('data-origin', 'card');
+  await expect(photoViewer(page)).toHaveAttribute('data-origin', 'card');
 });
 
 Then('the photo viewer should skip motion', async ({ page }) => {
-  const viewer = page.getByRole('dialog', { name: 'Photo viewer' });
+  const viewer = photoViewer(page);
   await expect(viewer).toHaveAttribute('data-reduced-motion', 'true');
   await expect(viewer).toHaveAttribute('data-viewer-motion', 'reduced');
 });
