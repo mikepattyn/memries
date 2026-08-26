@@ -125,7 +125,7 @@ export function Timeline({
         </p>
       </div>
 
-      <div className="sticky top-0 z-20 bg-cream/75 px-4 py-2 backdrop-blur-xl min-[640px]:px-6 min-[800px]:bg-surface/40">
+      <div className="sticky top-0 z-20 bg-cream/75 px-4 pb-2 pt-4 backdrop-blur-xl min-[640px]:px-6 min-[800px]:bg-surface/40">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <GranularitySelector value={granularity} onChange={handleGranularity} />
           {onRescan && (
