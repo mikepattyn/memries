@@ -14,13 +14,13 @@
     },
     "memries-empty-states": {
       "path": "apps/e2e/features/empty-states.feature",
-      "recordedAt": "2026-08-26T11:24:04.057Z",
-      "lastCommit": "1abf1ba3cb3faffb2db9826c346e614a6c14644a",
+      "recordedAt": "2026-08-26T11:50:38.997Z",
+      "lastCommit": "f9fe477a136506f811c0c2654bb628f176a5cdbb",
       "finding": {
         "status": "passed",
-        "summary": "6 passed",
+        "summary": "6 passed (16.6s)",
         "composeProject": "e2e-memries-empty-states",
-        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
+        "suiteCommit": "66b7e1a3240099a8b8211096052fac11060898d4"
       }
     },
     "memries-capture": {
