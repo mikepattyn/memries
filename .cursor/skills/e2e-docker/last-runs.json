@@ -77,6 +77,17 @@
         "composeProject": "e2e-memries-theme",
         "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
       }
+    },
+    "memries-long-press": {
+      "path": "e2e/features/long-press.feature",
+      "recordedAt": "2026-08-26T07:58:49.992Z",
+      "lastCommit": "8643b654af2d17e3837160ac86e6ab7f6ef36b59",
+      "finding": {
+        "status": "passed",
+        "summary": "2 passed",
+        "composeProject": "e2e-memries-long-press",
+        "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
+      }
     }
   }
 }
