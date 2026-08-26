@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
  * Plan, record, and close isolated Playwright feature runs for Memries.
+ * Children may author or update e2e/ coverage, then run the feature.
+ * The parent merges e2e/ commits; lastCommit advances only on pass.
  *
  * Usage:
- *   node scripts/e2e-docker.mjs plan [--force] [--app <id> ...] [--base <branch>]
- *   node scripts/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
- *   node scripts/e2e-docker.mjs close --here
- *   node scripts/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]
+ *   node scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--base <branch>]
+ *   node scripts/e2e-docker/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
+ *   node scripts/e2e-docker/e2e-docker.mjs close --here
+ *   node scripts/e2e-docker/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -27,11 +29,11 @@ import {
   e2eDiffPaths,
 } from './e2e-features.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const LAST_RUNS_REL = '.cursor/skills/e2e-docker/last-runs.json';
 const LAST_RUNS_PATH = join(ROOT, LAST_RUNS_REL);
 const SKILL_ID = 'e2e-docker';
-const MAX_LAUNCH = 4;
+export const MAX_LAUNCH = 20;
 const MAX_CHANGED_FILES = 40;
 const SUITES = [{ id: 'memries', path: '', featuresDir: 'e2e/features', gitlink: false }];
 
@@ -119,10 +121,10 @@ export function planE2eFeatures({
 
 function usage() {
   console.error(`Usage:
-  node scripts/e2e-docker.mjs plan [--force] [--app <id> ...] [--base <branch>]
-  node scripts/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
-  node scripts/e2e-docker.mjs close --here
-  node scripts/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]`);
+  node scripts/e2e-docker/e2e-docker.mjs plan [--force] [--app <id> ...] [--base <branch>]
+  node scripts/e2e-docker/e2e-docker.mjs record [--commit <sha>] [--finding <json>] <id> [<id> ...]
+  node scripts/e2e-docker/e2e-docker.mjs close --here
+  node scripts/e2e-docker/e2e-docker.mjs close [--base-worktree] [--base <branch>] <id> [<id> ...]`);
   process.exit(2);
 }
 
@@ -334,12 +336,31 @@ function closeSkill(ids, opts) {
   return closeOpenedWorktrees({
     branches,
     baseWorktree: opts.baseWorktree ? resolveBaseBranch(opts) : null,
-    deleteBranch: false,
+    deleteBranch: true,
     primaryPath,
     listPorcelain,
     runGit: (args, options) => git(args, options),
     ...closeHelpers(),
   });
+}
+
+export function buildE2ePlan(opts) {
+  return plan(opts);
+}
+
+export function recordE2eFindings(ids, opts) {
+  return record(ids, opts);
+}
+
+export function main(argv = process.argv.slice(2)) {
+  const { cmd, ids, opts } = parseArgs(argv);
+  let result;
+  if (cmd === 'plan') result = plan(opts);
+  else if (cmd === 'record') result = record(ids, opts);
+  else if (cmd === 'close') result = opts.here ? closeHere() : closeSkill(ids, opts);
+  else usage();
+  console.log(JSON.stringify(result, null, 2));
+  return result;
 }
 
 function parseArgs(argv) {
@@ -372,11 +393,5 @@ const isMain =
   Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
 
 if (isMain) {
-  const { cmd, ids, opts } = parseArgs(process.argv.slice(2));
-  let result;
-  if (cmd === 'plan') result = plan(opts);
-  else if (cmd === 'record') result = record(ids, opts);
-  else if (cmd === 'close') result = opts.here ? closeHere() : closeSkill(ids, opts);
-  else usage();
-  console.log(JSON.stringify(result, null, 2));
+  main();
 }

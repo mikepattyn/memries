@@ -65,4 +65,13 @@ There is no test suite yet. New tests belong next to those seams (`*_test.go` / 
 - `context-map` — before any feature or bug work
 - `tdd` — when adding tests
 - `responsive-frontend` — any visual change under `frontend/`
-- `e2e-docker` — one Docker Playwright feature per worktree (max 4 stacks; last-run finding per feature file). Shelf: [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/)
+- `page-accessibility` — WCAG work on one Memories / Albums / Search / viewer surface
+- `frontend-page-accessibility` / `frontend-lint` / `frontend-format` — React + Vite + Tailwind tree under `frontend/`
+- `backend-lint` / `backend-format` — Go (`gofmt` / `go vet`) under `backend/`
+- `platform-lint` / `platform-format` — `e2e/` and `scripts/`
+- `e2e-docker` — one Docker Playwright feature per worktree (max 20 stacks; setup + run + merge `e2e/` only). Shelf: [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/)
+- `platform-quality` — user-invoked only: page-accessibility → e2e-docker → lint → format. No scripts-to-node wave
+
+## Scripts
+
+New or edited scripts live in `scripts/<name>/` as a unit-tested Node `.mjs` plus Unix and PowerShell wrappers. See [`.cursor/rules/dual-shell-scripts.mdc`](.cursor/rules/dual-shell-scripts.mdc).

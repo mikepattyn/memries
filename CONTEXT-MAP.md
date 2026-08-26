@@ -14,7 +14,8 @@ Stay in this repository. Do not read or edit parent directories.
 | [0006](docs/adr/0006-truncate-arango-for-resync.md) | Truncate Arango for resync; keep photo volumes |
 | [0007](docs/adr/0007-viewport-forced-compact-thumbs.md) | Compact grids: 256 at viewport ≥1280px, else 512; no `srcset` |
 | [0008](docs/adr/0008-smart-date-search.md) | Search smart dates are SPA-parsed; `/api/photos` gets `month` / `local_from` / `local_to`; Filter opens Search |
-| [0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md) | `/e2e-docker` lives here: one feature file, one Compose project, last-runs in this repo |
+| [0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md) | `/e2e-docker` lives here: one feature file, one Compose project, setup + merge of `e2e/`, cap 20, last-runs in this repo |
+| [0010](docs/adr/0010-memries-platform-quality-shelf.md) | Local `/platform-quality`: a11y → e2e → lint → format; no scripts-to-node; dual-shell script rule |
 
 ## Contexts
 
@@ -25,6 +26,7 @@ Stay in this repository. Do not read or edit parent directories.
 | Timeline UI | [frontend/src](frontend/src) | [App.tsx](frontend/src/App.tsx) → [Timeline.tsx](frontend/src/components/Timeline.tsx) → [groupPhotos.ts](frontend/src/lib/groupPhotos.ts); catalog in [lib/api.ts](frontend/src/lib/api.ts) |
 | Local ops | [docker-compose.yml](docker-compose.yml), [deploy/](deploy/), [Makefile](Makefile) | Caddy routes; Dex issuer `http://localhost:5556`; catalog reset [docs/adr/0006-truncate-arango-for-resync.md](docs/adr/0006-truncate-arango-for-resync.md) |
 | Isolated Playwright BDD | [e2e/](e2e/) | One feature per Compose project ([0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md)); skill [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/) |
+| Quality shelf | [`.cursor/skills/`](.cursor/skills/) | `/platform-quality` waves and last-runs ([0010](docs/adr/0010-memries-platform-quality-shelf.md)); planner [`scripts/app-fanout/app-fanout.mjs`](scripts/app-fanout/app-fanout.mjs) |
 
 ```mermaid
 flowchart LR

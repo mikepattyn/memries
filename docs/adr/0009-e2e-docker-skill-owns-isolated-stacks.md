@@ -16,13 +16,14 @@ ADR 0001 said not to copy a global skill into this tree. That still holds for `c
 
 ## Decision
 
-1. The skill shelf is [`.cursor/skills/e2e-docker/`](../../.cursor/skills/e2e-docker/). Plan, record, and close run as `node scripts/e2e-docker.mjs`.
-2. Isolation is `MEMRIES_E2E_PROJECT`, `MEMRIES_E2E_FEATURE`, and the `*_HOST_PORT` band starting at 19000. Defaults in `e2e/scripts/stack.mjs` stay on `memries-e2e` / 18080 for `make e2e`.
-3. `lastCommit` is this repo's SHA and only advances when the finding passed.
-4. The Platform umbrella references this path and records into this `last-runs.json`.
+1. The skill shelf is [`.cursor/skills/e2e-docker/`](../../.cursor/skills/e2e-docker/). Plan, record, and close run as `node scripts/e2e-docker/e2e-docker.mjs`. `/platform-quality` wave 1 uses the same `planE2eFeatures` via `scripts/app-fanout/app-fanout.mjs`.
+2. Isolation is `MEMRIES_E2E_PROJECT`, `MEMRIES_E2E_FEATURE`, and the `*_HOST_PORT` band starting at 19000. Defaults in `e2e/scripts/stack.mjs` stay on `memries-e2e` / 18080 for `make e2e`. Fan-out caps at **20** stacks (stride 20).
+3. Children may author or update `e2e/features` and `e2e/steps` for that feature, then run it. They never edit `frontend/` or `backend/`. The parent merges `e2e/` commits even when the run failed so lint/format can see the setup.
+4. `lastCommit` is this repo's SHA and only advances when the finding passed.
+5. The Platform umbrella may reference this path and record into this `last-runs.json`.
 
 ## Consequences
 
 - Opening Memries as its own workspace is enough to run `/e2e-docker`.
 - A checked-out gitlink is enough for the umbrella to plan; it must not write last-runs into the umbrella tree.
-- Children stay run-only. Product fixes are a later chat.
+- Children may change `e2e/` coverage for that feature. Product fixes under `frontend/` or `backend/` are a later chat.

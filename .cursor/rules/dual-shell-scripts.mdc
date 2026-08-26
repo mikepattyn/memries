@@ -1,0 +1,35 @@
+---
+description: Node implementation plus Unix and PowerShell wrappers for every script
+globs:
+  - scripts/**
+  - e2e/scripts/**
+  - **/*.sh
+  - **/*.ps1
+---
+
+# Dual shell scripts
+
+When creating or materially editing a script, ship a **Node implementation** (`.mjs`) plus **both** a Unix (`.sh`) and PowerShell (`.ps1`) wrapper with the same basename. The shells start Node; they do not duplicate the logic. There is no `scripts-to-node` convert wave in this repo.
+
+## Rules
+
+1. **Own folder** — Each script family under `scripts/` (or `e2e/scripts/`) lives in a folder named after the stem. Do not add new loose `.mjs` / `.sh` / `.ps1` files directly in `scripts/`. Helpers that are not their own CLI stay in that folder. When you materially edit an existing loose trio, move it into `scripts/<name>/` in the same change.
+
+```
+scripts/<name>/<name>.mjs
+scripts/<name>/<name>.test.mjs
+scripts/<name>/<name>.sh
+scripts/<name>/<name>.ps1
+```
+
+2. **Node is the implementation** — Behavior lives in `<name>.mjs` (ESM, `#!/usr/bin/env node`, `node:` builtins). Export `main(argv)` so tests can import it.
+
+3. **Shells are wrappers only** — Creating or editing one of `.sh` / `.ps1` means creating or updating the other in the same directory with the same basename. Both must only exec the sibling `.mjs`.
+
+4. **Tests run Node** — Add `<name>.test.mjs` and run `node --test`. Spawn `process.execPath` on the `.mjs` or call `main`. Do not use bash/pwsh as the test runner.
+
+5. **Equivalent CLI** — Same args, exit codes, and outcomes. Wrappers forward `"$@"` / `@args`.
+
+6. **Edit the trio** — Bugfixes and behavior changes go in the `.mjs` (and its test). Update wrappers only if the launch convention changed.
+
+7. **Makefile call sites** — If a target should run the script, use the existing `SCRIPT_SHELL` / `SCRIPT_EXT` / `SCRIPT_RUN` pattern and the folder path (`./scripts/<name>/<name>.$(SCRIPT_EXT)`). Tests still call Node.

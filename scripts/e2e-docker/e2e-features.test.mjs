@@ -86,7 +86,7 @@ describe('discoverE2eFeatures', () => {
   });
 
   it('discovers checked-out feature files', () => {
-    const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
     const dir = join(root, 'e2e', 'features');
     if (!existsSync(dir)) return;
     const files = readdirSync(dir).filter((name) => name.endsWith('.feature'));
