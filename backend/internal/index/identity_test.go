@@ -41,8 +41,8 @@ func TestResolveIdentityCreatesWhenUnknown(t *testing.T) {
 
 func TestCaptureChangedDetectsLocalClockDrift(t *testing.T) {
 	p := db.Photo{
-		TakenAt:      time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-		TakenAtLocal: "2024-01-01T00:00:00",
+		TakenAt:       time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+		TakenAtLocal:  "2024-01-01T00:00:00",
 		TakenAtSource: SourceMtime,
 	}
 	next := Capture{TakenAt: p.TakenAt, TakenAtLocal: "2024-06-01T00:00:00", Source: SourceMtime}
