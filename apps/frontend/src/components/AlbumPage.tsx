@@ -30,7 +30,7 @@ export function AlbumPage({
       </button>
 
       {query.isPending && (
-        <p className="mt-10 text-center text-sm text-ink/60" role="status" aria-live="polite">
+        <p className="mt-10 text-center text-sm text-ink" role="status">
           Opening this album…
         </p>
       )}
@@ -55,11 +55,13 @@ export function AlbumPage({
           <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">
             {album.name}
           </h1>
-          <p className="mt-1 text-sm text-ink/60">
+          <p className="mt-1 text-sm text-ink">
             {album.photoCount} {album.photoCount === 1 ? 'photo' : 'photos'}
           </p>
           {photos.length === 0 ? (
-            <p className="mt-10 text-center text-sm text-ink/60">No photos in this album yet.</p>
+            <p className="mt-10 text-center text-sm text-ink" role="status">
+              No photos in this album yet.
+            </p>
           ) : (
             <div className="mt-5">
               <PhotoGrid

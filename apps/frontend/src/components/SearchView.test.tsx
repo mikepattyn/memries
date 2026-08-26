@@ -25,8 +25,12 @@ describe('SearchView', () => {
       />,
     );
     expect(screen.getByRole('heading', { level: 1, name: 'Search' })).toBeTruthy();
-    expect(screen.getByRole('searchbox', { name: 'Search memories' })).toBeTruthy();
+    expect(screen.getByRole('search')).toContainElement(
+      screen.getByRole('searchbox', { name: 'Search memories' }),
+    );
     expect(screen.getByRole('button', { name: 'Years' })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('list', { name: 'Search suggestions' })).toBeTruthy();
+    expect(screen.getByRole('status')).toHaveTextContent('No memories match that search.');
   });
 
   it('exposes year facets as a labelled group', () => {

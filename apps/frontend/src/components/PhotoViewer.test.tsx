@@ -22,10 +22,16 @@ describe('PhotoViewer', () => {
       />,
     );
     const title = `${formatCompactDate(photo.takenAt)} · ${formatTime(photo.takenAt)}`;
-    expect(screen.getByRole('dialog', { name: title })).toBeTruthy();
+    const dialog = screen.getByRole('dialog', { name: title });
+    expect(dialog).toBeTruthy();
+    expect(dialog).toHaveAttribute('aria-describedby', 'viewer-position');
     expect(screen.getByRole('heading', { level: 2, name: title })).toBeTruthy();
     expect(screen.getByRole('img')).toHaveAttribute('alt', photoViewerAlt(photo));
     expect(screen.getByRole('status')).toHaveTextContent('1 of 1');
     expect(screen.getByRole('button', { name: 'Close photo' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Add to favorites' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
   });
 });

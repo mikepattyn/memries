@@ -196,6 +196,7 @@ export function PhotoViewer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="viewer-title"
+        aria-describedby="viewer-position"
         aria-hidden={albumPickerOpen || undefined}
         data-viewer-motion={motion}
         data-viewer-day={formatDayLabel(photo.takenAt)}
@@ -246,7 +247,7 @@ export function PhotoViewer({
 
           <h2
             id="viewer-title"
-            className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/60"
+            className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/80"
           >
             {formatCompactDate(photo.takenAt)} · {formatTime(photo.takenAt)}
           </h2>
@@ -321,9 +322,9 @@ export function PhotoViewer({
           </div>
 
           <p
-            className="shrink-0 text-center text-xs text-white/55"
+            id="viewer-position"
+            className="shrink-0 text-center text-xs text-white/80"
             role="status"
-            aria-live="polite"
           >
             {index + 1} of {photos.length}
           </p>

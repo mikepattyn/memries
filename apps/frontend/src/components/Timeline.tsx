@@ -120,7 +120,7 @@ export function Timeline({
             </button>
           )}
         </div>
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink/70">
+        <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink">
           A quiet place for the days you want to keep.
         </p>
       </div>
@@ -133,7 +133,7 @@ export function Timeline({
               type="button"
               onClick={onRescan}
               disabled={rescanning}
-              className="min-h-9 rounded-full px-3 text-xs font-medium text-ink/60 transition hover:text-plum disabled:opacity-50"
+              className="min-h-9 rounded-full px-3 text-xs font-medium text-ink transition hover:text-plum disabled:opacity-50"
             >
               {rescanning ? 'Syncing…' : 'Sync folder'}
             </button>
@@ -143,14 +143,14 @@ export function Timeline({
           <div className="relative mt-2 min-h-4 px-1">
             {outgoingPeriod && (
               <span
-                className="period-out pointer-events-none absolute inset-x-1 text-xs font-medium text-ink/65"
+                className="period-out pointer-events-none absolute inset-x-1 text-xs font-medium text-ink"
                 aria-hidden
               >
                 {outgoingPeriod}
               </span>
             )}
             <p
-              className={`text-xs font-medium text-ink/65 ${reducedMotion || !outgoingPeriod ? '' : 'period-in'}`}
+              className={`text-xs font-medium text-ink ${reducedMotion || !outgoingPeriod ? '' : 'period-in'}`}
               aria-live="polite"
               aria-label="Current period"
               data-current-period
@@ -165,7 +165,7 @@ export function Timeline({
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {groups.length === 0 ? (
           <div className="flex flex-col items-center px-6 py-12 text-center" role="status">
-            <p className="text-ink/70">No memories here yet.</p>
+            <p className="text-ink">No memories here yet.</p>
             {onRescan && (
               <button
                 type="button"
@@ -227,13 +227,13 @@ export function Timeline({
                   enabled={!!hasNextPage && !isFetchingNextPage && !fetchError}
                 />
                 {isFetchingNextPage && (
-                  <p className="py-3 text-center text-sm text-ink/60" aria-live="polite">
+                  <p className="py-3 text-center text-sm text-ink" role="status">
                     Loading more memories…
                   </p>
                 )}
                 {fetchError && (
                   <div className="flex flex-col items-center gap-3 py-4 text-center" role="alert">
-                    <p className="text-sm text-ink/65">More memories did not load.</p>
+                    <p className="text-sm text-ink">More memories did not load.</p>
                     <button
                       type="button"
                       onClick={() => fetchNextPage?.()}

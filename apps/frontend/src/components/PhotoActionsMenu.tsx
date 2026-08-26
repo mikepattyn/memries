@@ -105,11 +105,11 @@ export function PhotoActionsMenu({
         </div>
       ) : (
         <div role="group" aria-label="Add to album" className="mt-1 border-t border-plum/10 pt-1">
-          <p className="px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] text-ink/50">
+          <p className="px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] text-ink">
             Add to album
           </p>
           {albums.length === 0 ? (
-            <p className="px-3 pb-2 text-sm text-ink/60">
+            <p className="px-3 pb-2 text-sm text-ink">
               No albums yet. Create one from the Albums tab.
             </p>
           ) : (
@@ -126,10 +126,10 @@ export function PhotoActionsMenu({
                     className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-3 text-left text-sm text-plum transition hover:bg-cream/80"
                   >
                     <span className="flex min-w-0 items-center gap-2">
-                      <AlbumIcon className="h-4 w-4 shrink-0 text-ink/45" />
+                      <AlbumIcon className="h-4 w-4 shrink-0 text-ink" />
                       <span className="truncate">{album.name}</span>
                     </span>
-                    <span className="shrink-0 text-xs text-ink/55">{album.photoCount}</span>
+                    <span className="shrink-0 text-xs text-ink">{album.photoCount}</span>
                   </button>
                 </li>
               ))}
@@ -141,7 +141,7 @@ export function PhotoActionsMenu({
       <button
         type="button"
         onClick={onClose}
-        className="mt-2 flex min-h-11 w-full items-center justify-center gap-1 rounded-full bg-cream text-sm font-medium text-ink/70"
+        className="mt-2 flex min-h-11 w-full items-center justify-center gap-1 rounded-full bg-cream text-sm font-medium text-ink"
       >
         Close
         <ChevronRightIcon className="h-4 w-4 rotate-90 min-[640px]:hidden" />

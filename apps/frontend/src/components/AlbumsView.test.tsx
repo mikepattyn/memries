@@ -16,5 +16,13 @@ describe('AlbumsView', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Albums' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'New album' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Open album Summer, 2 photos' })).toBeTruthy();
+    expect(screen.getByRole('list')).toContainElement(
+      screen.getByRole('button', { name: 'Open album Summer, 2 photos' }),
+    );
+  });
+
+  it('announces when there are no Albums yet', () => {
+    render(<AlbumsView albums={[]} onCreate={() => {}} onOpen={() => {}} creating={false} />);
+    expect(screen.getByRole('status')).toHaveTextContent('No albums yet.');
   });
 });

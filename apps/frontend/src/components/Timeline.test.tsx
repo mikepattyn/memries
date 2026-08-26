@@ -10,5 +10,7 @@ describe('Timeline', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Your memries' })).toBeTruthy();
     expect(screen.getByRole('radiogroup', { name: 'Group memories by' })).toBeTruthy();
     expect(screen.getByRole('status')).toHaveTextContent('No memories here yet.');
+    expect(screen.getByRole('radio', { name: 'Year' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: 'Month' })).toHaveAttribute('aria-checked', 'true');
   });
 });

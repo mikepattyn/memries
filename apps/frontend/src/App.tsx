@@ -154,7 +154,7 @@ export default function App() {
               <p className="font-display text-2xl font-semibold tracking-tight">
                 We could not load your photos
               </p>
-              <p className="mt-2 max-w-xs text-sm text-ink/65">
+              <p className="mt-2 max-w-xs text-sm text-ink">
                 Something went quietly wrong. You can try again in a moment.
               </p>
               <button

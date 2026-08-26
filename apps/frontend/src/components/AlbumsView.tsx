@@ -36,68 +36,84 @@ export function AlbumsView({
       <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">
         Albums
       </h1>
-      <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink/70">
+      <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink">
         Gather a handful of days into a set you can return to.
       </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 min-[800px]:grid-cols-3 min-[1280px]:grid-cols-4">
-        {drafting ? (
-          <form
-            data-album-form
-            className="animate-form-in col-span-2 flex min-h-[11.5rem] flex-col justify-between rounded-[1.4rem] bg-surface/70 p-4 shadow-soft min-[800px]:col-span-1"
-            onSubmit={(event) => {
-              event.preventDefault();
-              submit();
-            }}
-          >
-            <label className="text-sm font-medium text-plum">
-              Album name
-              <input
-                ref={inputRef}
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Summer, the house, Tuesday…"
-                className="mt-2 h-11 w-full rounded-2xl bg-cream px-3 text-sm text-plum outline-none ring-1 ring-plum/10 placeholder:text-ink/40"
-              />
-            </label>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="submit"
-                disabled={!name.trim() || creating}
-                className="min-h-11 rounded-full bg-plum px-4 text-sm font-medium text-cream disabled:opacity-40"
-              >
-                Create
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setDrafting(false);
-                  setName('');
-                }}
-                className="min-h-11 rounded-full bg-surface px-4 text-sm font-medium text-ink/70"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setDrafting(true)}
-            className="flex min-h-[11.5rem] flex-col items-center justify-center gap-3 rounded-[1.4rem] border border-dashed border-plum/20 bg-surface/40 px-4 text-center transition duration-200 hover:border-peach/70 hover:bg-surface/70 active:scale-[0.99]"
-          >
-            <span className="grid h-11 w-11 place-items-center rounded-full bg-surface text-plum shadow-soft">
-              <PlusIcon className="h-5 w-5" />
-            </span>
-            <span className="text-sm font-medium">New album</span>
-          </button>
-        )}
+      {creating && (
+        <p className="sr-only" role="status">
+          Creating album…
+        </p>
+      )}
+
+      {albums.length === 0 && !drafting && (
+        <p className="mt-4 text-sm text-ink" role="status">
+          No albums yet.
+        </p>
+      )}
+
+      <ul className="mt-6 grid list-none grid-cols-2 gap-3 p-0 min-[800px]:grid-cols-3 min-[1280px]:grid-cols-4">
+        <li className={drafting ? 'col-span-2 min-[800px]:col-span-1' : undefined}>
+          {drafting ? (
+            <form
+              data-album-form
+              className="animate-form-in flex min-h-[11.5rem] flex-col justify-between rounded-[1.4rem] bg-surface/70 p-4 shadow-soft"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submit();
+              }}
+            >
+              <label className="text-sm font-medium text-plum">
+                Album name
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Summer, the house, Tuesday…"
+                  className="mt-2 h-11 w-full rounded-2xl bg-cream px-3 text-sm text-plum outline-none ring-1 ring-plum/10 placeholder:text-ink"
+                />
+              </label>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  disabled={!name.trim() || creating}
+                  className="min-h-11 rounded-full bg-plum px-4 text-sm font-medium text-cream disabled:opacity-40"
+                >
+                  {creating ? 'Creating…' : 'Create'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrafting(false);
+                    setName('');
+                  }}
+                  className="min-h-11 rounded-full bg-surface px-4 text-sm font-medium text-ink"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setDrafting(true)}
+              className="flex min-h-[11.5rem] w-full flex-col items-center justify-center gap-3 rounded-[1.4rem] border border-dashed border-plum/20 bg-surface/40 px-4 text-center transition duration-200 hover:border-peach/70 hover:bg-surface/70 active:scale-[0.99]"
+            >
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-surface text-plum shadow-soft">
+                <PlusIcon className="h-5 w-5" />
+              </span>
+              <span className="text-sm font-medium">New album</span>
+            </button>
+          )}
+        </li>
 
         {albums.map((album) => (
-          <AlbumCard key={album.id} album={album} onOpen={onOpen} />
+          <li key={album.id}>
+            <AlbumCard album={album} onOpen={onOpen} />
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -130,7 +146,7 @@ function AlbumCard({ album, onOpen }: { album: Album; onOpen: (album: Album) => 
         </div>
         <div className="px-3 py-3">
           <p className="truncate text-sm font-semibold text-plum">{album.name}</p>
-          <p className="mt-0.5 text-xs text-ink/60">{countLabel}</p>
+          <p className="mt-0.5 text-xs text-ink">{countLabel}</p>
         </div>
       </button>
     </article>

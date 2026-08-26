@@ -15,11 +15,16 @@ describe('TimelineSection', () => {
         }}
         granularity="month"
         onOpen={() => {}}
+        onActions={() => {}}
         showHeading
       />,
     );
     const heading = screen.getByRole('heading', { level: 2, name: 'August 2026' });
     expect(heading).toHaveAttribute('id', 'period-2026-08');
     expect(heading.closest('section')).toHaveAttribute('aria-labelledby', 'period-2026-08');
+    expect(screen.getByRole('button', { name: /Open photo/ })).toHaveAttribute(
+      'aria-haspopup',
+      'dialog',
+    );
   });
 });

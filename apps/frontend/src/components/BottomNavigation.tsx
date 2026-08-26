@@ -45,7 +45,7 @@ function NavButton({
           ? 'bg-surface/80 text-plum shadow-soft'
           : selected
             ? 'text-plum'
-            : 'text-ink/55 hover:text-plum'
+            : 'text-ink hover:text-plum'
       }`}
     >
       {item.id === 'favorites' ? (

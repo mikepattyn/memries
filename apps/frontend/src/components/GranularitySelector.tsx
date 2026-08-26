@@ -72,7 +72,7 @@ export function GranularitySelector({
               }
             }}
             className={`relative z-10 min-h-11 rounded-full px-2 text-sm font-medium transition-colors duration-200 ${
-              checked ? 'text-plum' : 'text-ink/60 hover:text-plum'
+              checked ? 'text-plum' : 'text-ink hover:text-plum'
             }`}
           >
             {option.label}

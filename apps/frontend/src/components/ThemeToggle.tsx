@@ -24,7 +24,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
     <button
       type="button"
       onClick={toggle}
-      className="flex min-h-11 w-full items-center justify-between gap-2 rounded-2xl px-3 py-2 text-sm font-medium text-ink/70 transition duration-200 hover:bg-surface/70 hover:text-plum hover:rotate-0 active:scale-[0.98]"
+      className="flex min-h-11 w-full items-center justify-between gap-2 rounded-2xl px-3 py-2 text-sm font-medium text-ink transition duration-200 hover:bg-surface/70 hover:text-plum hover:rotate-0 active:scale-[0.98]"
       aria-label={label}
       data-theme-toggle
     >

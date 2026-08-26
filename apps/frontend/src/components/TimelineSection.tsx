@@ -32,7 +32,7 @@ export function TimelineSection({
           >
             {group.label}
           </h2>
-          <p className="mt-0.5 text-sm text-ink/60">{group.sublabel}</p>
+          <p className="mt-0.5 text-sm text-ink">{group.sublabel}</p>
         </header>
       )}
       <PhotoGrid

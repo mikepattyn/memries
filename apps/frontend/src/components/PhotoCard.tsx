@@ -84,8 +84,9 @@ export function PhotoCard({
                 : undefined,
         }}
         aria-label={ariaLabel}
+        aria-haspopup={onActions ? 'dialog' : undefined}
       >
-        {showImage && !loaded && <span className="skeleton absolute inset-0" />}
+        {showImage && !loaded && <span className="skeleton absolute inset-0" aria-hidden />}
         {showImage && (
           <img
             src={src}

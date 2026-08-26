@@ -26,6 +26,7 @@ describe('AlbumPage', () => {
     render(<AlbumPage albumId="a1" onBack={() => {}} onOpen={() => {}} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Summer' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Back to albums' })).toBeTruthy();
+    expect(screen.getByRole('status')).toHaveTextContent('No photos in this album yet.');
   });
 
   it('announces a failed Album load', () => {
