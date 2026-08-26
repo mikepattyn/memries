@@ -1,0 +1,18 @@
+{
+  "name": "memries-scripts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Memries quality-shelf planner and local ops scripts",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2"
+  }
+}
