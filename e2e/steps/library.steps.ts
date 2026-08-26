@@ -7,6 +7,7 @@ import {
   markFixturesDirty,
   openTab,
   photoByDay,
+  photoViewer,
   revealPhoto,
   runPrepareFixtures,
   scrollTimeline,
@@ -220,21 +221,21 @@ When('I open the photo from {string}', async ({ page }, day: string) => {
     const photo = photoByDay(page, day).first();
     await expect(photo).toBeVisible();
     await photo.click();
-    await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+    await expect(photoViewer(page)).toBeVisible();
     return;
   }
   await openTab(page, 'Memories');
   const photo = await revealPhoto(page, day);
   await photo.click();
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+  await expect(photoViewer(page)).toBeVisible();
 });
 
 Then('the photo viewer is open', async ({ page }) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+  await expect(photoViewer(page)).toBeVisible();
 });
 
 Then('the photo viewer is closed', async ({ page }) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toHaveCount(0);
+  await expect(photoViewer(page)).toHaveCount(0);
 });
 
 When('I add the viewer photo to favorites', async ({ page }) => {
