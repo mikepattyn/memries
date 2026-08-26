@@ -143,6 +143,17 @@
         "composeProject": "e2e-memries-search",
         "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
       }
+    },
+    "memries-viewer-keyboard": {
+      "path": "e2e/features/viewer-keyboard.feature",
+      "recordedAt": "2026-08-26T08:14:02.363Z",
+      "lastCommit": "e32357d6818a57d77d1d3c143959465cbf1b6664",
+      "finding": {
+        "status": "passed",
+        "summary": "12 passed",
+        "composeProject": "e2e-memries-viewer-keyboard",
+        "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
+      }
     }
   }
 }
