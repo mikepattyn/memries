@@ -1,8 +1,21 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { testPhoto } from '../test/fixtures';
 import { Timeline } from './Timeline';
 
 describe('Timeline', () => {
+  it('pins the first Timeline Group as the current period', () => {
+    render(
+      <Timeline
+        photos={[testPhoto({ takenAt: '2024-12-12T10:00:00' })]}
+        granularity="month"
+        onGranularityChange={() => {}}
+        onOpen={() => {}}
+      />,
+    );
+    expect(screen.getByLabelText('Current period')).toHaveTextContent('December 2024');
+  });
+
   it('uses a page heading and names the granularity group', () => {
     render(
       <Timeline photos={[]} granularity="month" onGranularityChange={() => {}} onOpen={() => {}} />,

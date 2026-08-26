@@ -3,6 +3,7 @@ import { VList, type VListHandle } from 'virtua';
 import { groupPhotos, nearestGroupIndex } from '../lib/groupPhotos';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import type { Granularity, Photo } from '../models/photo';
+import { CurrentPeriod } from './CurrentPeriod';
 import { GranularitySelector } from './GranularitySelector';
 import { PhotoSkeleton } from './PhotoSkeleton';
 import { TimelineSection } from './TimelineSection';
@@ -40,9 +41,12 @@ export function Timeline({
   const listRef = useRef<VListHandle>(null);
   const anchorRef = useRef<string | null>(null);
   const [activeLabel, setActiveLabel] = useState(groups[0]?.label ?? '');
-  const [periodLabel, setPeriodLabel] = useState(groups[0]?.label ?? '');
-  const [outgoingPeriod, setOutgoingPeriod] = useState<string | null>(null);
+  const [periodDirection, setPeriodDirection] = useState<'older' | 'newer'>('older');
+  const [scrolling, setScrolling] = useState(false);
   const [showToday, setShowToday] = useState(false);
+  const startIndexRef = useRef(0);
+  const lastOffsetRef = useRef(0);
+  const scrollIdleRef = useRef<number | undefined>(undefined);
 
   const orderedPhotos = useMemo(() => groups.flatMap((group) => group.photos), [groups]);
 
@@ -56,9 +60,11 @@ export function Timeline({
     const current = groupsRef.current;
     const nextLabel = current[0]?.label ?? '';
     setActiveLabel(nextLabel);
-    setPeriodLabel(nextLabel);
-    setOutgoingPeriod(null);
+    setPeriodDirection('older');
+    setScrolling(false);
     setShowToday(false);
+    startIndexRef.current = 0;
+    lastOffsetRef.current = 0;
     const anchor = anchorRef.current;
     if (!anchor || !listRef.current || current.length === 0) return;
     const index = nearestGroupIndex(current, anchor);
@@ -77,21 +83,14 @@ export function Timeline({
     onGranularityChange(next);
   };
 
-  if (activeLabel && activeLabel !== periodLabel) {
-    if (reducedMotion) {
-      setPeriodLabel(activeLabel);
-      setOutgoingPeriod(null);
-    } else {
-      setOutgoingPeriod(periodLabel);
-      setPeriodLabel(activeLabel);
-    }
-  }
+  const markScrolling = useCallback(() => {
+    if (reducedMotion) return;
+    setScrolling(true);
+    window.clearTimeout(scrollIdleRef.current);
+    scrollIdleRef.current = window.setTimeout(() => setScrolling(false), 340);
+  }, [reducedMotion]);
 
-  useEffect(() => {
-    if (!outgoingPeriod) return;
-    const timer = window.setTimeout(() => setOutgoingPeriod(null), 280);
-    return () => window.clearTimeout(timer);
-  }, [outgoingPeriod]);
+  useEffect(() => () => window.clearTimeout(scrollIdleRef.current), []);
 
   const openFrom = (photo: Photo, origin: HTMLElement) => {
     onOpen(photo, origin, orderedPhotos);
@@ -139,26 +138,14 @@ export function Timeline({
             </button>
           )}
         </div>
-        {periodLabel && (
-          <div className="relative mt-2 min-h-4 px-1">
-            {outgoingPeriod && (
-              <span
-                className="period-out pointer-events-none absolute inset-x-1 text-xs font-medium text-ink"
-                aria-hidden
-              >
-                {outgoingPeriod}
-              </span>
-            )}
-            <p
-              className={`text-xs font-medium text-ink ${reducedMotion || !outgoingPeriod ? '' : 'period-in'}`}
-              aria-live="polite"
-              aria-label="Current period"
-              data-current-period
-              data-period-motion={outgoingPeriod ? 'crossfade' : 'idle'}
-            >
-              {periodLabel}
-            </p>
-          </div>
+        {activeLabel && (
+          <CurrentPeriod
+            key={granularity}
+            label={activeLabel}
+            scrolling={scrolling}
+            direction={periodDirection}
+            reducedMotion={reducedMotion}
+          />
         )}
       </div>
 
@@ -206,6 +193,12 @@ export function Timeline({
                 const handle = listRef.current;
                 const start = handle?.findStartIndex() ?? 0;
                 setShowToday(offset > 280 && start > 0);
+                if (start !== startIndexRef.current) {
+                  setPeriodDirection(start > startIndexRef.current ? 'older' : 'newer');
+                  startIndexRef.current = start;
+                }
+                if (Math.abs(offset - lastOffsetRef.current) > 2) markScrolling();
+                lastOffsetRef.current = offset;
                 const label = groups[start]?.label;
                 if (label) setActiveLabel(label);
                 if (start >= Math.max(0, groups.length - 2)) requestNextPage();
