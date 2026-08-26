@@ -162,10 +162,7 @@ describe('planUmbrellaWaves', () => {
       baseBranch: 'main',
       head: 'abc',
     });
-    assert.deepEqual(
-      plan.steps,
-      ['page-accessibility', 'e2e', 'lint', 'format'],
-    );
+    assert.deepEqual(plan.steps, ['page-accessibility', 'e2e', 'lint', 'format']);
     assert.equal(plan.waves[1].step, 'e2e');
     assert.equal(plan.waves[1].launchNow[0].featureFile, 'login.feature');
     assert.equal(plan.waves[1].launchNow[0].composeProject, 'e2e-memries-login');

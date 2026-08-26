@@ -93,7 +93,8 @@ describe('discoverE2eFeatures', () => {
     if (!files.includes('timeline.feature')) return;
     const apps = discoverE2eFeatures({
       suites: [localSuite],
-      listFeatures: (rel) => readdirSync(join(root, rel)).filter((name) => name.endsWith('.feature')),
+      listFeatures: (rel) =>
+        readdirSync(join(root, rel)).filter((name) => name.endsWith('.feature')),
     });
     assert.ok(apps.some((a) => a.id === 'memries-timeline'));
     assert.equal(apps.length, files.length);
