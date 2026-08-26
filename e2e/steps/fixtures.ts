@@ -84,7 +84,7 @@ export function photoByDay(page: Page, day: string): Locator {
   return page.getByRole('button', { name: new RegExp(`Open (favorited )?photo, ${escapeRegExp(day)}`) });
 }
 
-/** Viewer dialog is labelled by the capture heading, not a fixed "Photo viewer" name. */
+/** Viewer dialog is labelled by the capture title, not a fixed "Photo viewer" name. */
 export function photoViewer(page: Page): Locator {
   return page.locator('[role="dialog"][data-viewer-day]');
 }
