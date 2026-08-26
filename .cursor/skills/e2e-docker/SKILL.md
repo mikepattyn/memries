@@ -14,7 +14,7 @@ description: >-
 
 Reusable **orchestrator** for this repository. Each child owns **one feature file**: author or update coverage under `apps/e2e/` if it is missing, then run that feature against its own Compose project. Children never edit `apps/frontend/` or `apps/backend/`.
 
-Planning uses [`apps/scripts/e2e-docker/e2e-docker.mjs`](../../../apps/scripts/e2e-docker/e2e-docker.mjs). Discovery lives in [`apps/scripts/e2e-docker/e2e-features.mjs`](../../../apps/scripts/e2e-docker/e2e-features.mjs). Isolation env is owned by [`apps/e2e/scripts/stack.mjs`](../../../apps/e2e/scripts/stack.mjs). `/platform-quality` wave 1 calls the same `planE2eFeatures` via [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs).
+Planning uses [`apps/scripts/e2e-docker/e2e-docker.mjs`](../../../apps/scripts/e2e-docker/e2e-docker.mjs). Discovery lives in [`apps/scripts/e2e-docker/e2e-features.mjs`](../../../apps/scripts/e2e-docker/e2e-features.mjs). Isolation env is owned by [`apps/e2e/scripts/stack.mjs`](../../../apps/e2e/scripts/stack.mjs). Exclusive four-slot leases live in [`apps/e2e/scripts/e2e-slots.mjs`](../../../apps/e2e/scripts/e2e-slots.mjs). `/platform-quality` wave 1 calls the same `planE2eFeatures` via [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs).
 
 ## Progress
 
@@ -39,7 +39,8 @@ Progress:
 - Launch **only** `launchNow` (at most **4**, the current slice). Task description = `e2e-docker-<id>`
 - Do **not** invoke `platform-quality`
 - Features come in sequential slices of 4: **1.1**, then **1.2**, then **1.3**, …. Never start the next slice while this one is running
-- If `deferred` is non-empty, merge + close + record the finished slice and re-plan `--wave 1.2` (then `1.3`, …). Do not launch preview slices from the same plan
+- Each child owns one distinct slot (`19000–19004`, `19020–19024`, `19040–19044`, `19060–19064`). Do not wait or poll for a claimed slot; if `stack up` fails because another project holds it, return a failed finding and close
+- If `deferred` is non-empty, merge + close + record the finished slice and re-plan `--wave 1.2` (then `1.3`, …). Do not launch preview slices from the same plan. `plan` returns empty `launchNow` and a `hint` while any prior slot lease is still active — do not begin the next slice until those leases are released
 - Docker Desktop must be running. The plan skips with `docker-unavailable` when it is not
 - Merge e2e/ commits even when the run failed so lint/format can see the setup. `lastCommit` still advances **only on pass**
 - `/e2e-docker --force` (or “fresh / all features / prove the suite”) re-runs **every** discovered feature in its own stack, including passed `no-diff` rows, then records last-runs again
@@ -73,7 +74,7 @@ The plan's `launchNow` is slice **1.1** (at most 4). Later slices appear on `wav
 
 `--force` marks every discovered feature `needs-run` (reason `force`), including rows that would otherwise be `up-to-date` (`no-diff` after a passed finding). Each feature still gets its own worktree and Compose project. After each child, record last-runs as usual so `recordedAt` / `lastCommit` / `finding` refresh. `--force --app memries-timeline` refreshes one feature only.
 
-Treat `status: "needs-run"` as work. Skip `up-to-date` (`no-diff` after a passed finding) and `skipped` (`docker-unavailable`, missing path) unless the plan was forced. If `launchNow` is empty, report that (and the plan `hint` if present) and stop. Fill `{{BASE_BRANCH}}` from the plan.
+Treat `status: "needs-run"` as work. Skip `up-to-date` (`no-diff` after a passed finding) and `skipped` (`docker-unavailable`, missing path) unless the plan was forced. If `launchNow` is empty, report that (and the plan `hint` if present) and stop — including when the hint says the 19000 band is still held. Fill `{{BASE_BRANCH}}` from the plan.
 
 Each `launchNow` row includes `featureFile`, `suiteCommit`, `composeProject`, `origin`, and `ports`. Pass those into the child prompt.
 

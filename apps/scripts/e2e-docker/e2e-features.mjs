@@ -3,9 +3,7 @@
  * One row per `.feature` file. Isolation (compose project + ports) is assigned
  * by launch index so parallel Docker stacks do not collide.
  */
-
-const FANOUT_PORT_BASE = 19000;
-const FANOUT_PORT_STRIDE = 20;
+import { isolationForSlot } from '../../e2e/scripts/e2e-slots.mjs';
 
 export function posix(p) {
   return String(p || '').replaceAll('\\', '/');
@@ -47,29 +45,21 @@ export function composeProjectForId(id) {
 }
 
 export function isolationForLaunchIndex(index) {
-  const n = Number(index);
-  const offset = (Number.isInteger(n) && n > 0 ? n : 0) * FANOUT_PORT_STRIDE;
-  const caddy = FANOUT_PORT_BASE + offset;
-  return {
-    ports: {
-      caddy,
-      backend: caddy + 1,
-      frontend: caddy + 2,
-      arango: caddy + 3,
-      dex: caddy + 4,
-    },
-    origin: `http://localhost:${caddy}`,
-  };
+  return isolationForSlot(index);
 }
 
 export function applyIsolation(rows) {
   return rows.map((row, index) => {
     const isolation = isolationForLaunchIndex(index);
+    if (!isolation) {
+      throw new Error('fan-out stack must use one of the four slot port sets');
+    }
     return {
       ...row,
       composeProject: composeProjectForId(row.id),
       origin: isolation.origin,
       ports: isolation.ports,
+      slot: isolation.slot,
     };
   });
 }

@@ -1,7 +1,25 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, it } from 'node:test';
+import { claimSlot } from '../../e2e/scripts/e2e-slots.mjs';
 import { lastRunsCommitTarget } from './e2e-docker-last-runs.mjs';
-import { MAX_LAUNCH, planE2eFeatures } from './e2e-docker.mjs';
+import { downFanoutProjects, MAX_LAUNCH, planE2eFeatures } from './e2e-docker.mjs';
+
+const temps = [];
+
+function leaseRoot() {
+  const dir = mkdtempSync(join(tmpdir(), 'memries-e2e-plan-'));
+  temps.push(dir);
+  return dir;
+}
+
+afterEach(() => {
+  while (temps.length) {
+    rmSync(temps.pop(), { recursive: true, force: true });
+  }
+});
 
 function feature(stem) {
   return {
@@ -91,6 +109,56 @@ describe('planE2eFeatures', () => {
     assert.equal(plan.apps[0].composeProject, 'e2e-memries-f00');
     assert.equal(plan.apps[1].composeProject, 'e2e-memries-f01');
     assert.equal(plan.hint, undefined);
+  });
+
+  it('blocks launchNow when a prior slot is still active', () => {
+    const plan = planE2eFeatures({
+      discovered,
+      suiteHead: 'abc',
+      baseBranch: 'feature/design',
+      listBusySlots: () => [
+        {
+          slot: 3,
+          project: 'e2e-memries-navigation',
+          ports: { caddy: 19060, backend: 19061, frontend: 19062, arango: 19063, dex: 19064 },
+        },
+      ],
+    });
+    assert.deepEqual(plan.launchNow, []);
+    assert.deepEqual(
+      plan.deferred,
+      discovered.map((row) => row.id),
+    );
+    assert.equal(plan.hint, 'band held by e2e-memries-navigation; close that slice first');
+    assert.equal(plan.apps[0].ports.caddy, 19000);
+    assert.equal(plan.apps[3].ports.caddy, 19060);
+  });
+});
+
+describe('downFanoutProjects', () => {
+  it('surfaces a teardown failure and keeps the lease', () => {
+    const root = leaseRoot();
+    claimSlot({ slot: 0, project: 'e2e-memries-f00', leaseRoot: root });
+    const stacks = downFanoutProjects(['memries-f00'], {
+      leaseRoot: root,
+      composeDown: () => {
+        throw new Error('compose down failed');
+      },
+    });
+    assert.equal(stacks[0].ok, false);
+    assert.equal(stacks[0].error, 'compose down failed');
+    assert.equal(stacks[0].released, false);
+  });
+
+  it('releases a confirmed-stopped lease', () => {
+    const root = leaseRoot();
+    claimSlot({ slot: 0, project: 'e2e-memries-f00', leaseRoot: root });
+    const stacks = downFanoutProjects(['memries-f00'], {
+      leaseRoot: root,
+      composeDown: () => {},
+    });
+    assert.equal(stacks[0].ok, true);
+    assert.equal(stacks[0].released, true);
   });
 });
 

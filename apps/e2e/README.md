@@ -1,6 +1,6 @@
 # Isolated Playwright BDD
 
-Real-stack browser tests against a **separate** Compose project (default `memries-e2e`). They do not share ports or volumes with `make up`. A second instance (for example a worktree fan-out) must set `MEMRIES_E2E_PROJECT` plus the `*_HOST_PORT` band starting at `19000` so it does not steal `18080`.
+Real-stack browser tests against a **separate** Compose project (default `memries-e2e`). They do not share ports or volumes with `make up`. A second instance (for example a worktree fan-out) must set `MEMRIES_E2E_PROJECT` plus one of the four `*_HOST_PORT` slots starting at `19000` so it does not steal `18080`. At most four fan-out stacks may run at once; each slot is leased exclusively.
 
 ## First run
 

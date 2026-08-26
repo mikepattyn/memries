@@ -21,6 +21,7 @@ import {
   isAgentWorktreeBranch,
   parseFinding,
 } from './e2e-docker-last-runs.mjs';
+import { applyBusySlotGate, listActiveSlots, stopFanoutProject } from '../../e2e/scripts/e2e-slots.mjs';
 import {
   composeProjectForId,
   decideE2eFeatureStatus,
@@ -51,6 +52,7 @@ export function planE2eFeatures({
   waveSlice = null,
   baseBranch,
   skillId = SKILL_ID,
+  listBusySlots = () => [],
 }) {
   const apps = [];
   for (const row of discovered) {
@@ -105,6 +107,7 @@ export function planE2eFeatures({
     app.composeProject = extra.composeProject;
     app.origin = extra.origin;
     app.ports = extra.ports;
+    app.slot = extra.slot;
   }
 
   const launchNow = launchSlice.map((a) => a.id);
@@ -135,7 +138,7 @@ export function planE2eFeatures({
   if (!force && launchNow.length === 0 && upToDate.length) {
     plan.hint = 'pass --force to rerun every feature and refresh last-runs';
   }
-  return plan;
+  return applyBusySlotGate(plan, listBusySlots());
 }
 
 function usage() {
@@ -237,15 +240,26 @@ function suiteChangedFiles(lastCommit, head, paths) {
   return out.split(/\r?\n/).filter(Boolean);
 }
 
-function composeDown(project) {
-  try {
-    execFileSync('docker', ['compose', '-p', project, 'down', '-v', '--remove-orphans'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-  } catch {
-    // leftover stacks are best-effort
-  }
+function dockerComposeDown(project) {
+  execFileSync('docker', ['compose', '-p', project, 'down', '-v', '--remove-orphans'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+}
+
+export function downFanoutProjects(ids, deps = {}) {
+  return ids.map((id) =>
+    stopFanoutProject(composeProjectForId(id), {
+      composeDown: deps.composeDown ?? dockerComposeDown,
+      leaseRoot: deps.leaseRoot,
+    }),
+  );
+}
+
+export function featureIdFromBranch(branch, skillId = SKILL_ID) {
+  const prefix = `${skillId}-`;
+  if (!branch || !String(branch).startsWith(prefix)) return null;
+  return String(branch).slice(prefix.length);
 }
 
 function plan(opts) {
@@ -275,6 +289,7 @@ function plan(opts) {
     maxLaunch: MAX_LAUNCH,
     waveSlice: opts.wave?.slice,
     baseBranch: branch,
+    listBusySlots: () => listActiveSlots(),
   });
 }
 
@@ -340,7 +355,10 @@ function closeHere() {
   if (!primaryPath) {
     throw new Error('cannot resolve the primary checkout from this directory');
   }
-  return closeOpenedWorktrees({
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], { allowFail: true });
+  const id = featureIdFromBranch(branch);
+  const stacks = id ? downFanoutProjects([id]) : [];
+  const closed = closeOpenedWorktrees({
     here,
     deleteBranch: false,
     primaryPath,
@@ -348,6 +366,7 @@ function closeHere() {
     runGit: (args, options) => git(args, options),
     ...closeHelpers(),
   });
+  return { ...closed, stacks };
 }
 
 function closeSkill(ids, opts) {
@@ -356,8 +375,8 @@ function closeSkill(ids, opts) {
   const listed = parseWorktreeList(listPorcelain);
   const primaryPath = listed[0]?.path || ROOT;
   const branches = ids.map((id) => `${SKILL_ID}-${id}`);
-  for (const id of ids) composeDown(composeProjectForId(id));
-  return closeOpenedWorktrees({
+  const stacks = ids.length ? downFanoutProjects(ids) : [];
+  const closed = closeOpenedWorktrees({
     branches,
     baseWorktree: opts.baseWorktree ? resolveBaseBranch(opts) : null,
     deleteBranch: true,
@@ -366,6 +385,7 @@ function closeSkill(ids, opts) {
     runGit: (args, options) => git(args, options),
     ...closeHelpers(),
   });
+  return { ...closed, stacks };
 }
 
 export function buildE2ePlan(opts) {

@@ -59,7 +59,7 @@ From `e2e`, with this environment:
 - `DEX_HOST_PORT={{DEX_PORT}}`
 - `PLAYWRIGHT_BROWSERS_PATH` = the machine Playwright cache
 
-1. `node apps/e2e/scripts/stack.mjs up` (or let Playwright's webServer do it).
+1. `node apps/e2e/scripts/stack.mjs up` (or let Playwright's webServer do it). Use only the ports in this prompt. If up fails because this slot is held by another Compose project, do not wait or poll. Tear down if you started anything, return a failed finding, and close.
 2. `MEMRIES_E2E_FEATURE={{FEATURE_FILE}} npm test`
 3. Always tear down, success or fail: `node apps/e2e/scripts/stack.mjs down --wipe`
 

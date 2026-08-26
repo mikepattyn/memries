@@ -219,6 +219,53 @@ describe('planUmbrellaWaves', () => {
     assert.equal(plan.waves[0].launchNow[3].ports.caddy, 19060);
     assert.equal(plan.waves[1].launchNow[0].ports.caddy, 19000);
     assert.equal(plan.waves[0].sequential, true);
+    assert.equal(plan.waves[0].launchNow[0].slot, 0);
+    assert.equal(plan.waves[0].launchNow[3].slot, 3);
+  });
+
+  it('blocks e2e launchNow when a prior slot is still active', () => {
+    const apps = Array.from({ length: 5 }, (_, i) => ({
+      id: `memries-f${i}`,
+      skill: 'e2e-docker',
+      status: 'needs-run',
+      agentName: `e2e-docker-memries-f${i}`,
+      worktreeBranch: `e2e-docker-memries-f${i}`,
+      baseBranch: 'main',
+      path: `e2e/features/f${i}.feature`,
+      featureFile: `f${i}.feature`,
+      suiteCommit: 'abc',
+    }));
+    const plan = planUmbrellaWaves({
+      waves: [
+        { step: 'page-accessibility', skills: ['frontend-page-accessibility'] },
+        { step: 'e2e', skills: ['e2e-docker'] },
+      ],
+      nestedBySkill: {
+        'frontend-page-accessibility': {
+          apps: [],
+          steps: ['page-accessibility'],
+          lastRunsPath: 'x',
+        },
+        'e2e-docker': {
+          apps,
+          steps: ['e2e'],
+          lastRunsPath: '.cursor/skills/e2e-docker/last-runs.json',
+          maxLaunch: 4,
+        },
+      },
+      maxLaunch: 4,
+      waveFilter: 1,
+      baseBranch: 'main',
+      head: 'abc',
+      listBusySlots: () => [{ slot: 3, project: 'e2e-memries-navigation' }],
+    });
+    assert.deepEqual(plan.waves[0].launchNow, []);
+    assert.deepEqual(plan.waves[1].launchNow, []);
+    assert.equal(
+      plan.waves[0].hint,
+      'band held by e2e-memries-navigation; close that slice first',
+    );
+    assert.equal(plan.waves[0].deferred.length, 5);
   });
 
   it('relabels the next remaining e2e batch as 1.2 when that slice is requested', () => {

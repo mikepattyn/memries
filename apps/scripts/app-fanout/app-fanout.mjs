@@ -21,12 +21,14 @@ import {
   commitLastRunsIfNeeded,
   isAgentWorktreeBranch,
 } from '../e2e-docker/e2e-docker-last-runs.mjs';
-import { buildE2ePlan, recordE2eFindings } from '../e2e-docker/e2e-docker.mjs';
+import { applyBusySlotGate, listActiveSlots } from '../../e2e/scripts/e2e-slots.mjs';
 import {
-  composeProjectForId,
-  e2eSequentialWaves,
-  parseWaveArg,
-} from '../e2e-docker/e2e-features.mjs';
+  buildE2ePlan,
+  downFanoutProjects,
+  featureIdFromBranch,
+  recordE2eFindings,
+} from '../e2e-docker/e2e-docker.mjs';
+import { e2eSequentialWaves, parseWaveArg } from '../e2e-docker/e2e-features.mjs';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(SCRIPT_DIR, '..', '..', '..');
@@ -179,6 +181,7 @@ function launchRow(app, branch) {
     row.origin = app.origin;
     row.ports = app.ports;
   }
+  if (app.slot != null) row.slot = app.slot;
   return row;
 }
 
@@ -236,6 +239,7 @@ export function planUmbrellaWaves({
   head,
   force = false,
   skillId = 'platform-quality',
+  listBusySlots = () => [],
 }) {
   if (!Array.isArray(waves) || !waves.length) {
     throw new Error(`umbrella '${skillId}' requires a non-empty waves array`);
@@ -284,7 +288,7 @@ export function planUmbrellaWaves({
     });
   });
 
-  return {
+  const result = {
     skill: skillId,
     kind: 'umbrella',
     userInvokedOnly: true,
@@ -295,6 +299,15 @@ export function planUmbrellaWaves({
     force,
     maxLaunch,
     waves: planned,
+  };
+  const busySlots = typeof listBusySlots === 'function' ? listBusySlots() : [];
+  if (!busySlots.length) return result;
+  return {
+    ...result,
+    waves: result.waves.map((wave) => {
+      if (!wave.skills?.includes('e2e-docker')) return wave;
+      return applyBusySlotGate(wave, busySlots);
+    }),
   };
 }
 
@@ -496,6 +509,7 @@ function plan(skillId, opts, config) {
     head,
     force: Boolean(opts.force),
     skillId,
+    listBusySlots: () => listActiveSlots(),
   });
 }
 
@@ -564,16 +578,6 @@ function record(skillId, ids, opts, config) {
   return result;
 }
 
-function composeDown(project) {
-  try {
-    execFileSync('docker', ['compose', '-p', project, 'down', '-v', '--remove-orphans'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-  } catch {
-    // leftover stacks are best-effort
-  }
-}
 
 function closeHelpers() {
   return {
@@ -590,7 +594,10 @@ function closeHere() {
   if (!primaryPath) {
     throw new Error('cannot resolve the primary checkout from this directory');
   }
-  return closeOpenedWorktrees({
+  const branch = git(['rev-parse', '--abbrev-ref', 'HEAD'], { allowFail: true });
+  const id = featureIdFromBranch(branch);
+  const stacks = id ? downFanoutProjects([id]) : [];
+  const closed = closeOpenedWorktrees({
     here,
     deleteBranch: false,
     primaryPath,
@@ -598,6 +605,7 @@ function closeHere() {
     runGit: (args, options) => git(args, options),
     ...closeHelpers(),
   });
+  return { ...closed, stacks };
 }
 
 function closeSkill(skillId, ids, opts, config) {
@@ -606,6 +614,7 @@ function closeSkill(skillId, ids, opts, config) {
   const listed = parseWorktreeList(listPorcelain);
   const primaryPath = listed[0]?.path || ROOT;
   const branches = [];
+  let stacks = [];
   if (skillId && ids.length) {
     const skill = resolveSkill(config, skillId);
     if (isUmbrella(skill)) {
@@ -613,10 +622,10 @@ function closeSkill(skillId, ids, opts, config) {
     }
     for (const id of ids) {
       branches.push(`${skillId}-${id}`);
-      if (skill.discover === 'e2e-features') composeDown(composeProjectForId(id));
     }
+    if (skill.discover === 'e2e-features') stacks = downFanoutProjects(ids);
   }
-  return closeOpenedWorktrees({
+  const closed = closeOpenedWorktrees({
     branches,
     baseWorktree: opts.baseWorktree ? resolveBaseBranch(opts) : null,
     deleteBranch: true,
@@ -625,6 +634,7 @@ function closeSkill(skillId, ids, opts, config) {
     runGit: (args, options) => git(args, options),
     ...closeHelpers(),
   });
+  return { ...closed, stacks };
 }
 
 function parseArgs(argv) {

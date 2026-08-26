@@ -76,7 +76,7 @@ Optional: `--force`, repeatable `--app <id>`, `--base <branch>` (default is the 
 
 When the user asked to force, refresh, or prove every quality wave, pass `--force` on each `plan` so skipped `no-diff` rows run again — including every e2e feature, each in its own stack — and last-runs refresh after record.
 
-If the current wave's `launchNow` is empty (`no-diff` / skipped), skip to the next wave. If every remaining wave is empty, stop. The e2e plan may list later slices (`1.2`, `1.3`, …) as a preview — launch **only** the first returned e2e slice. After that slice finishes, re-plan `--wave 1.2` (then `1.3`, …). Do not start the next e2e slice in the same turn.
+If the current wave's `launchNow` is empty (`no-diff` / skipped), skip to the next wave. If every remaining wave is empty, stop. If an e2e slice returns empty `launchNow` with a hint that the 19000 band is still held, stop and close the leftover stacks — do not start the next slice. The e2e plan may list later slices (`1.2`, `1.3`, …) as a preview — launch **only** the first returned e2e slice. After that slice finishes, re-plan `--wave 1.2` (then `1.3`, …). Do not start the next e2e slice in the same turn.
 
 ## 2. Fan out
 

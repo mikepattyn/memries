@@ -121,6 +121,7 @@ describe('e2eDiffPaths', () => {
 describe('isolationForLaunchIndex', () => {
   it('uses the 19000 band so 18080 stays free', () => {
     assert.deepEqual(isolationForLaunchIndex(0), {
+      slot: 0,
       ports: {
         caddy: 19000,
         backend: 19001,
@@ -131,6 +132,7 @@ describe('isolationForLaunchIndex', () => {
       origin: 'http://localhost:19000',
     });
     assert.equal(isolationForLaunchIndex(1).ports.caddy, 19020);
+    assert.equal(isolationForLaunchIndex(4), null);
   });
 });
 
