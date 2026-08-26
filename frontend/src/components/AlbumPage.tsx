@@ -1,7 +1,7 @@
-import { useAlbum } from "../hooks/useAlbums";
-import type { Photo } from "../models/photo";
-import { ChevronLeftIcon } from "./icons";
-import { PhotoGrid } from "./PhotoGrid";
+import { useAlbum } from '../hooks/useAlbums';
+import type { Photo } from '../models/photo';
+import { ChevronLeftIcon } from './icons';
+import { PhotoGrid } from './PhotoGrid';
 
 export function AlbumPage({
   albumId,
@@ -37,7 +37,9 @@ export function AlbumPage({
 
       {query.isError && (
         <div className="mt-10 text-center" role="alert">
-          <p className="font-display text-2xl font-semibold tracking-tight text-plum">We could not open this album</p>
+          <p className="font-display text-2xl font-semibold tracking-tight text-plum">
+            We could not open this album
+          </p>
           <button
             type="button"
             onClick={() => void query.refetch()}
@@ -50,9 +52,11 @@ export function AlbumPage({
 
       {query.isSuccess && album && (
         <>
-          <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">{album.name}</h1>
+          <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">
+            {album.name}
+          </h1>
           <p className="mt-1 text-sm text-ink/60">
-            {album.photoCount} {album.photoCount === 1 ? "photo" : "photos"}
+            {album.photoCount} {album.photoCount === 1 ? 'photo' : 'photos'}
           </p>
           {photos.length === 0 ? (
             <p className="mt-10 text-center text-sm text-ink/60">No photos in this album yet.</p>

@@ -1,1 +1,1 @@
-export { addPhotoToAlbum, createAlbum, fetchAlbums } from "./api";
+export { addPhotoToAlbum, createAlbum, fetchAlbums } from './api';

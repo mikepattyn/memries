@@ -1,17 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   addPhotoToAlbum,
   createAlbum,
   fetchAlbum,
   fetchAlbums,
   removePhotoFromAlbum,
-} from "../lib/api";
-import type { Album, Photo } from "../models/photo";
+} from '../lib/api';
+import type { Album, Photo } from '../models/photo';
 
-export const albumQueryKey = ["albums"] as const;
+export const albumQueryKey = ['albums'] as const;
 
 export function albumDetailQueryKey(id: string) {
-  return ["albums", id] as const;
+  return ['albums', id] as const;
 }
 
 export function useAlbums() {
@@ -24,7 +24,7 @@ export function useAlbums() {
 
 export function useAlbum(id: string | null) {
   return useQuery({
-    queryKey: albumDetailQueryKey(id ?? ""),
+    queryKey: albumDetailQueryKey(id ?? ''),
     queryFn: () => fetchAlbum(id!),
     enabled: Boolean(id),
     staleTime: 5 * 60_000,
@@ -45,7 +45,10 @@ export function useCreateAlbum() {
         photoCount: 0,
         photoIds: [],
       };
-      queryClient.setQueryData<Album[]>(albumQueryKey, (current) => [optimistic, ...(current ?? [])]);
+      queryClient.setQueryData<Album[]>(albumQueryKey, (current) => [
+        optimistic,
+        ...(current ?? []),
+      ]);
       return { previous };
     },
     onError: (_error, _name, context) => {
@@ -112,19 +115,23 @@ export function useRemovePhotoFromAlbum() {
           };
         }),
       );
-      queryClient.setQueryData<{ album: Album; photos: Photo[] }>(albumDetailQueryKey(albumId), (current) => {
-        if (!current) return current;
-        const photoIds = current.album.photoIds.filter((id) => id !== photoId);
-        return {
-          album: {
-            ...current.album,
-            photoCount: Math.max(0, current.album.photoCount - 1),
-            photoIds,
-            coverPhotoId: current.album.coverPhotoId === photoId ? photoIds[0] : current.album.coverPhotoId,
-          },
-          photos: current.photos.filter((photo) => photo.id !== photoId),
-        };
-      });
+      queryClient.setQueryData<{ album: Album; photos: Photo[] }>(
+        albumDetailQueryKey(albumId),
+        (current) => {
+          if (!current) return current;
+          const photoIds = current.album.photoIds.filter((id) => id !== photoId);
+          return {
+            album: {
+              ...current.album,
+              photoCount: Math.max(0, current.album.photoCount - 1),
+              photoIds,
+              coverPhotoId:
+                current.album.coverPhotoId === photoId ? photoIds[0] : current.album.coverPhotoId,
+            },
+            photos: current.photos.filter((photo) => photo.id !== photoId),
+          };
+        },
+      );
       return { previous, previousDetail };
     },
     onError: (_error, { albumId }, context) => {

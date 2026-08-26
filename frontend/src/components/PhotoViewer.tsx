@@ -1,14 +1,14 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
-import { formatCompactDate, formatDayLabel, formatTime } from "../lib/formatDate";
-import { photoViewerAlt } from "../lib/photoName";
-import { viewerFallbackSrc } from "../lib/photoSrc";
-import { resolveViewerGesture } from "../lib/viewerGesture";
-import type { Album, Photo } from "../models/photo";
-import { AlbumIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon, HeartIcon } from "./icons";
-import { PhotoActionsMenu } from "./PhotoActionsMenu";
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { formatCompactDate, formatDayLabel, formatTime } from '../lib/formatDate';
+import { photoViewerAlt } from '../lib/photoName';
+import { viewerFallbackSrc } from '../lib/photoSrc';
+import { resolveViewerGesture } from '../lib/viewerGesture';
+import type { Album, Photo } from '../models/photo';
+import { AlbumIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon, HeartIcon } from './icons';
+import { PhotoActionsMenu } from './PhotoActionsMenu';
 
-type ViewerMotion = "opening" | "open" | "navigating" | "closing" | "reduced";
+type ViewerMotion = 'opening' | 'open' | 'navigating' | 'closing' | 'reduced';
 
 export function PhotoViewer({
   photos,
@@ -30,7 +30,10 @@ export function PhotoViewer({
   onAddToAlbum: (albumId: string, photoId: string) => void;
 }) {
   const reducedMotion = usePrefersReducedMotion();
-  const index = Math.max(0, photos.findIndex((photo) => photo.id === activeId));
+  const index = Math.max(
+    0,
+    photos.findIndex((photo) => photo.id === activeId),
+  );
   const photo = photos[index];
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -40,12 +43,12 @@ export function PhotoViewer({
   const dragRef = useRef({ x: 0, y: 0 });
   const closingRef = useRef(false);
   const [drag, setDrag] = useState({ x: 0, y: 0 });
-  const nextSrc = photo?.imageUrl ?? "";
-  const imageIdentity = `${photo?.id ?? ""}:${nextSrc}`;
+  const nextSrc = photo?.imageUrl ?? '';
+  const imageIdentity = `${photo?.id ?? ''}:${nextSrc}`;
   const [src, setSrc] = useState(nextSrc);
   const [seenImageIdentity, setSeenImageIdentity] = useState(imageIdentity);
   const [albumPickerOpen, setAlbumPickerOpen] = useState(false);
-  const [motion, setMotion] = useState<ViewerMotion>(reducedMotion ? "reduced" : "opening");
+  const [motion, setMotion] = useState<ViewerMotion>(reducedMotion ? 'reduced' : 'opening');
   const [motionPhotoId, setMotionPhotoId] = useState(photo?.id);
 
   if (seenImageIdentity !== imageIdentity) {
@@ -56,13 +59,13 @@ export function PhotoViewer({
 
   if (photo?.id !== motionPhotoId) {
     setMotionPhotoId(photo?.id);
-    if (!reducedMotion) setMotion("navigating");
+    if (!reducedMotion) setMotion('navigating');
   }
 
   useEffect(() => {
-    if (motion !== "navigating") return;
+    if (motion !== 'navigating') return;
     const timer = window.setTimeout(() => {
-      setMotion((current) => (current === "navigating" ? "open" : current));
+      setMotion((current) => (current === 'navigating' ? 'open' : current));
     }, 280);
     return () => window.clearTimeout(timer);
   }, [motion, photo?.id]);
@@ -70,7 +73,7 @@ export function PhotoViewer({
   useEffect(() => {
     closeRef.current?.focus();
     const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = previous;
     };
@@ -84,7 +87,7 @@ export function PhotoViewer({
       onClose();
       return;
     }
-    setMotion("closing");
+    setMotion('closing');
     const img = imgRef.current;
     const card = originRef.current;
     if (img && card) {
@@ -94,9 +97,9 @@ export function PhotoViewer({
         const scaleY = card.height / dest.height;
         const dx = card.left + card.width / 2 - (dest.left + dest.width / 2);
         const dy = card.top + card.height / 2 - (dest.top + dest.height / 2);
-        img.style.transition = "transform 280ms ease, opacity 240ms ease";
+        img.style.transition = 'transform 280ms ease, opacity 240ms ease';
         img.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
-        img.style.opacity = "0.45";
+        img.style.opacity = '0.45';
       }
     }
     window.setTimeout(onClose, 280);
@@ -104,15 +107,18 @@ export function PhotoViewer({
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         if (albumPickerOpen) setAlbumPickerOpen(false);
         else close();
       }
-      if (event.key === "ArrowLeft" && index > 0) onChange(photos[index - 1].id);
-      if (event.key === "ArrowRight" && index < photos.length - 1) onChange(photos[index + 1].id);
-      if ((event.key === "f" || event.key === "F") && photo) onToggleFavorite(photo.id, !photo.favorite);
-      if (event.key === "Tab" && dialogRef.current && !albumPickerOpen) {
-        const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled])")];
+      if (event.key === 'ArrowLeft' && index > 0) onChange(photos[index - 1].id);
+      if (event.key === 'ArrowRight' && index < photos.length - 1) onChange(photos[index + 1].id);
+      if ((event.key === 'f' || event.key === 'F') && photo)
+        onToggleFavorite(photo.id, !photo.favorite);
+      if (event.key === 'Tab' && dialogRef.current && !albumPickerOpen) {
+        const focusable = [
+          ...dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled])'),
+        ];
         if (focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[lastIndex(focusable)];
@@ -125,20 +131,20 @@ export function PhotoViewer({
         }
       }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   });
 
   useLayoutEffect(() => {
     const img = imgRef.current;
     const card = originRef.current;
     if (!img || !card || reducedMotion) {
-      setMotion(reducedMotion ? "reduced" : "open");
+      setMotion(reducedMotion ? 'reduced' : 'open');
       return;
     }
     const dest = img.getBoundingClientRect();
     if (dest.width === 0 || dest.height === 0) {
-      setMotion("open");
+      setMotion('open');
       return;
     }
     const scaleX = card.width / dest.width;
@@ -146,12 +152,12 @@ export function PhotoViewer({
     const dx = card.left + card.width / 2 - (dest.left + dest.width / 2);
     const dy = card.top + card.height / 2 - (dest.top + dest.height / 2);
     img.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
-    img.style.transition = "none";
+    img.style.transition = 'none';
     const frame = requestAnimationFrame(() => {
-      img.style.transition = "transform 280ms ease";
-      img.style.transform = "none";
+      img.style.transition = 'transform 280ms ease';
+      img.style.transform = 'none';
     });
-    const done = window.setTimeout(() => setMotion("open"), 280);
+    const done = window.setTimeout(() => setMotion('open'), 280);
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(done);
@@ -184,23 +190,23 @@ export function PhotoViewer({
       <div
         ref={dialogRef}
         className={`fixed inset-0 z-50 flex flex-col overflow-x-hidden backdrop-blur-xl ${
-          reducedMotion ? "" : motion === "opening" ? "viewer-backdrop-in" : ""
-        } ${!reducedMotion && motion === "closing" ? "viewer-backdrop-out" : ""}`}
-        style={{ backgroundColor: `rgba(0, 0, 0, ${motion === "closing" ? 0 : backdrop})` }}
+          reducedMotion ? '' : motion === 'opening' ? 'viewer-backdrop-in' : ''
+        } ${!reducedMotion && motion === 'closing' ? 'viewer-backdrop-out' : ''}`}
+        style={{ backgroundColor: `rgba(0, 0, 0, ${motion === 'closing' ? 0 : backdrop})` }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="viewer-title"
         aria-hidden={albumPickerOpen || undefined}
         data-viewer-motion={motion}
         data-viewer-day={formatDayLabel(photo.takenAt)}
-        data-viewer-favorite={photo.favorite ? "true" : "false"}
-        data-reduced-motion={reducedMotion ? "true" : "false"}
-        data-origin={origin ? "card" : "none"}
+        data-viewer-favorite={photo.favorite ? 'true' : 'false'}
+        data-reduced-motion={reducedMotion ? 'true' : 'false'}
+        data-origin={origin ? 'card' : 'none'}
         onClick={close}
       >
         <div
           className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-3 py-3 min-[800px]:px-8 min-[800px]:py-6 ${
-            reducedMotion ? "" : "viewer-chrome-in"
+            reducedMotion ? '' : 'viewer-chrome-in'
           }`}
           onClick={(event) => event.stopPropagation()}
         >
@@ -227,15 +233,21 @@ export function PhotoViewer({
                 type="button"
                 onClick={() => onToggleFavorite(photo.id, !photo.favorite)}
                 className="grid h-11 w-11 min-h-11 min-w-11 place-items-center rounded-full bg-white/10 transition duration-200 hover:bg-white/20 active:scale-95"
-                aria-label={photo.favorite ? "Remove from favorites" : "Add to favorites"}
+                aria-label={photo.favorite ? 'Remove from favorites' : 'Add to favorites'}
                 aria-pressed={photo.favorite}
               >
-                <HeartIcon className={`h-5 w-5 ${photo.favorite ? "text-peach heart-pop" : ""}`} filled={photo.favorite} />
+                <HeartIcon
+                  className={`h-5 w-5 ${photo.favorite ? 'text-peach heart-pop' : ''}`}
+                  filled={photo.favorite}
+                />
               </button>
             </div>
           </div>
 
-          <h2 id="viewer-title" className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/60">
+          <h2
+            id="viewer-title"
+            className="mt-3 shrink-0 text-center text-xs uppercase tracking-[0.16em] text-white/60"
+          >
             {formatCompactDate(photo.takenAt)} · {formatTime(photo.takenAt)}
           </h2>
 
@@ -268,9 +280,9 @@ export function PhotoViewer({
               }}
               onPointerUp={() => {
                 const gesture = resolveViewerGesture(dragRef.current.x, dragRef.current.y);
-                if (gesture === "dismiss") close();
-                else if (gesture === "next") go(1);
-                else if (gesture === "prev") go(-1);
+                if (gesture === 'dismiss') close();
+                else if (gesture === 'next') go(1);
+                else if (gesture === 'prev') go(-1);
                 startRef.current = null;
                 dragRef.current = { x: 0, y: 0 };
                 setDrag({ x: 0, y: 0 });
@@ -288,7 +300,7 @@ export function PhotoViewer({
                 alt={photoViewerAlt(photo)}
                 draggable={false}
                 className={`max-h-[min(100%,calc(100dvh-12rem))] max-w-full rounded-2xl object-contain shadow-lift ${
-                  !reducedMotion && motion === "navigating" ? "photo-crossfade" : ""
+                  !reducedMotion && motion === 'navigating' ? 'photo-crossfade' : ''
                 }`}
                 style={{ transform: dragTransform }}
                 onError={() => {
@@ -308,7 +320,11 @@ export function PhotoViewer({
             </button>
           </div>
 
-          <p className="shrink-0 text-center text-xs text-white/55" role="status" aria-live="polite">
+          <p
+            className="shrink-0 text-center text-xs text-white/55"
+            role="status"
+            aria-live="polite"
+          >
             {index + 1} of {photos.length}
           </p>
         </div>
@@ -316,7 +332,11 @@ export function PhotoViewer({
 
       {albumPickerOpen && (
         <>
-          <div className="fixed inset-0 z-[55] bg-black/40" aria-hidden onClick={() => setAlbumPickerOpen(false)} />
+          <div
+            className="fixed inset-0 z-[55] bg-black/40"
+            aria-hidden
+            onClick={() => setAlbumPickerOpen(false)}
+          />
           <PhotoActionsMenu
             photo={photo}
             albums={albums}

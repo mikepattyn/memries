@@ -54,7 +54,13 @@ export default [
     },
   },
   {
-    files: ['*.config.{js,ts,mjs,cjs}', 'vitest.config.ts', 'vite.config.ts', 'postcss.config.js', 'tailwind.config.js'],
+    files: [
+      '*.config.{js,ts,mjs,cjs}',
+      'vitest.config.ts',
+      'vite.config.ts',
+      'postcss.config.js',
+      'tailwind.config.js',
+    ],
     languageOptions: {
       globals: {
         ...globals.node,

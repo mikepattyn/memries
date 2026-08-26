@@ -1,4 +1,4 @@
-import { formatMonthLabel, formatWeekLabel, isoWeekParts, mondayOfIsoWeek } from "./formatDate";
+import { formatMonthLabel, formatWeekLabel, isoWeekParts, mondayOfIsoWeek } from './formatDate';
 
 export type SmartDateConstraint = {
   years?: string[];
@@ -9,48 +9,61 @@ export type SmartDateConstraint = {
 };
 
 export const SEARCH_SUGGESTIONS = [
-  { chip: "Yesterday", query: "yesterday" },
-  { chip: "Last week", query: "last week" },
-  { chip: "Last July", query: "last july" },
-  { chip: "Last winter", query: "last winter" },
-  { chip: "In the summer", query: "in the summer" },
-  { chip: "June", query: "june" },
-  { chip: "Previous spring", query: "previous spring" },
-  { chip: "Previous fall", query: "previous fall" },
+  { chip: 'Yesterday', query: 'yesterday' },
+  { chip: 'Last week', query: 'last week' },
+  { chip: 'Last July', query: 'last july' },
+  { chip: 'Last winter', query: 'last winter' },
+  { chip: 'In the summer', query: 'in the summer' },
+  { chip: 'June', query: 'june' },
+  { chip: 'Previous spring', query: 'previous spring' },
+  { chip: 'Previous fall', query: 'previous fall' },
 ] as const;
 
 const MONTHS: { name: string; index: number }[] = [
-  { name: "january", index: 1 },
-  { name: "february", index: 2 },
-  { name: "march", index: 3 },
-  { name: "april", index: 4 },
-  { name: "may", index: 5 },
-  { name: "june", index: 6 },
-  { name: "july", index: 7 },
-  { name: "august", index: 8 },
-  { name: "september", index: 9 },
-  { name: "october", index: 10 },
-  { name: "november", index: 11 },
-  { name: "december", index: 12 },
+  { name: 'january', index: 1 },
+  { name: 'february', index: 2 },
+  { name: 'march', index: 3 },
+  { name: 'april', index: 4 },
+  { name: 'may', index: 5 },
+  { name: 'june', index: 6 },
+  { name: 'july', index: 7 },
+  { name: 'august', index: 8 },
+  { name: 'september', index: 9 },
+  { name: 'october', index: 10 },
+  { name: 'november', index: 11 },
+  { name: 'december', index: 12 },
 ];
 
-const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const SHORT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 const LONG_MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
-type Season = "spring" | "summer" | "fall" | "winter";
+type Season = 'spring' | 'summer' | 'fall' | 'winter';
 
 const SEASON_MONTHS: Record<Season, [number, number, number]> = {
   spring: [3, 4, 5],
@@ -60,7 +73,7 @@ const SEASON_MONTHS: Record<Season, [number, number, number]> = {
 };
 
 export function parseSmartDate(query: string, now: Date): SmartDateConstraint | null {
-  const raw = query.trim().toLowerCase().replace(/\s+/g, " ");
+  const raw = query.trim().toLowerCase().replace(/\s+/g, ' ');
   if (!raw) return null;
 
   const isoMonth = raw.match(/^(\d{4})-(\d{2})$/);
@@ -69,7 +82,11 @@ export function parseSmartDate(query: string, now: Date): SmartDateConstraint | 
     const month = Number(isoMonth[2]);
     if (month >= 1 && month <= 12) {
       const { from, to } = monthRange(year, month);
-      return { localFrom: from, localTo: to, label: formatMonthLabel(`${isoMonth[1]}-${isoMonth[2]}`) };
+      return {
+        localFrom: from,
+        localTo: to,
+        label: formatMonthLabel(`${isoMonth[1]}-${isoMonth[2]}`),
+      };
     }
   }
 
@@ -77,7 +94,7 @@ export function parseSmartDate(query: string, now: Date): SmartDateConstraint | 
     return { years: [raw], label: raw };
   }
 
-  if (raw === "yesterday") {
+  if (raw === 'yesterday') {
     const today = wallDay(now);
     const yday = addDays(today, -1);
     return {
@@ -87,7 +104,7 @@ export function parseSmartDate(query: string, now: Date): SmartDateConstraint | 
     };
   }
 
-  if (raw === "last week") {
+  if (raw === 'last week') {
     const { year, week } = isoWeekParts(`${wallDay(now)}T12:00:00`);
     const monday = mondayOfIsoWeek(year, week);
     const prevMonday = new Date(monday);
@@ -103,7 +120,7 @@ export function parseSmartDate(query: string, now: Date): SmartDateConstraint | 
     };
   }
 
-  const lastMonth = matchPrefixedMonth(raw, "last");
+  const lastMonth = matchPrefixedMonth(raw, 'last');
   if (lastMonth) {
     const { year, month } = lastNamedMonth(now, lastMonth.index);
     const { from, to } = monthRange(year, month);
@@ -140,29 +157,34 @@ function matchPrefixedMonth(raw: string, prefix: string): { index: number } | nu
 }
 
 function matchBareMonth(raw: string): { index: number } | null {
-  const stripped = raw.replace(/^(a day in|days in|in|during)\s+/, "");
+  const stripped = raw.replace(/^(a day in|days in|in|during)\s+/, '');
   return MONTHS.find((month) => month.name === stripped) ?? null;
 }
 
 function matchSeasonPhrase(
   raw: string,
-): { kind: "last" | "previous" | "current"; season: Season } | null {
-  const stripped = raw.replace(/^(in the|during the|in|during)\s+/, "");
-  const season = parseSeason(stripped.replace(/^(last|previous)\s+/, ""));
+): { kind: 'last' | 'previous' | 'current'; season: Season } | null {
+  const stripped = raw.replace(/^(in the|during the|in|during)\s+/, '');
+  const season = parseSeason(stripped.replace(/^(last|previous)\s+/, ''));
   if (!season) return null;
-  if (raw.startsWith("previous ")) return { kind: "previous", season };
-  if (raw.startsWith("last ")) return { kind: "last", season };
-  if (raw === season || raw === `in the ${season}` || raw === `in ${season}` || raw === `during the ${season}`) {
-    return { kind: "current", season };
+  if (raw.startsWith('previous ')) return { kind: 'previous', season };
+  if (raw.startsWith('last ')) return { kind: 'last', season };
+  if (
+    raw === season ||
+    raw === `in the ${season}` ||
+    raw === `in ${season}` ||
+    raw === `during the ${season}`
+  ) {
+    return { kind: 'current', season };
   }
   return null;
 }
 
 function parseSeason(value: string): Season | null {
-  if (value === "spring") return "spring";
-  if (value === "summer") return "summer";
-  if (value === "fall" || value === "autumn") return "fall";
-  if (value === "winter") return "winter";
+  if (value === 'spring') return 'spring';
+  if (value === 'summer') return 'summer';
+  if (value === 'fall' || value === 'autumn') return 'fall';
+  if (value === 'winter') return 'winter';
   return null;
 }
 
@@ -173,15 +195,21 @@ function lastNamedMonth(now: Date, month: number): { year: number; month: number
   return { year: year - 1, month };
 }
 
-function lastSeasonRange(now: Date, season: Season): { from: string; to: string; startYear: number } {
+function lastSeasonRange(
+  now: Date,
+  season: Season,
+): { from: string; to: string; startYear: number } {
   const year = now.getFullYear();
   const candidate = seasonRangeForYear(season, year);
   if (compareDay(wallDay(now), candidate.from) >= 0) return candidate;
   return seasonRangeForYear(season, year - 1);
 }
 
-function seasonRangeForYear(season: Season, year: number): { from: string; to: string; startYear: number } {
-  if (season === "winter") {
+function seasonRangeForYear(
+  season: Season,
+  year: number,
+): { from: string; to: string; startYear: number } {
+  if (season === 'winter') {
     return { from: `${year - 1}-12-01`, to: `${year}-03-01`, startYear: year - 1 };
   }
   const [startMonth] = SEASON_MONTHS[season];
@@ -196,7 +224,7 @@ function seasonRangeForYear(season: Season, year: number): { from: string; to: s
 }
 
 function seasonLabel(
-  phrase: { kind: "last" | "previous" | "current"; season: Season },
+  phrase: { kind: 'last' | 'previous' | 'current'; season: Season },
   range: { from: string; to: string; startYear: number },
 ): string {
   const startMonth = Number(range.from.slice(5, 7));
@@ -204,11 +232,11 @@ function seasonLabel(
   const endYear = Number(endMonth.slice(0, 4));
   const shortStart = SHORT_MONTHS[startMonth - 1];
   const shortEnd = SHORT_MONTHS[Number(endMonth.slice(5, 7)) - 1];
-  const seasonName = phrase.season === "fall" ? "fall" : phrase.season;
-  if (phrase.kind === "current") {
+  const seasonName = phrase.season === 'fall' ? 'fall' : phrase.season;
+  if (phrase.kind === 'current') {
     return `${capitalize(seasonName)} ${range.startYear} · ${shortStart}–${shortEnd}`;
   }
-  const prefix = phrase.kind === "last" ? "Last" : "Previous";
+  const prefix = phrase.kind === 'last' ? 'Last' : 'Previous';
   if (range.startYear !== endYear) {
     return `${prefix} ${seasonName} · ${shortStart} ${range.startYear}–${shortEnd} ${endYear}`;
   }
@@ -229,13 +257,13 @@ function utcDay(date: Date): string {
 }
 
 function addDays(day: string, delta: number): string {
-  const [y, m, d] = day.split("-").map(Number);
+  const [y, m, d] = day.split('-').map(Number);
   const next = new Date(Date.UTC(y, m - 1, d + delta));
   return utcDay(next);
 }
 
 function addMonths(day: string, delta: number): string {
-  const [y, m] = day.split("-").map(Number);
+  const [y, m] = day.split('-').map(Number);
   const next = new Date(Date.UTC(y, m - 1 + delta, 1));
   return utcDay(next);
 }
@@ -245,7 +273,7 @@ function compareDay(a: string, b: string): number {
 }
 
 function formatLongDay(day: string): string {
-  const [y, m, d] = day.split("-").map(Number);
+  const [y, m, d] = day.split('-').map(Number);
   return `${d} ${LONG_MONTHS[m - 1]} ${y}`;
 }
 
@@ -254,5 +282,5 @@ function capitalize(value: string): string {
 }
 
 function pad(n: number): string {
-  return String(n).padStart(2, "0");
+  return String(n).padStart(2, '0');
 }

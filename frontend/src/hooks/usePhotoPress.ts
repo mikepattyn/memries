@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef } from 'react';
 
 const LONG_PRESS_MS = 500;
 const MOVE_CANCEL_PX = 8;
@@ -80,7 +80,7 @@ export function usePhotoPress({
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (!onActions) return;
-      if ((event.key === "F10" && event.shiftKey) || event.key === "ContextMenu") {
+      if ((event.key === 'F10' && event.shiftKey) || event.key === 'ContextMenu') {
         event.preventDefault();
         onActions();
       }

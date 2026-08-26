@@ -1,6 +1,6 @@
-export type Granularity = "year" | "month" | "week" | "day";
+export type Granularity = 'year' | 'month' | 'week' | 'day';
 
-export type NavTab = "memories" | "albums" | "favorites" | "search";
+export type NavTab = 'memories' | 'albums' | 'favorites' | 'search';
 
 export interface Album {
   id: string;
@@ -32,7 +32,7 @@ export interface TimelineGroup {
   photos: Photo[];
 }
 
-export type SearchCategory = "years" | "favorites";
+export type SearchCategory = 'years' | 'favorites';
 
 export interface SearchState {
   query: string;

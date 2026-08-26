@@ -1,18 +1,18 @@
-import { formatDayLabel, formatMonthLabel, formatWeekLabel, isoWeekParts } from "./formatDate";
-import type { Granularity, Photo, TimelineGroup } from "../models/photo";
+import { formatDayLabel, formatMonthLabel, formatWeekLabel, isoWeekParts } from './formatDate';
+import type { Granularity, Photo, TimelineGroup } from '../models/photo';
 
 export function groupKey(takenAt: string, granularity: Granularity): string {
-  if (granularity === "year") return takenAt.slice(0, 4);
-  if (granularity === "month") return takenAt.slice(0, 7);
-  if (granularity === "day") return takenAt.slice(0, 10);
+  if (granularity === 'year') return takenAt.slice(0, 4);
+  if (granularity === 'month') return takenAt.slice(0, 7);
+  if (granularity === 'day') return takenAt.slice(0, 10);
   const { year, week } = isoWeekParts(takenAt);
-  return `${year}-W${String(week).padStart(2, "0")}`;
+  return `${year}-W${String(week).padStart(2, '0')}`;
 }
 
 export function groupLabel(key: string, granularity: Granularity): string {
-  if (granularity === "year") return key;
-  if (granularity === "month") return formatMonthLabel(key);
-  if (granularity === "day") return formatDayLabel(key);
+  if (granularity === 'year') return key;
+  if (granularity === 'month') return formatMonthLabel(key);
+  if (granularity === 'day') return formatDayLabel(key);
   return formatWeekLabel(key);
 }
 
@@ -28,7 +28,7 @@ export function groupPhotos(photos: Photo[], granularity: Granularity): Timeline
   return [...buckets.entries()].map(([key, groupPhotos]) => ({
     key,
     label: groupLabel(key, granularity),
-    sublabel: `${groupPhotos.length} ${groupPhotos.length === 1 ? "memory" : "memories"}`,
+    sublabel: `${groupPhotos.length} ${groupPhotos.length === 1 ? 'memory' : 'memories'}`,
     photos: groupPhotos,
   }));
 }
@@ -55,7 +55,8 @@ export function searchPhotos(
   const places = opts.places ?? [];
   return photos.filter((photo) => {
     if (opts.favoritesOnly && !photo.favorite) return false;
-    if (places.length && photo.location !== undefined && !places.includes(photo.location)) return false;
+    if (places.length && photo.location !== undefined && !places.includes(photo.location))
+      return false;
     if (places.length && !photo.location) return false;
     if (opts.years.length && !opts.years.includes(photo.takenAt.slice(0, 4))) return false;
     return true;
@@ -64,13 +65,15 @@ export function searchPhotos(
 
 export function nearestGroupIndex(groups: TimelineGroup[], takenAt: string): number {
   if (groups.length === 0) return 0;
-  const exact = groups.findIndex((group) => group.photos.some((photo) => photo.takenAt === takenAt));
+  const exact = groups.findIndex((group) =>
+    group.photos.some((photo) => photo.takenAt === takenAt),
+  );
   if (exact >= 0) return exact;
   const t = takenAt;
   let best = 0;
   let bestDelta = Number.POSITIVE_INFINITY;
   groups.forEach((group, index) => {
-    const sample = group.photos[0]?.takenAt ?? "";
+    const sample = group.photos[0]?.takenAt ?? '';
     const numeric = Math.abs(toStamp(sample) - toStamp(t));
     if (numeric < bestDelta) {
       bestDelta = numeric;

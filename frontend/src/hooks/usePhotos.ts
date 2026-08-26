@@ -1,8 +1,19 @@
-import { useMutation, useInfiniteQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { fetchPhotosPage, flattenPhotoPages, setPhotoFavorite, type PhotoFilter, type PhotosPage } from "../lib/api";
-import type { Photo } from "../models/photo";
+import {
+  useMutation,
+  useInfiniteQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
+import {
+  fetchPhotosPage,
+  flattenPhotoPages,
+  setPhotoFavorite,
+  type PhotoFilter,
+  type PhotosPage,
+} from '../lib/api';
+import type { Photo } from '../models/photo';
 
-export const photoQueryKey = ["photos"] as const;
+export const photoQueryKey = ['photos'] as const;
 
 export function photosQueryKey(filter?: PhotoFilter) {
   if (!filter || Object.keys(filter).length === 0) return photoQueryKey;
@@ -33,17 +44,24 @@ export function useToggleFavorite() {
     },
     onMutate: async ({ id, favorite }) => {
       await queryClient.cancelQueries({ queryKey: photoQueryKey });
-      const snapshots = queryClient.getQueriesData<InfiniteData<PhotosPage>>({ queryKey: photoQueryKey });
-      queryClient.setQueriesData<InfiniteData<PhotosPage>>({ queryKey: photoQueryKey }, (current) => {
-        if (!current) return current;
-        return {
-          ...current,
-          pages: current.pages.map((page) => ({
-            ...page,
-            photos: page.photos.map((photo) => (photo.id === id ? { ...photo, favorite } : photo)),
-          })),
-        };
+      const snapshots = queryClient.getQueriesData<InfiniteData<PhotosPage>>({
+        queryKey: photoQueryKey,
       });
+      queryClient.setQueriesData<InfiniteData<PhotosPage>>(
+        { queryKey: photoQueryKey },
+        (current) => {
+          if (!current) return current;
+          return {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              photos: page.photos.map((photo) =>
+                photo.id === id ? { ...photo, favorite } : photo,
+              ),
+            })),
+          };
+        },
+      );
       return { snapshots };
     },
     onError: (_error, _vars, context) => {

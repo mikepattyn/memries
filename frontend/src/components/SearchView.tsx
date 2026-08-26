@@ -1,20 +1,20 @@
-import { useEffect, useMemo, useRef } from "react";
-import { usePhotoPress } from "../hooks/usePhotoPress";
-import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
-import { useViewportWidth } from "../hooks/useViewportWidth";
-import { useVisibleRowRange } from "../hooks/useVisibleRowRange";
-import { photoOpenLabel } from "../lib/photoName";
-import { photoFacets } from "../lib/groupPhotos";
-import { chunkIntoRows, rowWindow, searchGridColumns } from "../lib/keepWindow";
-import { parseSmartDate, SEARCH_SUGGESTIONS } from "../lib/parseSmartDate";
-import { compactThumbSize, compactThumbUrl } from "../lib/photoSrc";
-import type { Photo, SearchCategory, SearchState } from "../models/photo";
-import { FavoriteBadge } from "./FavoriteBadge";
-import { CloseIcon, SearchIcon } from "./icons";
+import { useEffect, useMemo, useRef } from 'react';
+import { usePhotoPress } from '../hooks/usePhotoPress';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { useViewportWidth } from '../hooks/useViewportWidth';
+import { useVisibleRowRange } from '../hooks/useVisibleRowRange';
+import { photoOpenLabel } from '../lib/photoName';
+import { photoFacets } from '../lib/groupPhotos';
+import { chunkIntoRows, rowWindow, searchGridColumns } from '../lib/keepWindow';
+import { parseSmartDate, SEARCH_SUGGESTIONS } from '../lib/parseSmartDate';
+import { compactThumbSize, compactThumbUrl } from '../lib/photoSrc';
+import type { Photo, SearchCategory, SearchState } from '../models/photo';
+import { FavoriteBadge } from './FavoriteBadge';
+import { CloseIcon, SearchIcon } from './icons';
 
 const CATEGORIES: { id: SearchCategory; label: string }[] = [
-  { id: "years", label: "Years" },
-  { id: "favorites", label: "Favorites" },
+  { id: 'years', label: 'Years' },
+  { id: 'favorites', label: 'Favorites' },
 ];
 
 export function SearchView({
@@ -49,8 +49,12 @@ export function SearchView({
   const showSuggestions = !search.query.trim() || (ready && results.length === 0);
 
   const toggleCategory = (id: SearchCategory) => {
-    if (id === "favorites") {
-      onSearchChange({ ...search, favoritesOnly: !search.favoritesOnly, openCategory: search.openCategory });
+    if (id === 'favorites') {
+      onSearchChange({
+        ...search,
+        favoritesOnly: !search.favoritesOnly,
+        openCategory: search.openCategory,
+      });
       return;
     }
     onSearchChange({
@@ -59,10 +63,10 @@ export function SearchView({
     });
   };
 
-  const facetOptions = search.openCategory === "years" ? facets.years : [];
+  const facetOptions = search.openCategory === 'years' ? facets.years : [];
 
   const toggleFacet = (value: string) => {
-    if (search.openCategory === "years") {
+    if (search.openCategory === 'years') {
       onSearchChange({ ...search, years: xor(search.years, value) });
     }
   };
@@ -72,7 +76,9 @@ export function SearchView({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="px-4 pb-3 min-[640px]:px-6">
-        <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Search</h1>
+        <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">
+          Search
+        </h1>
         <label className="mt-4 flex min-h-12 items-center gap-3 rounded-full bg-surface/70 px-4 shadow-soft backdrop-blur-md">
           <SearchIcon className="h-5 w-5 shrink-0 text-ink/45" />
           <span className="sr-only">Search memories</span>
@@ -91,7 +97,7 @@ export function SearchView({
             <p className="min-w-0 flex-1 text-sm text-ink/70">{parsed.label}</p>
             <button
               type="button"
-              onClick={() => onSearchChange({ ...search, query: "" })}
+              onClick={() => onSearchChange({ ...search, query: '' })}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-ink/55 transition hover:text-plum"
               aria-label="Clear search date"
             >
@@ -109,7 +115,7 @@ export function SearchView({
                 data-suggestion-chip
                 onClick={() => onSearchChange({ ...search, query: suggestion.query })}
                 className={`min-h-11 rounded-full bg-surface/70 px-4 text-sm font-medium text-ink/70 shadow-soft transition duration-200 hover:text-plum ${
-                  reducedMotion ? "" : "animate-chip-in"
+                  reducedMotion ? '' : 'animate-chip-in'
                 }`}
                 style={reducedMotion ? undefined : { animationDelay: `${index * 45}ms` }}
               >
@@ -122,18 +128,23 @@ export function SearchView({
         <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Search filters">
           {CATEGORIES.map((category) => {
             const active =
-              category.id === "favorites"
+              category.id === 'favorites'
                 ? search.favoritesOnly
-                : search.openCategory === category.id || (category.id === "years" && search.years.length > 0);
+                : search.openCategory === category.id ||
+                  (category.id === 'years' && search.years.length > 0);
             return (
               <button
                 key={category.id}
                 type="button"
                 onClick={() => toggleCategory(category.id)}
                 aria-pressed={active}
-                aria-expanded={category.id === "years" ? search.openCategory === "years" : undefined}
+                aria-expanded={
+                  category.id === 'years' ? search.openCategory === 'years' : undefined
+                }
                 className={`min-h-11 rounded-full px-4 text-sm font-medium transition duration-200 ${
-                  active ? "bg-plum text-cream shadow-lift" : "bg-surface/70 text-ink/70 shadow-soft"
+                  active
+                    ? 'bg-plum text-cream shadow-lift'
+                    : 'bg-surface/70 text-ink/70 shadow-soft'
                 }`}
               >
                 {category.label}
@@ -153,7 +164,7 @@ export function SearchView({
                   onClick={() => toggleFacet(option)}
                   aria-pressed={selected}
                   className={`min-h-11 rounded-full px-3 text-sm transition duration-200 ${
-                    selected ? "bg-peach text-plum" : "bg-surface/50 text-ink/65"
+                    selected ? 'bg-peach text-plum' : 'bg-surface/50 text-ink/65'
                   }`}
                 >
                   {option}
@@ -171,7 +182,9 @@ export function SearchView({
           </p>
         ) : results.length === 0 ? (
           <div className="mt-10 flex flex-col items-center text-center" data-empty="search">
-            <span className={`grid h-14 w-14 place-items-center rounded-full bg-surface/70 text-peach shadow-soft ${reducedMotion ? "" : "index-pulse"}`}>
+            <span
+              className={`grid h-14 w-14 place-items-center rounded-full bg-surface/70 text-peach shadow-soft ${reducedMotion ? '' : 'index-pulse'}`}
+            >
               <SearchIcon className="h-6 w-6" />
             </span>
             <p className="mt-4 text-sm text-ink/60">No memories match that search.</p>
@@ -179,13 +192,9 @@ export function SearchView({
         ) : (
           <>
             <p className="mb-3 text-sm text-ink/55" role="status">
-              {results.length} {results.length === 1 ? "result" : "results"}
+              {results.length} {results.length === 1 ? 'result' : 'results'}
             </p>
-            <SearchResultGrid
-              photos={results}
-              onOpen={onOpen}
-              onActions={onActions}
-            />
+            <SearchResultGrid photos={results} onOpen={onOpen} onActions={onActions} />
           </>
         )}
       </div>
@@ -212,7 +221,7 @@ function SearchResultGrid({
     <div className="flex flex-col gap-2.5">
       {visualRows.map((rowPhotos, rowIndex) => (
         <div
-          key={rowPhotos.map((photo) => photo.id).join("-")}
+          key={rowPhotos.map((photo) => photo.id).join('-')}
           ref={bindRow(rowIndex)}
           className="grid grid-cols-2 gap-2.5 min-[640px]:grid-cols-3 min-[800px]:grid-cols-4"
         >

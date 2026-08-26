@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from 'react';
 
 export function useSlidingHighlight(selectedKey: string) {
   const groupRef = useRef<HTMLDivElement>(null);
@@ -26,10 +26,10 @@ export function useSlidingHighlight(selectedKey: string) {
     measure();
     const observer = new ResizeObserver(measure);
     if (groupRef.current) observer.observe(groupRef.current);
-    window.addEventListener("resize", measure);
+    window.addEventListener('resize', measure);
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", measure);
+      window.removeEventListener('resize', measure);
     };
   }, [selectedKey]);
 

@@ -1,21 +1,26 @@
-import { useCallback, useMemo, useState } from "react";
-import { AlbumPage } from "./components/AlbumPage";
-import { AlbumsView } from "./components/AlbumsView";
-import { AppShell } from "./components/AppShell";
-import { FavoritesView } from "./components/FavoritesView";
-import { IndexingScreen } from "./components/IndexingScreen";
-import { PhotoActionsMenu } from "./components/PhotoActionsMenu";
-import { PhotoViewer } from "./components/PhotoViewer";
-import { SearchView } from "./components/SearchView";
-import { Timeline } from "./components/Timeline";
-import { useAddPhotoToAlbum, useAlbums, useCreateAlbum, useRemovePhotoFromAlbum } from "./hooks/useAlbums";
-import { useIndex } from "./hooks/useIndex";
-import { flattenPhotos, usePhotos, useToggleFavorite } from "./hooks/usePhotos";
-import { parseSmartDate } from "./lib/parseSmartDate";
-import type { Granularity, NavTab, Photo, SearchState } from "./models/photo";
+import { useCallback, useMemo, useState } from 'react';
+import { AlbumPage } from './components/AlbumPage';
+import { AlbumsView } from './components/AlbumsView';
+import { AppShell } from './components/AppShell';
+import { FavoritesView } from './components/FavoritesView';
+import { IndexingScreen } from './components/IndexingScreen';
+import { PhotoActionsMenu } from './components/PhotoActionsMenu';
+import { PhotoViewer } from './components/PhotoViewer';
+import { SearchView } from './components/SearchView';
+import { Timeline } from './components/Timeline';
+import {
+  useAddPhotoToAlbum,
+  useAlbums,
+  useCreateAlbum,
+  useRemovePhotoFromAlbum,
+} from './hooks/useAlbums';
+import { useIndex } from './hooks/useIndex';
+import { flattenPhotos, usePhotos, useToggleFavorite } from './hooks/usePhotos';
+import { parseSmartDate } from './lib/parseSmartDate';
+import type { Granularity, NavTab, Photo, SearchState } from './models/photo';
 
 const INITIAL_SEARCH: SearchState = {
-  query: "",
+  query: '',
   years: [],
   favoritesOnly: false,
   openCategory: null,
@@ -31,8 +36,8 @@ export default function App() {
     rescanning,
     retrying: indexRetrying,
   } = useIndex();
-  const [tab, setTab] = useState<NavTab>("memories");
-  const [granularity, setGranularity] = useState<Granularity>("month");
+  const [tab, setTab] = useState<NavTab>('memories');
+  const [granularity, setGranularity] = useState<Granularity>('month');
   const [search, setSearch] = useState<SearchState>(INITIAL_SEARCH);
   const [lastFocus, setLastFocus] = useState<HTMLElement | null>(null);
   const [viewer, setViewer] = useState<{
@@ -45,7 +50,7 @@ export default function App() {
   const [indexVisible, setIndexVisible] = useState(true);
 
   const timelineQuery = usePhotos(isReadyForPhotos);
-  const favoritesQuery = usePhotos(isReadyForPhotos && tab === "favorites", { favorite: true });
+  const favoritesQuery = usePhotos(isReadyForPhotos && tab === 'favorites', { favorite: true });
   const parsedDate = useMemo(() => parseSmartDate(search.query, new Date()), [search.query]);
   const searchFilter = useMemo(() => {
     const years = [...search.years];
@@ -62,7 +67,7 @@ export default function App() {
       q: parsedDate || !query ? undefined : query,
     };
   }, [parsedDate, search.favoritesOnly, search.query, search.years]);
-  const searchQuery = usePhotos(isReadyForPhotos && tab === "search", searchFilter);
+  const searchQuery = usePhotos(isReadyForPhotos && tab === 'search', searchFilter);
 
   const albumsQuery = useAlbums();
   const favoriteMutation = useToggleFavorite();
@@ -71,7 +76,7 @@ export default function App() {
   const removePhotoMutation = useRemovePhotoFromAlbum();
 
   const activeQuery =
-    tab === "favorites" ? favoritesQuery : tab === "search" ? searchQuery : timelineQuery;
+    tab === 'favorites' ? favoritesQuery : tab === 'search' ? searchQuery : timelineQuery;
 
   const loadSettled = activeQuery.isSuccess || activeQuery.isError;
   const canLeaveIndex = isReadyForPhotos && loadSettled && !rescanning && !indexRetrying;
@@ -88,14 +93,14 @@ export default function App() {
   const albums = albumsQuery.data ?? [];
 
   const tabPhotos =
-    tab === "favorites" ? favoritesPhotos : tab === "search" ? searchPhotos : timelinePhotos;
+    tab === 'favorites' ? favoritesPhotos : tab === 'search' ? searchPhotos : timelinePhotos;
 
   const liveViewerList = viewer
     ? viewer.list.map((item) => tabPhotos.find((photo) => photo.id === item.id) ?? item)
     : [];
 
   const liveActionsPhoto = actionsPhoto
-    ? tabPhotos.find((photo) => photo.id === actionsPhoto.id) ?? actionsPhoto
+    ? (tabPhotos.find((photo) => photo.id === actionsPhoto.id) ?? actionsPhoto)
     : null;
 
   const openPhoto = (photo: Photo, origin: HTMLElement, list: Photo[]) => {
@@ -127,12 +132,12 @@ export default function App() {
   };
 
   const changeTab = (next: NavTab) => {
-    if (next === tab && next === "albums") {
+    if (next === tab && next === 'albums') {
       setSelectedAlbumId(null);
       return;
     }
     setTab(next);
-    if (next !== "albums") setSelectedAlbumId(null);
+    if (next !== 'albums') setSelectedAlbumId(null);
   };
 
   const showGallery = !indexVisible || canLeaveIndex;
@@ -142,8 +147,13 @@ export default function App() {
       {showGallery && (
         <AppShell tab={tab} onTabChange={changeTab}>
           {activeQuery.isError && (
-            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center" role="alert">
-              <p className="font-display text-2xl font-semibold tracking-tight">We could not load your photos</p>
+            <div
+              className="flex flex-1 flex-col items-center justify-center px-6 text-center"
+              role="alert"
+            >
+              <p className="font-display text-2xl font-semibold tracking-tight">
+                We could not load your photos
+              </p>
               <p className="mt-2 max-w-xs text-sm text-ink/65">
                 Something went quietly wrong. You can try again in a moment.
               </p>
@@ -156,7 +166,7 @@ export default function App() {
               </button>
             </div>
           )}
-          {timelineQuery.isSuccess && tab === "memories" && (
+          {timelineQuery.isSuccess && tab === 'memories' && (
             <Timeline
               photos={timelinePhotos}
               granularity={granularity}
@@ -171,10 +181,10 @@ export default function App() {
               fetchError={timelineQuery.isFetchNextPageError}
               onRescan={handleRescan}
               rescanning={rescanning}
-              onFilter={() => changeTab("search")}
+              onFilter={() => changeTab('search')}
             />
           )}
-          {tab === "albums" && selectedAlbumId && (
+          {tab === 'albums' && selectedAlbumId && (
             <AlbumPage
               albumId={selectedAlbumId}
               onBack={() => setSelectedAlbumId(null)}
@@ -182,7 +192,7 @@ export default function App() {
               onActions={openActions}
             />
           )}
-          {tab === "albums" && !selectedAlbumId && (
+          {tab === 'albums' && !selectedAlbumId && (
             <AlbumsView
               albums={albums}
               onCreate={(name) => createAlbumMutation.mutate(name)}
@@ -190,10 +200,10 @@ export default function App() {
               creating={createAlbumMutation.isPending}
             />
           )}
-          {favoritesQuery.isSuccess && tab === "favorites" && (
+          {favoritesQuery.isSuccess && tab === 'favorites' && (
             <FavoritesView photos={favoritesPhotos} onOpen={openPhoto} onActions={openActions} />
           )}
-          {tab === "search" && !searchQuery.isError && (
+          {tab === 'search' && !searchQuery.isError && (
             <SearchView
               photos={searchPhotos}
               facetPhotos={timelinePhotos}
@@ -221,17 +231,25 @@ export default function App() {
 
           {liveActionsPhoto && !viewer && (
             <>
-              <div className="fixed inset-0 z-[55] bg-black/40" aria-hidden onClick={closeActions} />
+              <div
+                className="fixed inset-0 z-[55] bg-black/40"
+                aria-hidden
+                onClick={closeActions}
+              />
               <PhotoActionsMenu
                 photo={liveActionsPhoto}
                 albums={albums}
-                mode={selectedAlbumId ? "album" : "library"}
+                mode={selectedAlbumId ? 'album' : 'library'}
                 onClose={closeActions}
                 onToggleFavorite={toggleFavorite}
                 onAddToAlbum={addToAlbum}
                 onRemoveFromAlbum={
                   selectedAlbumId
-                    ? () => removePhotoMutation.mutate({ albumId: selectedAlbumId, photoId: liveActionsPhoto.id })
+                    ? () =>
+                        removePhotoMutation.mutate({
+                          albumId: selectedAlbumId,
+                          photoId: liveActionsPhoto.id,
+                        })
                     : undefined
                 }
               />

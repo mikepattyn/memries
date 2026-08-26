@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { ThemeProvider } from "../hooks/useTheme";
-import { AppShell } from "./AppShell";
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { ThemeProvider } from '../hooks/useTheme';
+import { AppShell } from './AppShell';
 
 function renderShell() {
   return render(
@@ -13,21 +13,26 @@ function renderShell() {
   );
 }
 
-describe("AppShell", () => {
-  it("exposes a main landmark and a skip link", () => {
+describe('AppShell', () => {
+  it('exposes a main landmark and a skip link', () => {
     renderShell();
-    expect(screen.getByRole("link", { name: "Skip to content" })).toHaveAttribute("href", "#main-content");
-    expect(screen.getByRole("main")).toContainElement(screen.getByRole("heading", { level: 1, name: "Your memries" }));
+    expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute(
+      'href',
+      '#main-content',
+    );
+    expect(screen.getByRole('main')).toContainElement(
+      screen.getByRole('heading', { level: 1, name: 'Your memries' }),
+    );
   });
 
-  it("keeps the brand out of the heading outline", () => {
+  it('keeps the brand out of the heading outline', () => {
     renderShell();
-    expect(screen.getAllByText("Memries").length).toBeGreaterThan(0);
-    expect(screen.queryByRole("heading", { name: "Memries" })).toBeNull();
+    expect(screen.getAllByText('Memries').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('heading', { name: 'Memries' })).toBeNull();
   });
 
-  it("names the primary navigation", () => {
+  it('names the primary navigation', () => {
     renderShell();
-    expect(screen.getAllByRole("navigation", { name: "Main" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('navigation', { name: 'Main' }).length).toBeGreaterThan(0);
   });
 });

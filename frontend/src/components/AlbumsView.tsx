@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { compactThumbSize, thumbUrl } from "../lib/photoSrc";
-import { useViewportWidth } from "../hooks/useViewportWidth";
-import type { Album } from "../models/photo";
-import { FoldersIcon, PlusIcon } from "./icons";
+import { useEffect, useRef, useState } from 'react';
+import { compactThumbSize, thumbUrl } from '../lib/photoSrc';
+import { useViewportWidth } from '../hooks/useViewportWidth';
+import type { Album } from '../models/photo';
+import { FoldersIcon, PlusIcon } from './icons';
 
 export function AlbumsView({
   albums,
@@ -16,7 +16,7 @@ export function AlbumsView({
   creating: boolean;
 }) {
   const [drafting, setDrafting] = useState(false);
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,13 +27,15 @@ export function AlbumsView({
     const trimmed = name.trim();
     if (!trimmed || creating) return;
     onCreate(trimmed);
-    setName("");
+    setName('');
     setDrafting(false);
   };
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 min-[640px]:px-6">
-      <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">Albums</h1>
+      <h1 className="font-display text-[2.1rem] font-semibold leading-tight tracking-tight text-plum">
+        Albums
+      </h1>
       <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink/70">
         Gather a handful of days into a set you can return to.
       </p>
@@ -71,7 +73,7 @@ export function AlbumsView({
                 type="button"
                 onClick={() => {
                   setDrafting(false);
-                  setName("");
+                  setName('');
                 }}
                 className="min-h-11 rounded-full bg-surface px-4 text-sm font-medium text-ink/70"
               >
@@ -103,11 +105,14 @@ export function AlbumsView({
 function AlbumCard({ album, onOpen }: { album: Album; onOpen: (album: Album) => void }) {
   const coverId = album.coverPhotoId ?? album.photoIds[0];
   const count = album.photoCount;
-  const countLabel = `${count} ${count === 1 ? "photo" : "photos"}`;
+  const countLabel = `${count} ${count === 1 ? 'photo' : 'photos'}`;
   const coverSize = compactThumbSize(useViewportWidth());
 
   return (
-    <article data-album-card className="album-card overflow-hidden rounded-[1.4rem] bg-surface/70 shadow-soft">
+    <article
+      data-album-card
+      className="album-card overflow-hidden rounded-[1.4rem] bg-surface/70 shadow-soft"
+    >
       <button
         type="button"
         onClick={() => onOpen(album)}

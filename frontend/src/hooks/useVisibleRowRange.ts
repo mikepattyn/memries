@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { COMPACT_ROW_OVERSCAN } from "../lib/keepWindow";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { COMPACT_ROW_OVERSCAN } from '../lib/keepWindow';
 
 export function useVisibleRowRange(rowCount: number, overscan = COMPACT_ROW_OVERSCAN) {
   const [first, setFirst] = useState(0);

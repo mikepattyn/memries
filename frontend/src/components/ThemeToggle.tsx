@@ -1,10 +1,10 @@
-import { useTheme } from "../hooks/useTheme";
-import { MoonIcon, SunIcon } from "./icons";
+import { useTheme } from '../hooks/useTheme';
+import { MoonIcon, SunIcon } from './icons';
 
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, toggle } = useTheme();
-  const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
-  const Icon = theme === "dark" ? SunIcon : MoonIcon;
+  const label = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  const Icon = theme === 'dark' ? SunIcon : MoonIcon;
 
   if (compact) {
     return (
@@ -29,7 +29,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
       data-theme-toggle
     >
       <Icon className="h-5 w-5" />
-      <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+      <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
     </button>
   );
 }

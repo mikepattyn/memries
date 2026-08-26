@@ -1,6 +1,6 @@
-import type { Photo } from "../models/photo";
+import type { Photo } from '../models/photo';
 
-export type PhotoDensity = "thumb" | "medium" | "featured" | "day";
+export type PhotoDensity = 'thumb' | 'medium' | 'featured' | 'day';
 
 export const COMPACT_DESKTOP_MIN_WIDTH = 1280;
 
@@ -17,11 +17,11 @@ export function compactThumbUrl(id: string, viewportWidth: number): string {
 }
 
 export function timelineSrc(
-  photo: Pick<Photo, "id" | "thumbnailUrl">,
+  photo: Pick<Photo, 'id' | 'thumbnailUrl'>,
   density: PhotoDensity,
   viewportWidth = 1280,
 ): string {
-  if (density === "featured" || density === "day") {
+  if (density === 'featured' || density === 'day') {
     return thumbUrl(photo.id, 1024);
   }
   return compactThumbUrl(photo.id, viewportWidth);
@@ -31,6 +31,6 @@ export function cardImageSrc(photo: Photo, density: PhotoDensity, viewportWidth 
   return timelineSrc(photo, density, viewportWidth);
 }
 
-export function viewerFallbackSrc(photo: Pick<Photo, "id">): string {
+export function viewerFallbackSrc(photo: Pick<Photo, 'id'>): string {
   return thumbUrl(photo.id, 1024);
 }
