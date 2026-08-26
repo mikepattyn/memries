@@ -173,6 +173,10 @@ Then('I should see the empty album state', async ({ page }) => {
   await expect(page.getByText('No photos in this album yet.', { exact: true })).toBeVisible();
 });
 
+Then('I should see the empty albums list', async ({ page }) => {
+  await expect(page.getByRole('status').filter({ hasText: 'No albums yet.' })).toBeVisible();
+});
+
 Then('the search suggestion chips should be ready', async ({ page }) => {
   await expect(page.locator('[data-suggestion-chip]')).toHaveCount(8);
 });
