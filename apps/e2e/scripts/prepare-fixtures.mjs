@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { mkdir, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, rename, rm, unlink, utimes, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import jpeg from 'jpeg-js';
@@ -129,6 +129,7 @@ export async function setNoExifTimes(filePath) {
 
 export async function prepareAll() {
   await mkdir(cacheRoot, { recursive: true });
+  await rm(photosRoot, { recursive: true, force: true });
   await mkdir(photosRoot, { recursive: true });
   for (const spec of FIXTURES) {
     await writeFixture(spec);
@@ -139,13 +140,21 @@ export async function setExif(file, datetime) {
   await writeFixture(fixtureByName(file), datetime);
 }
 
+export async function removePhoto(file) {
+  await unlink(join(photosRoot, file));
+}
+
+export async function relocatePhoto(from, to) {
+  await rename(join(photosRoot, from), join(photosRoot, to));
+}
+
 const isMain =
   !!process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
 
 if (isMain) {
-  const [, , cmd, file, ...datetimeParts] = process.argv;
+  const [, , cmd, file, destOrDate, ...rest] = process.argv;
   if (cmd === 'set-exif') {
-    const datetime = datetimeParts.join(' ');
+    const datetime = [destOrDate, ...rest].filter(Boolean).join(' ');
     if (!file || !datetime) {
       console.error(
         'Usage: node scripts/prepare-fixtures.mjs set-exif <file.jpg> <YYYY:MM:DD HH:MM:SS>',
@@ -153,6 +162,18 @@ if (isMain) {
       process.exit(1);
     }
     await setExif(file, datetime);
+  } else if (cmd === 'remove-photo') {
+    if (!file) {
+      console.error('Usage: node scripts/prepare-fixtures.mjs remove-photo <file.jpg>');
+      process.exit(1);
+    }
+    await removePhoto(file);
+  } else if (cmd === 'relocate-photo') {
+    if (!file || !destOrDate) {
+      console.error('Usage: node scripts/prepare-fixtures.mjs relocate-photo <from.jpg> <to.jpg>');
+      process.exit(1);
+    }
+    await relocatePhoto(file, destOrDate);
   } else {
     await prepareAll();
   }

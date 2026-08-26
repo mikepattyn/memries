@@ -344,6 +344,16 @@ When(
   },
 );
 
+When('I remove the photo {string}', async ({}, file: string) => {
+  markFixturesDirty();
+  runPrepareFixtures(['remove-photo', file]);
+});
+
+When('I relocate the photo {string} to {string}', async ({}, from: string, to: string) => {
+  markFixturesDirty();
+  runPrepareFixtures(['relocate-photo', from, to]);
+});
+
 When('I sync the folder', async ({ page }) => {
   await openTab(page, 'Memories');
   await page.getByRole('button', { name: 'Sync folder' }).click();
@@ -357,6 +367,15 @@ When('I sync the folder', async ({ page }) => {
 
 Then('I should see a memory from {string}', async ({ page }, day: string) => {
   await expect(await revealPhoto(page, day)).toBeVisible();
+});
+
+Then('I should not see a memory from {string}', async ({ page }, day: string) => {
+  await openTab(page, 'Memories');
+  const labels = await collectTimelineLabels(page);
+  expect(
+    labels.some((label) => label.includes(day)),
+    `did not expect a memory from ${day}, got ${labels.join(' | ')}`,
+  ).toBe(false);
 });
 
 Then('the photo from {string} should be a favorite', async ({ page }, day: string) => {
