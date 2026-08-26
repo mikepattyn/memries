@@ -4,9 +4,12 @@ import {
   Then,
   When,
   collectTimelineLabels,
+  escapeRegExp,
   markFixturesDirty,
   openTab,
+  photoActionsDialog,
   photoByDay,
+  photoViewerDialog,
   revealPhoto,
   runPrepareFixtures,
   scrollTimeline,
@@ -156,7 +159,7 @@ When('I create an album named {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'New album' }).click();
   await page.getByLabel('Album name').fill(name);
   await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: new RegExp(`Open album ${escapeRegExp(name)}`) })).toBeVisible();
 });
 
 When('I open the album named {string}', async ({ page }, name: string) => {
@@ -218,21 +221,21 @@ When('I open the photo from {string}', async ({ page }, day: string) => {
     const photo = photoByDay(page, day).first();
     await expect(photo).toBeVisible();
     await photo.click();
-    await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+    await expect(photoViewerDialog(page)).toBeVisible();
     return;
   }
   await openTab(page, 'Memories');
   const photo = await revealPhoto(page, day);
   await photo.click();
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+  await expect(photoViewerDialog(page)).toBeVisible();
 });
 
 Then('the photo viewer is open', async ({ page }) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+  await expect(photoViewerDialog(page)).toBeVisible();
 });
 
 Then('the photo viewer is closed', async ({ page }) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toHaveCount(0);
+  await expect(photoViewerDialog(page)).toHaveCount(0);
 });
 
 When('I add the viewer photo to favorites', async ({ page }) => {
@@ -267,7 +270,7 @@ When('I long-press the photo from {string}', async ({ page }, day: string) => {
   await page.mouse.down();
   await page.waitForTimeout(650);
   await page.mouse.up();
-  const menu = page.getByRole('menu', { name: 'Photo actions' });
+  const menu = photoActionsDialog(page);
   if (!(await menu.isVisible().catch(() => false))) {
     await photo.click({ button: 'right' });
   }
@@ -275,7 +278,7 @@ When('I long-press the photo from {string}', async ({ page }, day: string) => {
 });
 
 Then('the photo actions menu is visible', async ({ page }) => {
-  await expect(page.getByRole('menu', { name: 'Photo actions' })).toBeVisible();
+  await expect(photoActionsDialog(page)).toBeVisible();
 });
 
 Then('album {string} in the actions menu shows {int} on the right', async ({ page }, name: string, count: number) => {
