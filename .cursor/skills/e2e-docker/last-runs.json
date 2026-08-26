@@ -123,14 +123,14 @@
       }
     },
     "memries-viewer": {
-      "path": "e2e/features/viewer.feature",
-      "recordedAt": "2026-08-26T08:03:32.424Z",
+      "path": "apps/e2e/features/viewer.feature",
+      "recordedAt": "2026-08-26T11:24:06.434Z",
       "lastCommit": "c8c403d613c30e9accaf4587ae365889d522610a",
       "finding": {
-        "status": "passed",
-        "summary": "4 passed",
+        "status": "failed",
+        "summary": "0 passed, stack up failed: frontend image Node 20 vs jest-dom 7",
         "composeProject": "e2e-memries-viewer",
-        "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
+        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
       }
     },
     "memries-search": {
