@@ -8,6 +8,8 @@
     "test": "bddgen && playwright test",
     "test:unit": "node --test scripts/stack.test.mjs",
     "lint": "eslint .",
+    "format": "prettier --write \"**/*.{js,mjs,cjs,ts,tsx}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,cjs,ts,tsx}\"",
     "bddgen": "bddgen",
     "stack:up": "node scripts/stack.mjs up",
     "stack:down": "node scripts/stack.mjs down",
@@ -24,6 +26,7 @@
     "jpeg-js": "^0.4.4",
     "piexifjs": "^1.0.6",
     "playwright-bdd": "^9.2.0",
+    "prettier": "^3.9.6",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.40.0"
   }

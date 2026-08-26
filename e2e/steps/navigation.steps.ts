@@ -12,5 +12,7 @@ When('I open the {string} tab', async ({ page }, tab: string) => {
 
 When('I reload the page', async ({ page }) => {
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Your memries' })).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByRole('heading', { name: 'Your memries' })).toBeVisible({
+    timeout: 120_000,
+  });
 });

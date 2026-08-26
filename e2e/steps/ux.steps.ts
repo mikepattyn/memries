@@ -1,5 +1,13 @@
 import { expect } from '@playwright/test';
-import { Given, Then, When, openTab, photoActionsDialog, photoByDay, photoViewer } from './fixtures';
+import {
+  Given,
+  Then,
+  When,
+  openTab,
+  photoActionsDialog,
+  photoByDay,
+  photoViewer,
+} from './fixtures';
 
 const GRANULARITY: Record<string, string> = {
   Year: 'year',
@@ -170,11 +178,17 @@ Then('the search suggestion chips should be ready', async ({ page }) => {
 });
 
 Then('the year facet {string} is selected', async ({ page }, year: string) => {
-  await expect(page.getByRole('button', { name: year, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: year, exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
 });
 
 Then('the year facet {string} is not selected', async ({ page }, year: string) => {
-  await expect(page.getByRole('button', { name: year, exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByRole('button', { name: year, exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
 });
 
 Then('the album name field is focused', async ({ page }) => {
@@ -184,7 +198,10 @@ Then('the album name field is focused', async ({ page }) => {
 Then('the granularity highlight should be on {string}', async ({ page }, label: string) => {
   const value = GRANULARITY[label];
   expect(value, `unknown granularity ${label}`).toBeTruthy();
-  await expect(page.getByRole('radio', { name: label, exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByRole('radio', { name: label, exact: true })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
   const indicator = page.locator('[data-granularity-indicator]');
   await expect(indicator).toHaveAttribute('data-granularity', value);
   await expect
