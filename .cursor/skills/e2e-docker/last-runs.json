@@ -79,14 +79,14 @@
       }
     },
     "memries-long-press": {
-      "path": "e2e/features/long-press.feature",
-      "recordedAt": "2026-08-26T07:58:49.992Z",
-      "lastCommit": "8643b654af2d17e3837160ac86e6ab7f6ef36b59",
+      "path": "apps/e2e/features/long-press.feature",
+      "recordedAt": "2026-08-26T11:24:04.654Z",
+      "lastCommit": "1abf1ba3cb3faffb2db9826c346e614a6c14644a",
       "finding": {
         "status": "passed",
-        "summary": "2 passed",
+        "summary": "2 passed (25.1s)",
         "composeProject": "e2e-memries-long-press",
-        "suiteCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29"
+        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
       }
     },
     "memries-viewer-gestures": {
