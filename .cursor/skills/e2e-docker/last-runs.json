@@ -3,13 +3,13 @@
   "apps": {
     "memries-albums": {
       "path": "apps/e2e/features/albums.feature",
-      "recordedAt": "2026-08-26T11:38:16.018Z",
-      "lastCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73",
+      "recordedAt": "2026-08-26T11:52:06.284Z",
+      "lastCommit": "278562958109bec84a5a857bc4a20b1a6e8429a6",
       "finding": {
         "status": "passed",
-        "summary": "10 passed (47.5s)",
+        "summary": "10 passed",
         "composeProject": "e2e-memries-albums",
-        "suiteCommit": "1bbcda483433dbf6e53019eccc1744ed39bd6d73"
+        "suiteCommit": "66b7e1a3240099a8b8211096052fac11060898d4"
       }
     },
     "memries-empty-states": {
