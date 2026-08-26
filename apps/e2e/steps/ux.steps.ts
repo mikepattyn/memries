@@ -50,6 +50,10 @@ When('I swipe the viewer left', async ({ page }) => {
   await dragViewer(page, -90, 0);
 });
 
+When('I swipe the viewer right', async ({ page }) => {
+  await dragViewer(page, 90, 0);
+});
+
 When('I drag the viewer a short way left', async ({ page }) => {
   await dragViewer(page, -24, 0);
 });

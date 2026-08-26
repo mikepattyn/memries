@@ -9,6 +9,12 @@ Feature: Photo viewer gestures
     And I swipe the viewer left
     Then the viewer shows the photo from "Wednesday, 26 August 2026"
 
+  Scenario: Swiping right opens the previous photo
+    Given I am signed in
+    When I open the photo from "Wednesday, 26 August 2026"
+    And I swipe the viewer right
+    Then the viewer shows the photo from "Monday, 31 August 2026"
+
   Scenario: A short drag snaps back
     Given I am signed in
     When I open the photo from "Monday, 31 August 2026"
