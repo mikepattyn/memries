@@ -248,7 +248,11 @@ function plan(opts) {
     pathExists: (row) => existsSync(join(ROOT, row.path)),
     commitExists: (sha) => gitOk(['cat-file', '-e', `${sha}^{commit}`]),
     changedFilesFor: (row) =>
-      suiteChangedFiles(lastRuns.apps[row.id]?.lastCommit, suiteHead, e2eDiffPaths(row.featuresDir, row.featureFile)),
+      suiteChangedFiles(
+        lastRuns.apps[row.id]?.lastCommit,
+        suiteHead,
+        e2eDiffPaths(row.featuresDir, row.featureFile),
+      ),
     maxLaunch: MAX_LAUNCH,
     baseBranch: branch,
   });
@@ -389,8 +393,7 @@ function parseArgs(argv) {
   return { cmd: positional[0], ids: positional.slice(1), opts };
 }
 
-const isMain =
-  Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
+const isMain = Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
 
 if (isMain) {
   main();

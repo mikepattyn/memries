@@ -17,7 +17,10 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { closeOpenedWorktrees, parseWorktreeList } from '../e2e-docker/e2e-docker-close.mjs';
-import { commitLastRunsIfNeeded, isAgentWorktreeBranch } from '../e2e-docker/e2e-docker-last-runs.mjs';
+import {
+  commitLastRunsIfNeeded,
+  isAgentWorktreeBranch,
+} from '../e2e-docker/e2e-docker-last-runs.mjs';
 import { buildE2ePlan, recordE2eFindings } from '../e2e-docker/e2e-docker.mjs';
 import { applyIsolation, composeProjectForId } from '../e2e-docker/e2e-features.mjs';
 
@@ -418,8 +421,7 @@ function planAtomic(skillId, opts, config) {
     incompleteField: skill.incompleteField,
     pathExists: (row) => existsSync(join(ROOT, row.path)),
     commitExists: (sha) => gitOk(['cat-file', '-e', `${sha}^{commit}`]),
-    changedFilesFor: (row) =>
-      changedFiles(lastRuns.apps[row.id]?.lastCommit, head, row.path),
+    changedFilesFor: (row) => changedFiles(lastRuns.apps[row.id]?.lastCommit, head, row.path),
   });
 }
 
@@ -623,14 +625,14 @@ export function main(argv = process.argv.slice(2)) {
   if (cmd === 'list') result = listSkillsFromConfig(config, resolveBaseBranch());
   else if (cmd === 'plan') result = plan(opts.skill, opts, config);
   else if (cmd === 'record') result = record(opts.skill, opts.ids, opts, config);
-  else if (cmd === 'close') result = opts.here ? closeHere() : closeSkill(opts.skill, opts.ids, opts, config);
+  else if (cmd === 'close')
+    result = opts.here ? closeHere() : closeSkill(opts.skill, opts.ids, opts, config);
   else usage(cmd ? 1 : 0);
   console.log(JSON.stringify(result, null, 2));
   return result;
 }
 
-const isMain =
-  Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
+const isMain = Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
 
 if (isMain) {
   try {

@@ -84,9 +84,7 @@ export function trimSlash(url) {
  */
 export function collectionNames(body) {
   const rows = Array.isArray(body?.result) ? body.result : [];
-  return rows
-    .filter((row) => row && row.name && !row.isSystem)
-    .map((row) => row.name);
+  return rows.filter((row) => row && row.name && !row.isSystem).map((row) => row.name);
 }
 
 /**
@@ -122,7 +120,9 @@ export async function main(argv, deps = {}) {
   }
 
   const fileEnv = await loadEnvFile(args.envFile, cwd, readFileImpl);
-  const url = trimSlash(args.url || env.MEMRIES_ARANGO_URL || fileEnv.MEMRIES_ARANGO_URL || DEFAULT_URL);
+  const url = trimSlash(
+    args.url || env.MEMRIES_ARANGO_URL || fileEnv.MEMRIES_ARANGO_URL || DEFAULT_URL,
+  );
   const dbName = args.db || env.MEMRIES_ARANGO_DB || fileEnv.MEMRIES_ARANGO_DB || DEFAULT_DB;
   const user = args.user || env.MEMRIES_ARANGO_USER || fileEnv.MEMRIES_ARANGO_USER || DEFAULT_USER;
   const password =
@@ -142,9 +142,13 @@ export async function main(argv, deps = {}) {
 
   let listed;
   try {
-    listed = await arangoJson(fetchImpl, `${url}/_db/${encodeURIComponent(dbName)}/_api/collection?excludeSystem=true`, {
-      headers,
-    });
+    listed = await arangoJson(
+      fetchImpl,
+      `${url}/_db/${encodeURIComponent(dbName)}/_api/collection?excludeSystem=true`,
+      {
+        headers,
+      },
+    );
   } catch (err) {
     if (err instanceof ArangoHttpError && err.status === 404) {
       log(`database ${dbName} does not exist (nothing to clear)`);
@@ -240,7 +244,8 @@ function formatConnectError(url, err) {
   return `Cannot reach ArangoDB at ${url} (${message}). Is the stack up? Try: make up`;
 }
 
-const invoked = process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
+const invoked =
+  process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url));
 if (invoked) {
   main(process.argv.slice(2))
     .then((code) => {

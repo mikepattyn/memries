@@ -4,13 +4,16 @@ import { test } from 'node:test';
 import { collectionNames, main, parseArgs, parseEnvFile, trimSlash } from './clear-arango.mjs';
 
 test('parseArgs reads flags', () => {
-  assert.deepEqual(parseArgs(['--url', 'http://x:1', '--db', 'other', '--user', 'root', '--env-file', '.env']), {
-    url: 'http://x:1',
-    db: 'other',
-    user: 'root',
-    envFile: '.env',
-    help: false,
-  });
+  assert.deepEqual(
+    parseArgs(['--url', 'http://x:1', '--db', 'other', '--user', 'root', '--env-file', '.env']),
+    {
+      url: 'http://x:1',
+      db: 'other',
+      user: 'root',
+      envFile: '.env',
+      help: false,
+    },
+  );
 });
 
 test('parseArgs rejects unknown flags', () => {
@@ -71,7 +74,8 @@ test('main treats a missing database as already empty', async () => {
   const logs = [];
   const code = await main([], {
     env: { ARANGO_PASSWORD: 'secret' },
-    fetch: async () => new Response('{"error":true,"errorMessage":"database not found"}', { status: 404 }),
+    fetch: async () =>
+      new Response('{"error":true,"errorMessage":"database not found"}', { status: 404 }),
     log: (...args) => logs.push(args.join(' ')),
   });
   assert.equal(code, 0);
