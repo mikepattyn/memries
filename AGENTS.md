@@ -28,6 +28,7 @@ Out of scope unless the user asks: video, S3 storage, WebSockets, sharing graph,
 
 ## Stack
 
+- pnpm + Turborepo workspace under `apps/` (`@memries/frontend`, `@memries/backend`, `@memries/e2e`, `@memries/scripts`)
 - Go 1.23 module `github.com/memries/memries` — chi, Arango driver, OIDC, gorilla sessions, imaging
 - React 18 + Vite + Tailwind + TanStack Query + virtua
 - ArangoDB, Dex, Caddy, Docker Compose
@@ -42,7 +43,7 @@ Out of scope unless the user asks: video, S3 storage, WebSockets, sharing graph,
 
 ## How to run
 
-Follow the README quick start (Compose + `.env`). Initial index:
+Follow the README quick start (Compose + `.env`). Host Turbo builds need `make install-requirements` then `pnpm install`. Initial index:
 
 ```bash
 docker compose exec backend indexer -owner admin@example.com -prefix admin@example.com
@@ -54,24 +55,24 @@ Dev login is documented in [deploy/dex/config.yaml](deploy/dex/config.yaml). Tro
 
 Public seams for new behavior and tests:
 
-- HTTP: [backend/internal/api](backend/internal/api/api.go) and [backend/internal/auth](backend/internal/auth/auth.go)
-- Storage: [backend/internal/storage](backend/internal/storage/storage.go)
-- Schema and queries: [backend/internal/db](backend/internal/db/arango.go)
+- HTTP: [apps/backend/internal/api](apps/backend/internal/api/api.go) and [apps/backend/internal/auth](apps/backend/internal/auth/auth.go)
+- Storage: [apps/backend/internal/storage](apps/backend/internal/storage/storage.go)
+- Schema and queries: [apps/backend/internal/db](apps/backend/internal/db/arango.go)
 
-There is no test suite yet. New tests belong next to those seams (`*_test.go` / frontend tests), not inside UI widgets.
+New tests belong next to those seams (`*_test.go` / frontend tests), not inside UI widgets.
 
 ## Skills
 
 - `context-map` — before any feature or bug work
 - `tdd` — when adding tests
-- `responsive-frontend` — any visual change under `frontend/`
+- `responsive-frontend` — any visual change under `apps/frontend/`
 - `page-accessibility` — WCAG work on one Memories / Albums / Search / viewer surface
-- `frontend-page-accessibility` / `frontend-lint` / `frontend-format` — React + Vite + Tailwind tree under `frontend/`
-- `backend-lint` / `backend-format` — Go (`gofmt` / `go vet`) under `backend/`
-- `platform-lint` / `platform-format` — `e2e/` and `scripts/`
-- `e2e-docker` — one Docker Playwright feature per worktree (max 20 stacks; setup + run + merge `e2e/` only). `--force` reruns every feature and refreshes last-runs. Shelf: [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/)
+- `frontend-page-accessibility` / `frontend-lint` / `frontend-format` — React + Vite + Tailwind tree under `apps/frontend/`
+- `backend-lint` / `backend-format` — Go (`gofmt` / `go vet`) under `apps/backend/`
+- `platform-lint` / `platform-format` — `apps/e2e/` and `apps/scripts/`
+- `e2e-docker` — one Docker Playwright feature per worktree (max 20 stacks; setup + run + merge `apps/e2e/` only). `--force` reruns every feature and refreshes last-runs. Shelf: [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/)
 - `platform-quality` — user-invoked only: page-accessibility → e2e-docker → lint → format. No scripts-to-node wave
 
 ## Scripts
 
-New or edited scripts live in `scripts/<name>/` as a unit-tested Node `.mjs` plus Unix and PowerShell wrappers. See [`.cursor/rules/dual-shell-scripts.mdc`](.cursor/rules/dual-shell-scripts.mdc).
+New or edited scripts live in `apps/scripts/<name>/` as a unit-tested Node `.mjs` plus Unix and PowerShell wrappers. See [`.cursor/rules/dual-shell-scripts.mdc`](.cursor/rules/dual-shell-scripts.mdc).

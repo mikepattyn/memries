@@ -3,16 +3,16 @@ name: frontend-page-accessibility
 description: >-
   Orchestrates /page-accessibility for the Memries React frontend. Diffs
   last-run commits against the current local branch and fans out one isolated
-  worktree agent when frontend/ is dirty (max 40). Use when the user wants
+  worktree agent when apps/frontend/ is dirty (max 40). Use when the user wants
   /frontend-page-accessibility. Do not mix format or lint into this launch.
   Do not invoke platform-quality.
 ---
 
 # Frontend page accessibility
 
-Reusable **orchestrator**. This skill does **not** audit a page itself. It diffs `frontend/` against the last recorded commit on the **current local branch** and launches one isolated worktree agent when that tree still needs work.
+Reusable **orchestrator**. This skill does **not** audit a page itself. It diffs `apps/frontend/` against the last recorded commit on the **current local branch** and launches one isolated worktree agent when that tree still needs work.
 
-Planning uses [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs) (`--skill frontend-page-accessibility`).
+Planning uses [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs) (`--skill frontend-page-accessibility`).
 
 Shared assets: [app-fanout](../app-fanout/README.md).
 
@@ -33,7 +33,7 @@ Progress:
 - Accessibility target: WCAG 2.2 AA for Memories, Albums, Album page, Search, and the photo viewer
 - Verification: focused assertions + axe-core when the app already has it; note keyboard/screen-reader checks tools cannot prove
 - Headings: one page-level `h1`, labelled sections below
-- Stay inside `frontend/`
+- Stay inside `apps/frontend/`
 - Never push
 - `last-runs.json` is parent-only; the executing parent commits it when `record` adds an id or changes last-run time
 - Children close their worktree with `close --here` before they return. The parent always runs `close --skill` after merge or failure
@@ -52,10 +52,10 @@ Progress:
 ## 1. Plan
 
 ```
-node scripts/app-fanout/app-fanout.mjs plan --skill frontend-page-accessibility
+node apps/scripts/app-fanout/app-fanout.mjs plan --skill frontend-page-accessibility
 ```
 
-Wrappers: `./scripts/app-fanout/app-fanout.sh plan --skill frontend-page-accessibility` or `./scripts/app-fanout/app-fanout.ps1 plan --skill frontend-page-accessibility`.
+Wrappers: `./apps/scripts/app-fanout/app-fanout.sh plan --skill frontend-page-accessibility` or `./apps/scripts/app-fanout/app-fanout.ps1 plan --skill frontend-page-accessibility`.
 
 Optional: `--force`, `--app frontend`, `--base <branch>`.
 
@@ -72,19 +72,19 @@ Treat `status: "needs-run"` as work. Skip `up-to-date` (`no-diff`) and `skipped`
 Merge `worktreeBranch` into the plan `baseBranch`. Then close:
 
 ```
-node scripts/app-fanout/app-fanout.mjs close --skill frontend-page-accessibility frontend
+node apps/scripts/app-fanout/app-fanout.mjs close --skill frontend-page-accessibility frontend
 ```
 
 After the last child, if you created `.worktrees/<baseBranch>`:
 
 ```
-node scripts/app-fanout/app-fanout.mjs close --skill frontend-page-accessibility --base-worktree
+node apps/scripts/app-fanout/app-fanout.mjs close --skill frontend-page-accessibility --base-worktree
 ```
 
 Then record that branch's new SHA:
 
 ```
-node scripts/app-fanout/app-fanout.mjs record --skill frontend-page-accessibility --commit <base-sha> frontend
+node apps/scripts/app-fanout/app-fanout.mjs record --skill frontend-page-accessibility --commit <base-sha> frontend
 ```
 
 `record` Conventional-Commits **only** this skill's `last-runs.json` when an id is new or `recordedAt` / `lastCommit` changed. Do not record failed or skipped trees.
@@ -96,5 +96,5 @@ Pages completed, incomplete pages, merge, closed worktrees. Never push.
 ## Out of scope
 
 - Lint and format
-- `backend/`, `e2e/`, `scripts/`
+- `apps/backend/`, `apps/e2e/`, `apps/scripts/`
 - `platform-quality`

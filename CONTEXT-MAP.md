@@ -14,19 +14,21 @@ Stay in this repository. Do not read or edit parent directories.
 | [0006](docs/adr/0006-truncate-arango-for-resync.md) | Truncate Arango for resync; keep photo volumes |
 | [0007](docs/adr/0007-viewport-forced-compact-thumbs.md) | Compact grids: 256 at viewport ≥1280px, else 512; no `srcset` |
 | [0008](docs/adr/0008-smart-date-search.md) | Search smart dates are SPA-parsed; `/api/photos` gets `month` / `local_from` / `local_to`; Filter opens Search |
-| [0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md) | `/e2e-docker` lives here: one feature file, one Compose project, setup + merge of `e2e/`, cap 20, last-runs in this repo; `--force` reruns every feature |
+| [0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md) | `/e2e-docker` lives here: one feature file, one Compose project, setup + merge of `apps/e2e/`, cap 20, last-runs in this repo; `--force` reruns every feature |
 | [0010](docs/adr/0010-memries-platform-quality-shelf.md) | Local `/platform-quality`: a11y → e2e → lint → format; no scripts-to-node; dual-shell script rule |
+| [0011](docs/adr/0011-turborepo-pnpm-workspace.md) | pnpm + Turbo workspace under `apps/`; prune + fill-extras in Docker; quality shelf paths retargeted |
 
 ## Contexts
 
 | Context | Path | Start here |
 |---------|------|------------|
-| Photo library / API | [backend/](backend/), [CONTEXT.md](CONTEXT.md) | [cmd/server/main.go](backend/cmd/server/main.go), [internal/api/api.go](backend/internal/api/api.go), [internal/db/models.go](backend/internal/db/models.go) |
-| Indexer | [backend/cmd/indexer](backend/cmd/indexer/main.go), [internal/index](backend/internal/index/indexer.go) | HTTP job or CLI walks prefix → identity → EXIF → thumbs → upsert ([0004](docs/adr/0004-owner-scoped-index-job-and-cursor-photos.md)) |
-| Timeline UI | [frontend/src](frontend/src) | [App.tsx](frontend/src/App.tsx) → [Timeline.tsx](frontend/src/components/Timeline.tsx) → [groupPhotos.ts](frontend/src/lib/groupPhotos.ts); catalog in [lib/api.ts](frontend/src/lib/api.ts) |
-| Local ops | [docker-compose.yml](docker-compose.yml), [deploy/](deploy/), [Makefile](Makefile) | Caddy routes; Dex issuer `http://localhost:5556`; catalog reset [docs/adr/0006-truncate-arango-for-resync.md](docs/adr/0006-truncate-arango-for-resync.md) |
-| Isolated Playwright BDD | [e2e/](e2e/) | One feature per Compose project ([0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md)); skill [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/) |
-| Quality shelf | [`.cursor/skills/`](.cursor/skills/) | `/platform-quality` waves and last-runs ([0010](docs/adr/0010-memries-platform-quality-shelf.md)); planner [`scripts/app-fanout/app-fanout.mjs`](scripts/app-fanout/app-fanout.mjs) |
+| Photo library / API | [apps/backend/](apps/backend/), [CONTEXT.md](CONTEXT.md) | [cmd/server/main.go](apps/backend/cmd/server/main.go), [internal/api/api.go](apps/backend/internal/api/api.go), [internal/db/models.go](apps/backend/internal/db/models.go) |
+| Indexer | [apps/backend/cmd/indexer](apps/backend/cmd/indexer/main.go), [internal/index](apps/backend/internal/index/indexer.go) | HTTP job or CLI walks prefix → identity → EXIF → thumbs → upsert ([0004](docs/adr/0004-owner-scoped-index-job-and-cursor-photos.md)) |
+| Timeline UI | [apps/frontend/src](apps/frontend/src) | [App.tsx](apps/frontend/src/App.tsx) → [Timeline.tsx](apps/frontend/src/components/Timeline.tsx) → [groupPhotos.ts](apps/frontend/src/lib/groupPhotos.ts); catalog in [lib/api.ts](apps/frontend/src/lib/api.ts) |
+| Local ops | [docker-compose.yml](docker-compose.yml), [deploy/](deploy/), [Makefile](Makefile) | Caddy routes; Dex issuer `http://localhost:5556`; catalog reset [docs/adr/0006-truncate-arango-for-resync.md](docs/adr/0006-truncate-arango-for-resync.md); images [Dockerfile.frontend](Dockerfile.frontend) / [Dockerfile.backend](Dockerfile.backend) |
+| Isolated Playwright BDD | [apps/e2e/](apps/e2e/) | One feature per Compose project ([0009](docs/adr/0009-e2e-docker-skill-owns-isolated-stacks.md)); skill [`.cursor/skills/e2e-docker/`](.cursor/skills/e2e-docker/) |
+| Quality shelf | [`.cursor/skills/`](.cursor/skills/) | `/platform-quality` waves and last-runs ([0010](docs/adr/0010-memries-platform-quality-shelf.md)); planner [`apps/scripts/app-fanout/app-fanout.mjs`](apps/scripts/app-fanout/app-fanout.mjs) |
+| Build graph | [package.json](package.json), [turbo.json](turbo.json) | pnpm workspace + Turbo ([0011](docs/adr/0011-turborepo-pnpm-workspace.md)); host install [apps/scripts/install-requirements/](apps/scripts/install-requirements/) |
 
 ```mermaid
 flowchart LR
@@ -74,7 +76,7 @@ Owner ACL today: session user key vs `photo.owner_id` / `album.owner_id`. Share 
 - `/api/*` → backend + auth middleware: `GET /me`, `/timeline`, `/photos` (`year`, `month`, `local_from`, `local_to`, `favorite`, `q`), `/photos/{id}`, `/photos/{id}/favorite`, `/albums`, `/albums/{id}`, `/albums/{id}/photos`, `/thumb/{id}`, `/original/{id}`, `/index`, `/index/status`
 - `/healthz` on the backend only (not via Caddy today)
 
-## Module map (backend `internal/`)
+## Module map (`apps/backend/internal/`)
 
 - `config` — `MEMRIES_*` env
 - `auth` — Dex OIDC + cookie + `/api/me`

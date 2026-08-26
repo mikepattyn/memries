@@ -1,7 +1,7 @@
 ---
 name: platform-format
 description: >-
-  Orchestrates formatting for Memries remainder trees: e2e/ and scripts/.
+  Orchestrates formatting for Memries remainder trees: apps/e2e/ and apps/scripts/.
   Diffs last-run commits against the current local branch and fans out one
   isolated worktree agent per dirty tree (max 40). Use when the user wants
   /platform-format. Do not mix lint into this launch. Do not invoke
@@ -10,9 +10,9 @@ description: >-
 
 # Platform format
 
-Reusable **orchestrator**. Trees are the explicit list in [`scripts/app-fanout/app-fanout.config.json`](../../../scripts/app-fanout/app-fanout.config.json) (`platform-format.trees`): `e2e` and `scripts`.
+Reusable **orchestrator**. Trees are the explicit list in [`apps/scripts/app-fanout/app-fanout.config.json`](../../../apps/scripts/app-fanout/app-fanout.config.json) (`platform-format.trees`): `apps/e2e` and `apps/scripts`.
 
-Planning uses [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs) (`--skill platform-format`).
+Planning uses [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs) (`--skill platform-format`).
 
 Shared assets: [app-fanout](../app-fanout/README.md).
 
@@ -50,7 +50,7 @@ Progress:
 ## 1. Plan
 
 ```
-node scripts/app-fanout/app-fanout.mjs plan --skill platform-format
+node apps/scripts/app-fanout/app-fanout.mjs plan --skill platform-format
 ```
 
 Optional: `--force`, repeatable `--app <id>`, `--base <branch>`.
@@ -63,8 +63,8 @@ Optional: `--force`, repeatable `--app <id>`, `--base <branch>`.
 ## 3. Merge, close, then record
 
 ```
-node scripts/app-fanout/app-fanout.mjs close --skill platform-format e2e
-node scripts/app-fanout/app-fanout.mjs record --skill platform-format --commit <base-sha> e2e
+node apps/scripts/app-fanout/app-fanout.mjs close --skill platform-format e2e
+node apps/scripts/app-fanout/app-fanout.mjs record --skill platform-format --commit <base-sha> e2e
 ```
 
 Do not record failed or skipped trees.
@@ -72,5 +72,5 @@ Do not record failed or skipped trees.
 ## Out of scope
 
 - Lint (`platform-lint`)
-- `frontend/`, `backend/`
+- `apps/frontend/`, `apps/backend/`
 - `platform-quality`

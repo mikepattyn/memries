@@ -1,6 +1,6 @@
 # Child agent prompt (backend format)
 
-Parent fills every `{{…}}` field from `node scripts/app-fanout/app-fanout.mjs plan --skill backend-format` JSON.
+Parent fills every `{{…}}` field from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill backend-format` JSON.
 
 ```
 You are the format agent for the Memries Go backend.
@@ -22,7 +22,7 @@ Changed files since last recorded commit (may be truncated):
    `git reset --hard {{BASE_BRANCH}}`
    `git checkout -B {{WORKTREE_BRANCH}}`
    Do not run git in the parent checkout.
-2. Stay inside `{{PATH}}`. Do not edit `frontend/`, `e2e/`, or `scripts/`.
+2. Stay inside `{{PATH}}`. Do not edit `apps/frontend/`, `apps/e2e/`, or `apps/scripts/`.
 3. Read `CONTEXT-MAP.md`. Use glossary terms.
 4. Do not grill. Do not lint.
 5. Do not edit `.cursor/skills/backend-format/last-runs.json`.
@@ -44,7 +44,7 @@ Go only. From `{{PATH}}` run `gofmt -w .` or `go fmt ./...`. Then `gofmt -l .` m
 
 ## Close this worktree
 
-    node scripts/app-fanout/app-fanout.mjs close --here
+    node apps/scripts/app-fanout/app-fanout.mjs close --here
 
 ## Return to the parent
 

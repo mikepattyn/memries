@@ -1,0 +1,105 @@
+{
+  "maxLaunch": 40,
+  "skills": {
+    "frontend-page-accessibility": {
+      "cohort": "frontends",
+      "discover": "trees",
+      "lastRunsPath": ".cursor/skills/frontend-page-accessibility/last-runs.json",
+      "incompleteField": "pages",
+      "steps": ["page-accessibility"],
+      "trees": [{ "id": "frontend", "path": "apps/frontend" }]
+    },
+    "frontend-format": {
+      "cohort": "frontends",
+      "discover": "trees",
+      "lastRunsPath": ".cursor/skills/frontend-format/last-runs.json",
+      "incompleteField": null,
+      "steps": ["format"],
+      "trees": [{ "id": "frontend", "path": "apps/frontend" }]
+    },
+    "frontend-lint": {
+      "cohort": "frontends",
+      "discover": "trees",
+      "lastRunsPath": ".cursor/skills/frontend-lint/last-runs.json",
+      "incompleteField": "files",
+      "steps": ["lint"],
+      "trees": [{ "id": "frontend", "path": "apps/frontend" }]
+    },
+    "backend-format": {
+      "cohort": "backends",
+      "discover": "trees",
+      "lastRunsPath": ".cursor/skills/backend-format/last-runs.json",
+      "incompleteField": null,
+      "steps": ["format"],
+      "trees": [{ "id": "backend", "path": "apps/backend" }]
+    },
+    "backend-lint": {
+      "cohort": "backends",
+      "discover": "trees",
+      "lastRunsPath": ".cursor/skills/backend-lint/last-runs.json",
+      "incompleteField": "files",
+      "steps": ["lint"],
+      "trees": [{ "id": "backend", "path": "apps/backend" }]
+    },
+    "platform-format": {
+      "cohort": "platform",
+      "discover": "trees",
+      "lastRunsPath": ".cursor/skills/platform-format/last-runs.json",
+      "incompleteField": null,
+      "steps": ["format"],
+      "trees": [
+        { "id": "e2e", "path": "apps/e2e" },
+        { "id": "scripts", "path": "apps/scripts" }
+      ]
+    },
+    "platform-lint": {
+      "cohort": "platform",
+      "discover": "trees",
+      "lastRunsPath": ".cursor/skills/platform-lint/last-runs.json",
+      "incompleteField": "files",
+      "steps": ["lint"],
+      "trees": [
+        { "id": "e2e", "path": "apps/e2e" },
+        { "id": "scripts", "path": "apps/scripts" }
+      ]
+    },
+    "e2e-docker": {
+      "cohort": "e2e",
+      "discover": "e2e-features",
+      "lastRunsPath": ".cursor/skills/e2e-docker/last-runs.json",
+      "incompleteField": null,
+      "steps": ["e2e"],
+      "maxLaunch": 20,
+      "suites": [
+        {
+          "id": "memries",
+          "path": "",
+          "featuresDir": "apps/e2e/features"
+        }
+      ]
+    },
+    "platform-quality": {
+      "kind": "umbrella",
+      "userInvokedOnly": true,
+      "cohort": "all",
+      "waves": [
+        {
+          "step": "page-accessibility",
+          "skills": ["frontend-page-accessibility"]
+        },
+        {
+          "step": "e2e",
+          "skills": ["e2e-docker"]
+        },
+        {
+          "step": "lint",
+          "skills": ["frontend-lint", "backend-lint", "platform-lint"]
+        },
+        {
+          "step": "format",
+          "skills": ["frontend-format", "backend-format", "platform-format"]
+        }
+      ]
+    }
+  }
+}

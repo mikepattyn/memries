@@ -25,8 +25,8 @@ Use this skill for accessibility work on a specific Memries surface, including t
    - Use glossary terms (Photo, Album, Timeline Group, Thumb, Original, Owner). If the user uses a conflicting term, call it out immediately.
 
 3. Trace the full accessibility surface.
-   - Route or tab in `frontend/src/App.tsx`.
-   - Page component and child components under `frontend/src/components`.
+   - Route or tab in `apps/frontend/src/App.tsx`.
+   - Page component and child components under `apps/frontend/src/components`.
    - Shared UI primitives and hooks those components use.
    - Existing frontend tests for that surface.
 

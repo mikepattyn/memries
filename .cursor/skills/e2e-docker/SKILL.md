@@ -4,7 +4,7 @@ description: >-
   Orchestrates one Docker Playwright BDD feature per isolated worktree in
   this Memries repo. Diffs this checkout, fans out at most 20 stacks on the
   19000 port band, and lets children author or update that feature plus steps
-  before running it. The parent merges e2e/ commits. Use when the user wants
+  before running it. The parent merges apps/e2e/ commits. Use when the user wants
   /e2e-docker, /e2e-docker --force (fresh run of every feature and last-runs),
   or the e2e wave of /platform-quality. Do not invoke platform-quality from
   here.
@@ -12,9 +12,9 @@ description: >-
 
 # E2E Docker
 
-Reusable **orchestrator** for this repository. Each child owns **one feature file**: author or update coverage under `e2e/` if it is missing, then run that feature against its own Compose project. Children never edit `frontend/` or `backend/`.
+Reusable **orchestrator** for this repository. Each child owns **one feature file**: author or update coverage under `apps/e2e/` if it is missing, then run that feature against its own Compose project. Children never edit `apps/frontend/` or `apps/backend/`.
 
-Planning uses [`scripts/e2e-docker/e2e-docker.mjs`](../../../scripts/e2e-docker/e2e-docker.mjs). Discovery lives in [`scripts/e2e-docker/e2e-features.mjs`](../../../scripts/e2e-docker/e2e-features.mjs). Isolation env is owned by [`e2e/scripts/stack.mjs`](../../../e2e/scripts/stack.mjs). `/platform-quality` wave 1 calls the same `planE2eFeatures` via [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs).
+Planning uses [`apps/scripts/e2e-docker/e2e-docker.mjs`](../../../apps/scripts/e2e-docker/e2e-docker.mjs). Discovery lives in [`apps/scripts/e2e-docker/e2e-features.mjs`](../../../apps/scripts/e2e-docker/e2e-features.mjs). Isolation env is owned by [`apps/e2e/scripts/stack.mjs`](../../../apps/e2e/scripts/stack.mjs). `/platform-quality` wave 1 calls the same `planE2eFeatures` via [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs).
 
 ## Progress
 
@@ -32,8 +32,8 @@ Progress:
 ## Defaults (do not grill per feature)
 
 - One feature file per agent. Not the whole suite
-- Setup + run: add or update `e2e/features` and `e2e/steps` when product diffs lack coverage, then start the isolated stack, run that feature, wipe the stack
-- Never push. Do not edit product code under `frontend/` or `backend/`
+- Setup + run: add or update `apps/e2e/features` and `apps/e2e/steps` when product diffs lack coverage, then start the isolated stack, run that feature, wipe the stack
+- Never push. Do not edit product code under `apps/frontend/` or `apps/backend/`
 - `last-runs.json` is parent-only; the executing parent commits it when `record` adds an id or changes last-run time / lastCommit / finding
 - Children close their worktree with `close --here` before they return. The parent always runs `close` after success or failure
 - Launch **only** `launchNow` (at most **20**). Task description = `e2e-docker-<id>`
@@ -54,16 +54,16 @@ Progress:
 ## 1. Plan
 
 ```
-node scripts/e2e-docker/e2e-docker.mjs plan
+node apps/scripts/e2e-docker/e2e-docker.mjs plan
 ```
 
 When the user asked to force, refresh, rerun all features, or prove the suite:
 
 ```
-node scripts/e2e-docker/e2e-docker.mjs plan --force
+node apps/scripts/e2e-docker/e2e-docker.mjs plan --force
 ```
 
-Wrappers: `./scripts/e2e-docker/e2e-docker.sh plan` or `./scripts/e2e-docker/e2e-docker.ps1 plan`.
+Wrappers: `./apps/scripts/e2e-docker/e2e-docker.sh plan` or `./apps/scripts/e2e-docker/e2e-docker.ps1 plan`.
 Make: `make e2e-docker` or `make e2e-docker-force` (`make e2e-docker FORCE=1`).
 
 Optional: `--force`, repeatable `--app <id>` (slug like `memries-timeline`), `--base <branch>`.
@@ -83,7 +83,7 @@ Each `launchNow` row includes `featureFile`, `suiteCommit`, `composeProject`, `o
 
 ## 3. Merge, close, then record
 
-After each child that committed `e2e/` files, merge `worktreeBranch` into the plan **`baseBranch`**:
+After each child that committed `apps/e2e/` files, merge `worktreeBranch` into the plan **`baseBranch`**:
 
 - If this checkout is still on `baseBranch` and merge-clean: `git merge <worktreeBranch>`
 - Otherwise: `git worktree add .worktrees/<baseBranch> <baseBranch>` if missing, then `git -C .worktrees/<baseBranch> merge <worktreeBranch>`
@@ -93,29 +93,29 @@ Merge even when the finding is `failed`. Do not merge if the child made no commi
 Then close the worktree that child opened — success or fail, merged or not:
 
 ```
-node scripts/e2e-docker/e2e-docker.mjs close memries-timeline
+node apps/scripts/e2e-docker/e2e-docker.mjs close memries-timeline
 ```
 
 If this checkout is not still on `baseBranch` and you created `.worktrees/<baseBranch>`:
 
 ```
-node scripts/e2e-docker/e2e-docker.mjs close --base-worktree
+node apps/scripts/e2e-docker/e2e-docker.mjs close --base-worktree
 ```
 
 Then record the finding (pass **and** fail). `lastCommit` is this repo's SHA and only advances on pass:
 
 ```
-node scripts/e2e-docker/e2e-docker.mjs record --commit <sha> --finding "{\"status\":\"passed\",\"summary\":\"12 passed\",\"composeProject\":\"e2e-memries-timeline\",\"suiteCommit\":\"<sha>\"}" memries-timeline
+node apps/scripts/e2e-docker/e2e-docker.mjs record --commit <sha> --finding "{\"status\":\"passed\",\"summary\":\"12 passed\",\"composeProject\":\"e2e-memries-timeline\",\"suiteCommit\":\"<sha>\"}" memries-timeline
 ```
 
 `record` Conventional-Commits **only** this skill's `last-runs.json` when an id is new or `recordedAt` / `lastCommit` / `finding` changed. Do not leave the file unstaged. Do not `git checkout` the child branch here.
 
 ## 4. Summarize
 
-Status, finding, compose project, whether e2e/ commits were merged, whether the worktree was closed, deferred features. Never push.
+Status, finding, compose project, whether apps/e2e/ commits were merged, whether the worktree was closed, deferred features. Never push.
 
 ## Out of scope
 
-- Fixing product code under `frontend/` or `backend/` to make a feature pass
+- Fixing product code under `apps/frontend/` or `apps/backend/` to make a feature pass
 - Infrastructure deploys
 - Starting `platform-quality` from this skill

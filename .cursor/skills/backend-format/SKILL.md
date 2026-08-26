@@ -3,7 +3,7 @@ name: backend-format
 description: >-
   Orchestrates formatting for the Memries Go backend. Diffs last-run commits
   against the current local branch and fans out one isolated worktree agent
-  when backend/ is dirty (max 40). Each child only formats with gofmt.
+  when apps/backend/ is dirty (max 40). Each child only formats with gofmt.
   Use when the user wants /backend-format. Do not mix lint into this launch.
   Do not invoke platform-quality.
 ---
@@ -12,7 +12,7 @@ description: >-
 
 Reusable **orchestrator**. Each child runs **format only**.
 
-Planning uses [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs) (`--skill backend-format`).
+Planning uses [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs) (`--skill backend-format`).
 
 Shared assets: [app-fanout](../app-fanout/README.md).
 
@@ -32,7 +32,7 @@ Progress:
 
 - `gofmt -w` / `go fmt ./...` until format-clean
 - Do not lint. Do not add golangci-lint. Do not use dotnet
-- Stay inside `backend/`
+- Stay inside `apps/backend/`
 - Never push
 - `last-runs.json` is parent-only
 - Children `close --here`; parent always `close --skill`
@@ -49,7 +49,7 @@ Progress:
 ## 1. Plan
 
 ```
-node scripts/app-fanout/app-fanout.mjs plan --skill backend-format
+node apps/scripts/app-fanout/app-fanout.mjs plan --skill backend-format
 ```
 
 Optional: `--force`, `--app backend`, `--base <branch>`.
@@ -62,8 +62,8 @@ Optional: `--force`, `--app backend`, `--base <branch>`.
 ## 3. Merge, close, then record
 
 ```
-node scripts/app-fanout/app-fanout.mjs close --skill backend-format backend
-node scripts/app-fanout/app-fanout.mjs record --skill backend-format --commit <base-sha> backend
+node apps/scripts/app-fanout/app-fanout.mjs close --skill backend-format backend
+node apps/scripts/app-fanout/app-fanout.mjs record --skill backend-format --commit <base-sha> backend
 ```
 
 Do not record failed or skipped trees.
@@ -71,5 +71,5 @@ Do not record failed or skipped trees.
 ## Out of scope
 
 - Lint (`backend-lint`)
-- `frontend/`, `e2e/`, `scripts/`
+- `apps/frontend/`, `apps/e2e/`, `apps/scripts/`
 - `platform-quality`

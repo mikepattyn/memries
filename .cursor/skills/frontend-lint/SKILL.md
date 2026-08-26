@@ -3,7 +3,7 @@ name: frontend-lint
 description: >-
   Orchestrates linting for the Memries React/Vite/Tailwind frontend. Diffs
   last-run commits against the current local branch and fans out one isolated
-  worktree agent when frontend/ is dirty (max 40). Each child only lints
+  worktree agent when apps/frontend/ is dirty (max 40). Each child only lints
   (auto-fix, then leftovers until clean or 40 diagnostics). Use when the user
   wants /frontend-lint. Do not mix format into this launch. Do not invoke
   platform-quality.
@@ -13,7 +13,7 @@ description: >-
 
 Reusable **orchestrator**. Each child runs **lint only**.
 
-Planning uses [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs) (`--skill frontend-lint`).
+Planning uses [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs) (`--skill frontend-lint`).
 
 Shared assets: [app-fanout](../app-fanout/README.md).
 
@@ -34,7 +34,7 @@ Progress:
 - Auto-fix, then leftovers until clean or **40** diagnostics
 - ESLint + Prettier config for React/Vite/Tailwind; add configs only if the tree has none
 - Do not format. Do not replace existing linter config
-- Stay inside `frontend/`
+- Stay inside `apps/frontend/`
 - Never push
 - `last-runs.json` is parent-only
 - Children `close --here`; parent always `close --skill`
@@ -51,7 +51,7 @@ Progress:
 ## 1. Plan
 
 ```
-node scripts/app-fanout/app-fanout.mjs plan --skill frontend-lint
+node apps/scripts/app-fanout/app-fanout.mjs plan --skill frontend-lint
 ```
 
 Optional: `--force`, `--app frontend`, `--base <branch>`.
@@ -64,8 +64,8 @@ Optional: `--force`, `--app frontend`, `--base <branch>`.
 ## 3. Merge, close, then record
 
 ```
-node scripts/app-fanout/app-fanout.mjs close --skill frontend-lint frontend
-node scripts/app-fanout/app-fanout.mjs record --skill frontend-lint --commit <base-sha> frontend
+node apps/scripts/app-fanout/app-fanout.mjs close --skill frontend-lint frontend
+node apps/scripts/app-fanout/app-fanout.mjs record --skill frontend-lint --commit <base-sha> frontend
 ```
 
 Do not record failed or skipped trees.
@@ -73,5 +73,5 @@ Do not record failed or skipped trees.
 ## Out of scope
 
 - Format (`frontend-format`) and page accessibility
-- `backend/`, `e2e/`, `scripts/`
+- `apps/backend/`, `apps/e2e/`, `apps/scripts/`
 - `platform-quality`

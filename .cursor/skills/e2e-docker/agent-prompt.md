@@ -1,6 +1,6 @@
 # Child agent prompt (e2e-docker)
 
-Parent fills every `{{…}}` field from `node scripts/e2e-docker/e2e-docker.mjs plan` JSON (or the e2e row from `node scripts/app-fanout/app-fanout.mjs plan --skill platform-quality --wave 1`).
+Parent fills every `{{…}}` field from `node apps/scripts/e2e-docker/e2e-docker.mjs plan` JSON (or the e2e row from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill platform-quality --wave 1`).
 
 ```
 You are the e2e-docker agent for one feature file in the Memries repo.
@@ -32,14 +32,14 @@ Changed files since last recorded commit (may be truncated):
    Do not run git in the parent checkout.
 2. Copy the parent checkout `.env` into this worktree `.env`. Never commit it.
 3. Reuse the machine Playwright browser cache (`PLAYWRIGHT_BROWSERS_PATH` = the user `ms-playwright` folder). `npm install` in `e2e` if `node_modules` is missing.
-4. You may edit `e2e/features`, `e2e/steps`, and e2e helpers this feature needs. Do **not** edit `frontend/` or `backend/`. Do not edit `.cursor/skills/e2e-docker/last-runs.json`.
+4. You may edit `apps/e2e/features`, `apps/e2e/steps`, and e2e helpers this feature needs. Do **not** edit `apps/frontend/` or `apps/backend/`. Do not edit `.cursor/skills/e2e-docker/last-runs.json`.
 5. Do not push. Never amend. Never skip hooks.
 
 ## Coverage (before the run)
 
 If product diffs or the feature file show missing or stale coverage for this feature only:
 
-1. Author or update `e2e/features/{{FEATURE_FILE}}` and the matching step definitions.
+1. Author or update `apps/e2e/features/{{FEATURE_FILE}}` and the matching step definitions.
 2. Stay inside this feature. Do not rewrite the suite.
 3. Do not change product behavior to make the scenario pass.
 
@@ -59,13 +59,13 @@ From `e2e`, with this environment:
 - `DEX_HOST_PORT={{DEX_PORT}}`
 - `PLAYWRIGHT_BROWSERS_PATH` = the machine Playwright cache
 
-1. `node scripts/stack.mjs up` (or let Playwright's webServer do it).
+1. `node apps/e2e/scripts/stack.mjs up` (or let Playwright's webServer do it).
 2. `MEMRIES_E2E_FEATURE={{FEATURE_FILE}} npm test`
-3. Always tear down, success or fail: `node scripts/stack.mjs down --wipe`
+3. Always tear down, success or fail: `node apps/e2e/scripts/stack.mjs down --wipe`
 
 ## Commit
 
-If you changed any `e2e/` files, create one Conventional Commits commit of **only** those files — even when the run failed. Skip the commit if you made no file changes. Never stage `frontend/`, `backend/`, `.env`, or `.cursor/skills/e2e-docker/last-runs.json`.
+If you changed any `apps/e2e/` files, create one Conventional Commits commit of **only** those files — even when the run failed. Skip the commit if you made no file changes. Never stage `apps/frontend/`, `apps/backend/`, `.env`, or `.cursor/skills/e2e-docker/last-runs.json`.
 
 Message like `test({{ID}}): cover {{FEATURE_FILE}}`.
 
@@ -73,7 +73,7 @@ Message like `test({{ID}}): cover {{FEATURE_FILE}}`.
 
 Success or fail:
 
-    node scripts/e2e-docker/e2e-docker.mjs close --here
+    node apps/scripts/e2e-docker/e2e-docker.mjs close --here
 
 Do not delete the branch. Do not run this in the parent checkout.
 

@@ -1,8 +1,8 @@
 ---
 description: Node implementation plus Unix and PowerShell wrappers for every script
 globs:
-  - scripts/**
-  - e2e/scripts/**
+  - apps/scripts/**
+  - apps/e2e/scripts/**
   - **/*.sh
   - **/*.ps1
 ---
@@ -13,13 +13,13 @@ When creating or materially editing a script, ship a **Node implementation** (`.
 
 ## Rules
 
-1. **Own folder** — Each script family under `scripts/` (or `e2e/scripts/`) lives in a folder named after the stem. Do not add new loose `.mjs` / `.sh` / `.ps1` files directly in `scripts/`. Helpers that are not their own CLI stay in that folder. When you materially edit an existing loose trio, move it into `scripts/<name>/` in the same change.
+1. **Own folder** — Each script family under `apps/scripts/` (or `apps/e2e/scripts/`) lives in a folder named after the stem. Do not add new loose `.mjs` / `.sh` / `.ps1` files directly in `apps/scripts/`. Helpers that are not their own CLI stay in that folder. When you materially edit an existing loose trio, move it into `apps/scripts/<name>/` in the same change.
 
 ```
-scripts/<name>/<name>.mjs
-scripts/<name>/<name>.test.mjs
-scripts/<name>/<name>.sh
-scripts/<name>/<name>.ps1
+apps/scripts/<name>/<name>.mjs
+apps/scripts/<name>/<name>.test.mjs
+apps/scripts/<name>/<name>.sh
+apps/scripts/<name>/<name>.ps1
 ```
 
 2. **Node is the implementation** — Behavior lives in `<name>.mjs` (ESM, `#!/usr/bin/env node`, `node:` builtins). Export `main(argv)` so tests can import it.
@@ -32,4 +32,4 @@ scripts/<name>/<name>.ps1
 
 6. **Edit the trio** — Bugfixes and behavior changes go in the `.mjs` (and its test). Update wrappers only if the launch convention changed.
 
-7. **Makefile call sites** — If a target should run the script, use the existing `SCRIPT_SHELL` / `SCRIPT_EXT` / `SCRIPT_RUN` pattern and the folder path (`./scripts/<name>/<name>.$(SCRIPT_EXT)`). Tests still call Node.
+7. **Makefile call sites** — If a target should run the script, use the existing `SCRIPT_SHELL` / `SCRIPT_EXT` / `SCRIPT_RUN` pattern and the folder path (`./apps/scripts/<name>/<name>.$(SCRIPT_EXT)`). Tests still call Node.

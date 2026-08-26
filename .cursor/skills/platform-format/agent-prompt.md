@@ -1,6 +1,6 @@
 # Child agent prompt (platform format)
 
-Parent fills every `{{…}}` field from `node scripts/app-fanout/app-fanout.mjs plan --skill platform-format` JSON.
+Parent fills every `{{…}}` field from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill platform-format` JSON.
 
 ```
 You are the format agent for one Memries remainder tree.
@@ -22,7 +22,7 @@ Changed files since last recorded commit (may be truncated):
    `git reset --hard {{BASE_BRANCH}}`
    `git checkout -B {{WORKTREE_BRANCH}}`
    Do not run git in the parent checkout.
-2. Stay inside `{{PATH}}`. Do not edit `frontend/` or `backend/`.
+2. Stay inside `{{PATH}}`. Do not edit `apps/frontend/` or `apps/backend/`.
 3. Read `CONTEXT-MAP.md`. Use glossary terms.
 4. Do not grill. Do not lint.
 5. Do not edit `.cursor/skills/platform-format/last-runs.json`.
@@ -48,7 +48,7 @@ Changed files since last recorded commit (may be truncated):
 
 ## Close this worktree
 
-    node scripts/app-fanout/app-fanout.mjs close --here
+    node apps/scripts/app-fanout/app-fanout.mjs close --here
 
 ## Return to the parent
 

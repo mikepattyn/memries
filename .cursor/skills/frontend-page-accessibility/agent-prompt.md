@@ -1,6 +1,6 @@
 # Child agent prompt (frontend page accessibility)
 
-Parent fills every `{{…}}` field from `node scripts/app-fanout/app-fanout.mjs plan --skill frontend-page-accessibility` JSON.
+Parent fills every `{{…}}` field from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill frontend-page-accessibility` JSON.
 
 ```
 You are the page-accessibility agent for the Memries React frontend.
@@ -22,7 +22,7 @@ Changed files since last recorded commit (may be truncated):
    `git reset --hard {{BASE_BRANCH}}`
    `git checkout -B {{WORKTREE_BRANCH}}`
    Do not run git in the parent checkout.
-2. Stay inside `{{PATH}}`. Do not edit `backend/`, `e2e/`, or `scripts/`.
+2. Stay inside `{{PATH}}`. Do not edit `apps/backend/`, `apps/e2e/`, or `apps/scripts/`.
 3. Read `CONTEXT-MAP.md`, then `CONTEXT.md`. Use glossary terms (Photo, Album, Timeline Group, Thumb, Original, Owner).
 4. Read `.cursor/skills/page-accessibility/SKILL.md`.
 5. Do not grill. Defaults: WCAG 2.2 AA; one page-level h1; focused tests plus axe-core when the app already has it; native HTML over ARIA.
@@ -53,7 +53,7 @@ Follow the page-accessibility skill. This tree is React + Vite + Tailwind. Do no
 
 After the commit (or if you made none), close the worktree you were placed in — success or fail:
 
-    node scripts/app-fanout/app-fanout.mjs close --here
+    node apps/scripts/app-fanout/app-fanout.mjs close --here
 
 That removes this worktree and keeps `{{WORKTREE_BRANCH}}` so the parent can merge. Do not delete the branch. Do not run this in the parent checkout.
 

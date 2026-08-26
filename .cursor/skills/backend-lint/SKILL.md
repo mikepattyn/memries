@@ -3,7 +3,7 @@ name: backend-lint
 description: >-
   Orchestrates linting for the Memries Go backend. Diffs last-run commits
   against the current local branch and fans out one isolated worktree agent
-  when backend/ is dirty (max 40). Each child only lints (gofmt -l plus
+  when apps/backend/ is dirty (max 40). Each child only lints (gofmt -l plus
   go vet) until clean or 40 diagnostics. Use when the user wants
   /backend-lint. Do not mix format into this launch. Do not invoke
   platform-quality.
@@ -13,7 +13,7 @@ description: >-
 
 Reusable **orchestrator**. Each child runs **lint only**.
 
-Planning uses [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs) (`--skill backend-lint`).
+Planning uses [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs) (`--skill backend-lint`).
 
 Shared assets: [app-fanout](../app-fanout/README.md).
 
@@ -33,7 +33,7 @@ Progress:
 
 - `gofmt -l` must be empty; `go vet ./...` until clean or **40** diagnostics
 - Do not format. Do not add golangci-lint. Do not use dotnet
-- Stay inside `backend/`
+- Stay inside `apps/backend/`
 - Never push
 - `last-runs.json` is parent-only
 - Children `close --here`; parent always `close --skill`
@@ -50,7 +50,7 @@ Progress:
 ## 1. Plan
 
 ```
-node scripts/app-fanout/app-fanout.mjs plan --skill backend-lint
+node apps/scripts/app-fanout/app-fanout.mjs plan --skill backend-lint
 ```
 
 Optional: `--force`, `--app backend`, `--base <branch>`.
@@ -63,8 +63,8 @@ Optional: `--force`, `--app backend`, `--base <branch>`.
 ## 3. Merge, close, then record
 
 ```
-node scripts/app-fanout/app-fanout.mjs close --skill backend-lint backend
-node scripts/app-fanout/app-fanout.mjs record --skill backend-lint --commit <base-sha> backend
+node apps/scripts/app-fanout/app-fanout.mjs close --skill backend-lint backend
+node apps/scripts/app-fanout/app-fanout.mjs record --skill backend-lint --commit <base-sha> backend
 ```
 
 Do not record failed or skipped trees.
@@ -72,5 +72,5 @@ Do not record failed or skipped trees.
 ## Out of scope
 
 - Format (`backend-format`)
-- `frontend/`, `e2e/`, `scripts/`
+- `apps/frontend/`, `apps/e2e/`, `apps/scripts/`
 - `platform-quality`

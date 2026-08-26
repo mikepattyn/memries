@@ -2,7 +2,7 @@
 
 Lightweight photo manager. Replaces Piwigo. Modern UI focused on date-scroll browsing with switchable granularity (year / month / week / day).
 
-**Stack:** Go backend · ArangoDB · React + Vite · OIDC (Dex) · Caddy reverse proxy · Docker Compose.
+**Stack:** pnpm + Turborepo · Go backend · ArangoDB · React + Vite · OIDC (Dex) · Caddy reverse proxy · Docker Compose.
 
 ## Status
 
@@ -70,18 +70,19 @@ That truncates the `memries` collections and restarts the API so the in-memory i
 Isolated Playwright BDD against Compose project `memries-e2e` (ports 18080/18081/15173/18529/15556). It does not use the developer stack’s volumes or `:80`.
 
 ```bash
-cd e2e && npm install && npx playwright install chromium
+pnpm install
+pnpm --filter @memries/e2e exec playwright install chromium
 make e2e          # first compose build can take several minutes
 make e2e-down     # stop; keep e2e volumes
 make e2e-docker-force  # plan a fresh isolated run of every feature
 ```
 
-See [e2e/README.md](e2e/README.md) for reuse of a running stack, wipe, and cleanup of `.work/`.
+See [apps/e2e/README.md](apps/e2e/README.md) for reuse of a running stack, wipe, and cleanup of `.work/`.
 
 ## Layout
 
 ```
-backend/             Go server + indexer CLI
+apps/backend/        Go server + indexer CLI (@memries/backend)
   cmd/server         HTTP API
   cmd/indexer        bulk import CLI
   internal/
@@ -93,18 +94,21 @@ backend/             Go server + indexer CLI
     index            walker/indexer pipeline + HTTP job coordinator
     auth             OIDC + cookie session middleware
     api              chi routes (timeline, photos, index, thumb, original)
-frontend/            React + Vite + Tailwind
+apps/frontend/       React + Vite + Tailwind (@memries/frontend)
   src/
     components       Timeline, IndexingScreen, lightbox
     hooks            photos infinite query, index status
     lib              authenticated API client, date helpers
+apps/e2e/            isolated Playwright BDD + Compose project memries-e2e
+apps/scripts/        quality-shelf planners + install-requirements
 deploy/
   caddy/Caddyfile    routes /api, /oauth
   dex/config.yaml    OIDC provider for dev
 data/
   photos/            originals (mounted into backend)
   cache/             thumbnails (mounted into backend)
-e2e/                 isolated Playwright BDD + Compose project memries-e2e
+Dockerfile.frontend  turbo prune + Vite image
+Dockerfile.backend   turbo prune + Go image
 ```
 
 ## Service topology
@@ -158,6 +162,21 @@ data/photos/<owner-email>/<yyyy>/<mm>/<file>.jpg
 
 Indexer accepts any prefix — pass `-prefix admin@example.com` to limit to one user.
 
+## Local Turbo (host Node + Go)
+
+Docker Desktop is enough for `make up`. To run `pnpm build` / `pnpm test` / `pnpm lint` on the host:
+
+```bash
+make install-requirements
+pnpm install
+pnpm build
+pnpm test   # frontend, backend, scripts — not Playwright
+```
+
+`make e2e` still runs the isolated Playwright suite (`@memries/e2e`).
+
+The installer provisions Node 20, Go 1.23, and corepack pnpm. It does not install Docker or workspace dependencies.
+
 ## Dev mode (without Docker)
 
 ```bash
@@ -165,19 +184,18 @@ Indexer accepts any prefix — pass `-prefix admin@example.com` to limit to one 
 docker compose up -d arangodb dex caddy frontend
 
 # Backend
-cd backend
-export $(grep -v '^#' ../.env | xargs)
+cd apps/backend
+export $(grep -v '^#' ../../.env | xargs)
 export MEMRIES_ARANGO_URL=http://localhost:8529
 export MEMRIES_OIDC_ISSUER=http://localhost:5556
-export MEMRIES_LOCAL_ROOT=../data/photos
-export MEMRIES_CACHE_ROOT=../data/cache
+export MEMRIES_LOCAL_ROOT=../../data/photos
+export MEMRIES_CACHE_ROOT=../../data/cache
 go mod tidy
 go run ./cmd/server
 
 # Frontend (in another shell)
-cd frontend
-npm install
-npm run dev
+cd apps/frontend
+pnpm --filter @memries/frontend dev
 ```
 
 ## Troubleshooting

@@ -5,6 +5,7 @@
 #   make down WIPE=1  Stop; delete Compose volumes
 #   make down-wipe    Same as WIPE=1
 #   make db-clear          Empty Arango collections; restart API
+#   make install-requirements  Host Node, Go, and corepack pnpm
 #   make e2e-docker        Plan isolated e2e-docker feature runs
 #   make e2e-docker FORCE=1
 #   make e2e-docker-force  Plan a fresh run of every feature
@@ -38,7 +39,7 @@ else
   REQUIRE_ENV := test -f .env || { echo "Missing .env (see README quick start)" >&2; exit 1; }
 endif
 
-.PHONY: help up down down-wipe db-clear e2e e2e-down e2e-docker e2e-docker-force
+.PHONY: help up down down-wipe db-clear build e2e e2e-down e2e-docker e2e-docker-force install-requirements
 
 help:
 	$(info make up              Start the stack (docker compose up -d --build))
@@ -46,6 +47,8 @@ help:
 	$(info make down WIPE=1     Stop, wipe Compose volumes)
 	$(info make down-wipe       Alias for make down WIPE=1)
 	$(info make db-clear        Empty Arango collections; restart the API)
+	$(info make build           turbo run build (host Node/Go/pnpm required))
+	$(info make install-requirements  Host Node 20, Go 1.23, corepack pnpm)
 	$(info make e2e             Playwright BDD against the isolated memries-e2e stack)
 	$(info make e2e-down        Stop the isolated e2e stack; keep volumes)
 	$(info make e2e-docker      Plan isolated e2e-docker feature runs)
@@ -70,23 +73,29 @@ down-wipe:
 
 db-clear:
 	$(REQUIRE_ENV)
-	$(SCRIPT_RUN) ./scripts/clear-arango.$(SCRIPT_EXT)
+	$(SCRIPT_RUN) ./apps/scripts/clear-arango.$(SCRIPT_EXT)
 	$(COMPOSE) restart backend
+
+install-requirements:
+	$(SCRIPT_RUN) ./apps/scripts/install-requirements/install-requirements.$(SCRIPT_EXT)
+
+build:
+	pnpm exec turbo run build
 
 e2e:
 	$(REQUIRE_ENV)
-	npm --prefix e2e test
+	pnpm --filter @memries/e2e test
 
 e2e-down:
 	$(REQUIRE_ENV)
-	npm --prefix e2e run stack:down
+	pnpm --filter @memries/e2e run stack:down
 
 e2e-docker:
 	$(REQUIRE_ENV)
 ifeq ($(FORCE),1)
-	$(SCRIPT_RUN) ./scripts/e2e-docker/e2e-docker.$(SCRIPT_EXT) plan --force
+	$(SCRIPT_RUN) ./apps/scripts/e2e-docker/e2e-docker.$(SCRIPT_EXT) plan --force
 else
-	$(SCRIPT_RUN) ./scripts/e2e-docker/e2e-docker.$(SCRIPT_EXT) plan
+	$(SCRIPT_RUN) ./apps/scripts/e2e-docker/e2e-docker.$(SCRIPT_EXT) plan
 endif
 
 e2e-docker-force:

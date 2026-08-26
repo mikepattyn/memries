@@ -1,6 +1,6 @@
 # Child agent prompt (frontend lint)
 
-Parent fills every `{{…}}` field from `node scripts/app-fanout/app-fanout.mjs plan --skill frontend-lint` JSON.
+Parent fills every `{{…}}` field from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill frontend-lint` JSON.
 
 ```
 You are the lint agent for the Memries React frontend.
@@ -23,7 +23,7 @@ Changed files since last recorded commit (may be truncated):
    `git reset --hard {{BASE_BRANCH}}`
    `git checkout -B {{WORKTREE_BRANCH}}`
    Do not run git in the parent checkout.
-2. Stay inside `{{PATH}}`. Do not edit `backend/`, `e2e/`, or `scripts/`.
+2. Stay inside `{{PATH}}`. Do not edit `apps/backend/`, `apps/e2e/`, or `apps/scripts/`.
 3. Read `CONTEXT-MAP.md`. Use glossary terms.
 4. Do not grill. Do not format.
 5. Do not edit `.cursor/skills/frontend-lint/last-runs.json`.
@@ -47,7 +47,7 @@ This tree is React + Vite + Tailwind. Do **not** replace existing linter config.
 
 1. Add missing linter config as above.
 2. Run auto-fix, then fix leftovers until exit 0 or **40** leftover diagnostics. List incomplete files if capped.
-3. After code-fixing lint, run `npm test` in `frontend/` if that script exists. Test failure = failed run.
+3. After code-fixing lint, run `pnpm test` in `apps/frontend/` if that script exists. Test failure = failed run.
 
 ## Commit (on success)
 
@@ -57,7 +57,7 @@ This tree is React + Vite + Tailwind. Do **not** replace existing linter config.
 
 ## Close this worktree
 
-    node scripts/app-fanout/app-fanout.mjs close --here
+    node apps/scripts/app-fanout/app-fanout.mjs close --here
 
 ## Return to the parent
 

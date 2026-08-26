@@ -3,7 +3,7 @@ name: frontend-format
 description: >-
   Orchestrates formatting for the Memries React/Vite/Tailwind frontend. Diffs
   last-run commits against the current local branch and fans out one isolated
-  worktree agent when frontend/ is dirty (max 40). Each child only formats.
+  worktree agent when apps/frontend/ is dirty (max 40). Each child only formats.
   Use when the user wants /frontend-format. Do not mix lint into this launch.
   Do not invoke platform-quality.
 ---
@@ -12,7 +12,7 @@ description: >-
 
 Reusable **orchestrator**. Each child runs **format only**.
 
-Planning uses [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs) (`--skill frontend-format`).
+Planning uses [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs) (`--skill frontend-format`).
 
 Shared assets: [app-fanout](../app-fanout/README.md).
 
@@ -33,7 +33,7 @@ Progress:
 - Format until format-clean
 - Prettier for React/Vite/Tailwind; add config only if the tree has none
 - Do not lint. Do not replace existing formatter config
-- Stay inside `frontend/`
+- Stay inside `apps/frontend/`
 - Never push
 - `last-runs.json` is parent-only
 - Children `close --here`; parent always `close --skill`
@@ -50,7 +50,7 @@ Progress:
 ## 1. Plan
 
 ```
-node scripts/app-fanout/app-fanout.mjs plan --skill frontend-format
+node apps/scripts/app-fanout/app-fanout.mjs plan --skill frontend-format
 ```
 
 Optional: `--force`, `--app frontend`, `--base <branch>`.
@@ -63,8 +63,8 @@ Optional: `--force`, `--app frontend`, `--base <branch>`.
 ## 3. Merge, close, then record
 
 ```
-node scripts/app-fanout/app-fanout.mjs close --skill frontend-format frontend
-node scripts/app-fanout/app-fanout.mjs record --skill frontend-format --commit <base-sha> frontend
+node apps/scripts/app-fanout/app-fanout.mjs close --skill frontend-format frontend
+node apps/scripts/app-fanout/app-fanout.mjs record --skill frontend-format --commit <base-sha> frontend
 ```
 
 Do not record failed or skipped trees.
@@ -72,5 +72,5 @@ Do not record failed or skipped trees.
 ## Out of scope
 
 - Lint and page accessibility
-- `backend/`, `e2e/`, `scripts/`
+- `apps/backend/`, `apps/e2e/`, `apps/scripts/`
 - `platform-quality`

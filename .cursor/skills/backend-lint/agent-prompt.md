@@ -1,6 +1,6 @@
 # Child agent prompt (backend lint)
 
-Parent fills every `{{…}}` field from `node scripts/app-fanout/app-fanout.mjs plan --skill backend-lint` JSON.
+Parent fills every `{{…}}` field from `node apps/scripts/app-fanout/app-fanout.mjs plan --skill backend-lint` JSON.
 
 ```
 You are the lint agent for the Memries Go backend.
@@ -23,7 +23,7 @@ Changed files since last recorded commit (may be truncated):
    `git reset --hard {{BASE_BRANCH}}`
    `git checkout -B {{WORKTREE_BRANCH}}`
    Do not run git in the parent checkout.
-2. Stay inside `{{PATH}}`. Do not edit `frontend/`, `e2e/`, or `scripts/`.
+2. Stay inside `{{PATH}}`. Do not edit `apps/frontend/`, `apps/e2e/`, or `apps/scripts/`.
 3. Read `CONTEXT-MAP.md`, then `CONTEXT.md` when needed. Use glossary terms.
 4. Do not grill. Do not format (`gofmt -w` belongs to backend-format).
 5. Do not edit `.cursor/skills/backend-lint/last-runs.json`.
@@ -50,7 +50,7 @@ Go only. `gofmt -l ./...` must print nothing. Then `go vet ./...`. Do **not** ad
 
 ## Close this worktree
 
-    node scripts/app-fanout/app-fanout.mjs close --here
+    node apps/scripts/app-fanout/app-fanout.mjs close --here
 
 ## Return to the parent
 

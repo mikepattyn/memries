@@ -8,7 +8,7 @@ Shared planner assets for the Memries quality orchestrators:
 - `e2e-docker` (one Playwright feature file per Docker stack)
 - `platform-quality` (umbrella; user-invoked only)
 
-Planning lives in [`scripts/app-fanout/app-fanout.mjs`](../../../scripts/app-fanout/app-fanout.mjs) and [`scripts/app-fanout/app-fanout.config.json`](../../../scripts/app-fanout/app-fanout.config.json). Standalone `/e2e-docker` still uses [`scripts/e2e-docker/e2e-docker.mjs`](../../../scripts/e2e-docker/e2e-docker.mjs); both call the same `planE2eFeatures`.
+Planning lives in [`apps/scripts/app-fanout/app-fanout.mjs`](../../../apps/scripts/app-fanout/app-fanout.mjs) and [`apps/scripts/app-fanout/app-fanout.config.json`](../../../apps/scripts/app-fanout/app-fanout.config.json). Standalone `/e2e-docker` still uses [`apps/scripts/e2e-docker/e2e-docker.mjs`](../../../apps/scripts/e2e-docker/e2e-docker.mjs); both call the same `planE2eFeatures`.
 
 This folder is **not** a user-facing skill. Do not trigger it. Do not invoke `platform-quality` from here.
 

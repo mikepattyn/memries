@@ -1,0 +1,16 @@
+.git
+.worktrees
+.cursor
+.claude
+data
+**/node_modules
+**/.turbo
+apps/e2e/.work
+apps/e2e/.features-gen
+apps/e2e/test-results
+apps/e2e/playwright-report
+apps/backend/bin
+dist
+*.log
+.env
+docs
