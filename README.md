@@ -175,7 +175,7 @@ pnpm test   # frontend, backend, scripts — not Playwright
 
 `make e2e` still runs the isolated Playwright suite (`@memries/e2e`).
 
-The installer provisions Node 20, Go 1.23, and corepack pnpm. It does not install Docker or workspace dependencies.
+The installer provisions Node 22, Go 1.23, and corepack pnpm. It does not install Docker or workspace dependencies.
 
 ## Dev mode (without Docker)
 

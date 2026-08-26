@@ -14,10 +14,10 @@ import {
 } from './versions.mjs';
 
 describe('version helpers', () => {
-  it('accepts Node 20+ and Go 1.23+', () => {
-    assert.equal(parseNodeMajor('v20.18.2'), 20);
-    assert.equal(nodeSatisfies('v18.20.0'), false);
-    assert.equal(nodeSatisfies('v20.18.2'), true);
+  it('accepts Node 22+ and Go 1.23+', () => {
+    assert.equal(parseNodeMajor('v22.23.2'), 22);
+    assert.equal(nodeSatisfies('v20.18.2'), false);
+    assert.equal(nodeSatisfies('v22.23.2'), true);
     assert.deepEqual(parseGoVersion('go version go1.23.6 linux/amd64'), {
       major: 1,
       minor: 23,
@@ -70,7 +70,7 @@ describe('main', () => {
       nodeOk: () => true,
       goFound: () => true,
       goOk: () => true,
-      nodeVersion: () => 'v20.18.2',
+      nodeVersion: () => 'v22.23.2',
       goVersion: () => 'go version go1.23.6 windows/amd64',
       wingetInstall: (id) => winget.push(id),
       enableCorepack: () => {},
@@ -85,7 +85,7 @@ describe('main', () => {
     await main([], {
       platform: () => 'win32',
       nodeOk: () => true,
-      nodeVersion: () => 'v20.18.2',
+      nodeVersion: () => 'v22.23.2',
       goFound: () => true,
       goVersion: () => 'go version go1.22.5 windows/amd64',
       wingetInstall: (id) => winget.push(id),
@@ -125,7 +125,7 @@ describe('main', () => {
       platform: () => 'linux',
       arch: () => 'x64',
       nodeOk: () => true,
-      nodeVersion: () => 'v20.18.2',
+      nodeVersion: () => 'v22.23.2',
       goFound: () => true,
       goVersion: () => 'go version go1.22.5 linux/amd64',
       installTarball: async (opts) => downloads.push(opts),

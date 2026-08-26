@@ -1,5 +1,5 @@
-export const NODE_MAJOR = 20;
-export const NODE_VERSION = '20.18.2';
+export const NODE_MAJOR = 22;
+export const NODE_VERSION = '22.23.2';
 export const GO_VERSION = '1.23.6';
 export const PNPM_VERSION = '9.15.9';
 
