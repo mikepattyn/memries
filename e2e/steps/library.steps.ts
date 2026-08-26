@@ -3,10 +3,13 @@ import {
   Given,
   Then,
   When,
+  albumOpenButton,
   collectTimelineLabels,
   markFixturesDirty,
   openTab,
+  photoActions,
   photoByDay,
+  photoViewer,
   revealPhoto,
   runPrepareFixtures,
   scrollTimeline,
@@ -156,12 +159,12 @@ When('I create an album named {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'New album' }).click();
   await page.getByLabel('Album name').fill(name);
   await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(albumOpenButton(page, name)).toBeVisible();
 });
 
 When('I open the album named {string}', async ({ page }, name: string) => {
   await openTab(page, 'Albums');
-  await page.getByRole('button', { name: new RegExp(`Open album ${name}`) }).click();
+  await albumOpenButton(page, name).click();
   await expect(page.getByRole('button', { name: 'Back to albums' })).toBeVisible();
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
 });
@@ -197,17 +200,17 @@ Then('the original image is requested', async ({ page }) => {
 });
 
 Then('the actions menu offers to remove from this album', async ({ page }) => {
-  await expect(page.getByRole('menuitem', { name: 'Remove from this album' })).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Add to album' })).toHaveCount(0);
+  await expect(photoActions(page).getByRole('button', { name: 'Remove from this album' })).toBeVisible();
+  await expect(photoActions(page).getByRole('group', { name: 'Add to album' })).toHaveCount(0);
 });
 
 When('I remove the photo from this album', async ({ page }) => {
-  await page.getByRole('menuitem', { name: 'Remove from this album' }).click();
+  await photoActions(page).getByRole('button', { name: 'Remove from this album' }).click();
 });
 
 Then('the album {string} should have {int} photos', async ({ page }, name: string, count: number) => {
   await openTab(page, 'Albums');
-  const card = page.locator('article').filter({ has: page.getByRole('heading', { name, exact: true }) });
+  const card = page.locator('article').filter({ has: albumOpenButton(page, name) });
   const label = count === 1 ? '1 photo' : `${count} photos`;
   await expect(card.getByText(label, { exact: true })).toBeVisible();
 });
@@ -218,21 +221,21 @@ When('I open the photo from {string}', async ({ page }, day: string) => {
     const photo = photoByDay(page, day).first();
     await expect(photo).toBeVisible();
     await photo.click();
-    await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+    await expect(photoViewer(page)).toBeVisible();
     return;
   }
   await openTab(page, 'Memories');
   const photo = await revealPhoto(page, day);
   await photo.click();
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+  await expect(photoViewer(page)).toBeVisible();
 });
 
 Then('the photo viewer is open', async ({ page }) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toBeVisible();
+  await expect(photoViewer(page)).toBeVisible();
 });
 
 Then('the photo viewer is closed', async ({ page }) => {
-  await expect(page.getByRole('dialog', { name: 'Photo viewer' })).toHaveCount(0);
+  await expect(photoViewer(page)).toHaveCount(0);
 });
 
 When('I add the viewer photo to favorites', async ({ page }) => {
@@ -242,7 +245,8 @@ When('I add the viewer photo to favorites', async ({ page }) => {
 
 When('I add the viewer photo to album {string}', async ({ page }, name: string) => {
   await page.getByRole('button', { name: 'Add to album', exact: true }).click();
-  await page.getByRole('menuitem', { name: new RegExp(`Add to album ${name}`) }).click();
+  await expect(photoActions(page)).toBeVisible();
+  await photoActions(page).getByRole('button', { name: new RegExp(`Add to album ${name}`) }).click();
 });
 
 When('I go to the next photo', async ({ page }) => {
@@ -267,7 +271,7 @@ When('I long-press the photo from {string}', async ({ page }, day: string) => {
   await page.mouse.down();
   await page.waitForTimeout(650);
   await page.mouse.up();
-  const menu = page.getByRole('menu', { name: 'Photo actions' });
+  const menu = photoActions(page);
   if (!(await menu.isVisible().catch(() => false))) {
     await photo.click({ button: 'right' });
   }
@@ -275,18 +279,18 @@ When('I long-press the photo from {string}', async ({ page }, day: string) => {
 });
 
 Then('the photo actions menu is visible', async ({ page }) => {
-  await expect(page.getByRole('menu', { name: 'Photo actions' })).toBeVisible();
+  await expect(photoActions(page)).toBeVisible();
 });
 
 Then('album {string} in the actions menu shows {int} on the right', async ({ page }, name: string, count: number) => {
-  const item = page.getByRole('menuitem', { name: new RegExp(`Add to album ${name}, ${count} photo`) });
+  const item = photoActions(page).getByRole('button', { name: new RegExp(`Add to album ${name}, ${count} photo`) });
   await expect(item).toBeVisible();
   await expect(item).toContainText(name);
   await expect(item).toContainText(String(count));
 });
 
 When('I choose album {string} in the actions menu', async ({ page }, name: string) => {
-  await page.getByRole('menuitem', { name: new RegExp(`Add to album ${name}`) }).click();
+  await photoActions(page).getByRole('button', { name: new RegExp(`Add to album ${name}`) }).click();
 });
 
 When('I change the capture date of {string} to {string}', async ({ page }, file: string, datetime: string) => {

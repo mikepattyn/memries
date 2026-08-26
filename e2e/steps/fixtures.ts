@@ -84,6 +84,18 @@ export function photoByDay(page: Page, day: string): Locator {
   return page.getByRole('button', { name: new RegExp(`Open (favorited )?photo, ${escapeRegExp(day)}`) });
 }
 
+export function photoViewer(page: Page): Locator {
+  return page.locator('[role="dialog"][data-viewer-day]');
+}
+
+export function photoActions(page: Page): Locator {
+  return page.getByRole('dialog', { name: 'Photo actions' });
+}
+
+export function albumOpenButton(page: Page, name: string): Locator {
+  return page.getByRole('button', { name: new RegExp(`Open album ${escapeRegExp(name)}`) });
+}
+
 type TimelineEl = HTMLElement & { __scrollToGroup?: (index: number) => void };
 
 export async function scrollTimeline(page: Page, dy: number) {
