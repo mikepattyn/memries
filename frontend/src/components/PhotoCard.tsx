@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { usePhotoPress } from "../hooks/usePhotoPress";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
@@ -45,9 +45,12 @@ export function PhotoCard({
       : undefined,
   });
 
-  useEffect(() => {
+  const imageKey = `${photo.id}:${src}:${density}:${showImage}`;
+  const [seenImageKey, setSeenImageKey] = useState(imageKey);
+  if (seenImageKey !== imageKey) {
+    setSeenImageKey(imageKey);
     setLoaded(false);
-  }, [photo.id, src, density, showImage]);
+  }
 
   const radius =
     density === "thumb" ? "rounded-xl" : density === "day" ? "rounded-[1.6rem]" : "rounded-2xl";

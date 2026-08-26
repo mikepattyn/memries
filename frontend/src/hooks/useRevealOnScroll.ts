@@ -4,19 +4,17 @@ import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
 export function useRevealOnScroll<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const reduced = usePrefersReducedMotion();
-  const [visible, setVisible] = useState(reduced);
+  const [revealed, setRevealed] = useState(false);
+  const visible = reduced || revealed;
 
   useEffect(() => {
-    if (reduced) {
-      setVisible(true);
-      return;
-    }
+    if (reduced) return;
     const element = ref.current;
     if (!element) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true);
+          setRevealed(true);
           observer.disconnect();
         }
       },

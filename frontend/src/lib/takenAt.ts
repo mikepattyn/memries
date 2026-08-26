@@ -18,7 +18,7 @@ export const TAKEN_AT_TAG_ORDER = [
   "Creation Time",
 ] as const;
 
-const EXIF_CLOCK = /^(\d{4})[:\-](\d{2})[:\-](\d{2})[ T](\d{2}):(\d{2}):(\d{2})/;
+const EXIF_CLOCK = /^(\d{4})[:-](\d{2})[:-](\d{2})[ T](\d{2}):(\d{2}):(\d{2})/;
 const RFC_CLOCK =
   /\b(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})\b/i;
 

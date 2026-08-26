@@ -39,29 +39,33 @@ export function PhotoViewer({
   const startRef = useRef<{ x: number; y: number } | null>(null);
   const dragRef = useRef({ x: 0, y: 0 });
   const closingRef = useRef(false);
-  const firstPhoto = useRef(true);
   const [drag, setDrag] = useState({ x: 0, y: 0 });
-  const [src, setSrc] = useState(photo?.imageUrl ?? "");
+  const nextSrc = photo?.imageUrl ?? "";
+  const imageIdentity = `${photo?.id ?? ""}:${nextSrc}`;
+  const [src, setSrc] = useState(nextSrc);
+  const [seenImageIdentity, setSeenImageIdentity] = useState(imageIdentity);
   const [albumPickerOpen, setAlbumPickerOpen] = useState(false);
   const [motion, setMotion] = useState<ViewerMotion>(reducedMotion ? "reduced" : "opening");
+  const [motionPhotoId, setMotionPhotoId] = useState(photo?.id);
 
-  useEffect(() => {
-    setSrc(photo?.imageUrl ?? "");
+  if (seenImageIdentity !== imageIdentity) {
+    setSeenImageIdentity(imageIdentity);
+    setSrc(nextSrc);
     setAlbumPickerOpen(false);
-  }, [photo?.id, photo?.imageUrl]);
+  }
+
+  if (photo?.id !== motionPhotoId) {
+    setMotionPhotoId(photo?.id);
+    if (!reducedMotion) setMotion("navigating");
+  }
 
   useEffect(() => {
-    if (firstPhoto.current) {
-      firstPhoto.current = false;
-      return;
-    }
-    if (reducedMotion) return;
-    setMotion("navigating");
+    if (motion !== "navigating") return;
     const timer = window.setTimeout(() => {
       setMotion((current) => (current === "navigating" ? "open" : current));
     }, 280);
     return () => window.clearTimeout(timer);
-  }, [photo?.id, reducedMotion]);
+  }, [motion, photo?.id]);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -191,7 +195,7 @@ export function PhotoViewer({
         data-viewer-day={formatDayLabel(photo.takenAt)}
         data-viewer-favorite={photo.favorite ? "true" : "false"}
         data-reduced-motion={reducedMotion ? "true" : "false"}
-        data-origin={originRef.current ? "card" : "none"}
+        data-origin={origin ? "card" : "none"}
         onClick={close}
       >
         <div

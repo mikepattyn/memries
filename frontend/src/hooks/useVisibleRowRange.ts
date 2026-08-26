@@ -29,11 +29,17 @@ export function useVisibleRowRange(rowCount: number, overscan = COMPACT_ROW_OVER
     };
   }, []);
 
+  const maxLast = Math.max(0, rowCount - 1);
+  const clampedLast = Math.min(Math.max(last, 0), maxLast);
+  if (clampedLast !== last) {
+    setLast(clampedLast);
+  }
+
   useEffect(() => {
-    setLast((current) => Math.min(Math.max(current, 0), Math.max(0, rowCount - 1)));
+    const observed = observers.current;
     return () => {
-      for (const io of observers.current.values()) io.disconnect();
-      observers.current.clear();
+      for (const io of observed.values()) io.disconnect();
+      observed.clear();
     };
   }, [rowCount]);
 

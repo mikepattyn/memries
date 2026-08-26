@@ -47,7 +47,10 @@ export function Timeline({
   const orderedPhotos = useMemo(() => groups.flatMap((group) => group.photos), [groups]);
 
   const groupsRef = useRef(groups);
-  groupsRef.current = groups;
+
+  useLayoutEffect(() => {
+    groupsRef.current = groups;
+  });
 
   useLayoutEffect(() => {
     const current = groupsRef.current;
@@ -74,18 +77,21 @@ export function Timeline({
     onGranularityChange(next);
   };
 
-  useEffect(() => {
-    if (!activeLabel || activeLabel === periodLabel) return;
+  if (activeLabel && activeLabel !== periodLabel) {
     if (reducedMotion) {
       setPeriodLabel(activeLabel);
       setOutgoingPeriod(null);
-      return;
+    } else {
+      setOutgoingPeriod(periodLabel);
+      setPeriodLabel(activeLabel);
     }
-    setOutgoingPeriod(periodLabel);
-    setPeriodLabel(activeLabel);
+  }
+
+  useEffect(() => {
+    if (!outgoingPeriod) return;
     const timer = window.setTimeout(() => setOutgoingPeriod(null), 280);
     return () => window.clearTimeout(timer);
-  }, [activeLabel, periodLabel, reducedMotion]);
+  }, [outgoingPeriod]);
 
   const openFrom = (photo: Photo, origin: HTMLElement) => {
     onOpen(photo, origin, orderedPhotos);
