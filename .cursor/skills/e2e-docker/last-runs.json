@@ -47,13 +47,13 @@
     },
     "memries-login": {
       "path": "apps/e2e/features/login.feature",
-      "recordedAt": "2026-08-26T11:24:08.150Z",
-      "lastCommit": "3019f3a7398deaed4f8966191ef84d9787c77a29",
+      "recordedAt": "2026-08-26T12:44:24.056Z",
+      "lastCommit": "9f3563ddcf1381aa7c69d2e101e4d0e7294134bd",
       "finding": {
-        "status": "failed",
-        "summary": "0 passed (stack up failed: frontend Docker build, Node 20 vs jest-dom engines >=22)",
+        "status": "passed",
+        "summary": "2 passed",
         "composeProject": "e2e-memries-login",
-        "suiteCommit": "1f3767f059051d52a8c13ebc0f33d2bc60aa031e"
+        "suiteCommit": "9f3563ddcf1381aa7c69d2e101e4d0e7294134bd"
       }
     },
     "memries-timeline": {

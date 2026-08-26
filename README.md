@@ -1,7 +1,7 @@
 # Memries
 
 <!-- e2e-last-runs-tag:start -->
-[**E2E last-runs:** ❌ 10 of 14 passed](#end-to-end-tests) — login, search, viewer-gestures, viewer
+[**E2E last-runs:** ❌ 11 of 14 passed](#end-to-end-tests) — search, viewer-gestures, viewer
 <!-- e2e-last-runs-tag:end -->
 
 Lightweight photo manager. Replaces Piwigo. Modern UI focused on date-scroll browsing with switchable granularity (year / month / week / day).
@@ -78,7 +78,7 @@ Playwright BDD against a real Compose stack — not the one on `:80`. Each featu
 - ✅ **Capture time** — Newest first. EXIF DateTimeOriginal wins; no EXIF uses file time. Sync keeps favorites and album membership.
 - ✅ **Empty library states** — Favorites, Search, and a new Album explain themselves when they have nothing to show.
 - ✅ **Index run splash** — Folder Sync shows the Index run, then Memories. A missing Original is pruned; a relocated Photo keeps its identity.
-- ❌ **Sign in** — Dex login puts the owner on Memories.
+- ✅ **Sign in** — Dex login puts the owner on Memories.
 - ✅ **Long-press photo actions** — Long-press offers album rows (name left, count right). Tapping a row adds the Photo once.
 - ✅ **Motion** — Open, close, granularity, and scroll move by default. Reduced motion makes them instant.
 - ✅ **Library navigation** — Side nav on wide viewports, bottom bar on narrow. Re-opening Albums leaves an Album page. Today jumps to the newest Timeline Group.
