@@ -88,6 +88,10 @@ e2e:
 	$(REQUIRE_ENV)
 	pnpm --filter @memries/e2e test
 
+e2e-headed:
+	$(REQUIRE_ENV)
+	pnpm --filter @memries/e2e test:headed
+
 e2e-down:
 	$(REQUIRE_ENV)
 	pnpm --filter @memries/e2e run stack:down

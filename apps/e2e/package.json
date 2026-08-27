@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "bddgen && playwright test",
+    "test:headed": "bddgen && playwright test --headed",
     "test:unit": "node --test scripts/stack.test.mjs",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,mjs,cjs,ts,tsx}\"",
