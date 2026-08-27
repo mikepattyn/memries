@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "apps": {
+    "frontend": {
+      "path": "apps/frontend",
+      "lastCommit": "e387f4a16a984d75db5a5670ecf2271248fcf7a2",
+      "recordedAt": "2026-08-26T10:36:39.510Z",
+      "incompletePages": []
+    }
+  }
+}

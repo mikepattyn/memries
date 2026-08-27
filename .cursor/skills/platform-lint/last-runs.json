@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "apps": {
+    "e2e": {
+      "path": "e2e",
+      "lastCommit": "f7f79e6940a5fc5e301ee4f1b505214f49a01492",
+      "recordedAt": "2026-08-26T09:02:57.894Z",
+      "incompleteFiles": []
+    },
+    "scripts": {
+      "path": "scripts",
+      "lastCommit": "f7f79e6940a5fc5e301ee4f1b505214f49a01492",
+      "recordedAt": "2026-08-26T09:02:58.458Z",
+      "incompleteFiles": []
+    }
+  }
+}
