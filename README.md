@@ -1,7 +1,7 @@
 # Memries
 
 <!-- e2e-last-runs-tag:start -->
-[**E2E last-runs:** ❌ 11 of 14 passed](#end-to-end-tests) — search, viewer-gestures, viewer
+[**E2E last-runs:** ❌ suite not recorded](#end-to-end-tests)
 <!-- e2e-last-runs-tag:end -->
 
 Lightweight photo manager. Replaces Piwigo. Modern UI focused on date-scroll browsing with switchable granularity (year / month / week / day).
@@ -71,22 +71,22 @@ That truncates the `memries` collections and restarts the API so the in-memory i
 
 ## End-to-end tests
 
-Playwright BDD against a real Compose stack — not the one on `:80`. Each feature file owns one product surface. Last-runs are the recorded result of the last isolated `/e2e-docker` pass.
+Playwright BDD against a real Compose stack — not the one on `:80`. All feature files run in one `make e2e` process. Last-runs are the recorded result of the last `/e2e-docker` suite pass (id `memries`). Catalog marks follow that one finding.
 
 <!-- e2e-last-runs-catalog:start -->
-- ✅ **Albums** — Create, add a Photo, count survives reload. Opening an Album shows its Photos. Long-press on the Album page unmembers; the Photo stays in the library.
-- ✅ **Capture time** — Newest first. EXIF DateTimeOriginal wins; no EXIF uses file time. Sync keeps favorites and album membership.
-- ✅ **Empty library states** — Favorites, Search, and a new Album explain themselves when they have nothing to show.
-- ✅ **Index run splash** — Folder Sync shows the Index run, then Memories. A missing Original is pruned; a relocated Photo keeps its identity.
-- ✅ **Sign in** — Dex login puts the owner on Memories.
-- ✅ **Long-press photo actions** — Long-press offers album rows (name left, count right). Tapping a row adds the Photo once.
-- ✅ **Motion** — Open, close, granularity, and scroll move by default. Reduced motion makes them instant.
-- ✅ **Library navigation** — Side nav on wide viewports, bottom bar on narrow. Re-opening Albums leaves an Album page. Today jumps to the newest Timeline Group.
+- ❌ **Albums** — Create, add a Photo, count survives reload. Opening an Album shows its Photos. Long-press on the Album page unmembers; the Photo stays in the library.
+- ❌ **Capture time** — Newest first. EXIF DateTimeOriginal wins; no EXIF uses file time. Sync keeps favorites and album membership.
+- ❌ **Empty library states** — Favorites, Search, and a new Album explain themselves when they have nothing to show.
+- ❌ **Index run splash** — Folder Sync shows the Index run, then Memories. A missing Original is pruned; a relocated Photo keeps its identity.
+- ❌ **Sign in** — Dex login puts the owner on Memories.
+- ❌ **Long-press photo actions** — Long-press offers album rows (name left, count right). Tapping a row adds the Photo once.
+- ❌ **Motion** — Open, close, granularity, and scroll move by default. Reduced motion makes them instant.
+- ❌ **Library navigation** — Side nav on wide viewports, bottom bar on narrow. Re-opening Albums leaves an Album page. Today jumps to the newest Timeline Group.
 - ❌ **Search** — Filter on Memories opens Search. Smart dates (`yesterday`, `last winter`, `a day in june`) plus year and favorites facets. Library clock is frozen at 26 August 2026.
-- ✅ **Light and dark theme** — First visit follows the system. Toggle persists.
-- ✅ **Timeline periods** — Year / month / week / day headings follow capture time. The pinned label follows the first visible Timeline Group.
+- ❌ **Light and dark theme** — First visit follows the system. Toggle persists.
+- ❌ **Timeline periods** — Year / month / week / day headings follow capture time. The pinned label follows the first visible Timeline Group.
 - ❌ **Photo viewer gestures** — Swipe past a threshold for next/previous. A short drag snaps back. Drag down dismisses.
-- ✅ **Photo viewer keyboard** — The viewer is a dialog: Escape closes, arrows move, F favorites, Tab stays inside. Close returns focus to the Photo.
+- ❌ **Photo viewer keyboard** — The viewer is a dialog: Escape closes, arrows move, F favorites, Tab stays inside. Close returns focus to the Photo.
 - ❌ **Photo viewer** — Opens from Memories and Search. Favorite, album, next/previous, close.
 <!-- e2e-last-runs-catalog:end -->
 
@@ -95,10 +95,10 @@ pnpm install
 pnpm --filter @memries/e2e exec playwright install chromium
 make e2e          # first compose build can take several minutes
 make e2e-down     # stop; keep e2e volumes
-make e2e-docker-force  # plan a fresh isolated run of every feature
+make e2e-docker-force  # plan a fresh suite run
 ```
 
-See [apps/e2e/README.md](apps/e2e/README.md) for reuse of a running stack, wipe, and cleanup of `.work/`. `make e2e-last-runs` fails unless every last-run passed.
+See [apps/e2e/README.md](apps/e2e/README.md) for reuse of a running stack, wipe, and cleanup of `.work/`. `make e2e-last-runs` fails unless the suite last-run passed.
 
 ## Layout
 
