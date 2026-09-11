@@ -69,9 +69,37 @@ That truncates the `memries` collections and restarts the API so the in-memory i
 > **Note:** ArangoDB sets the root password on **first init only**. Change `ARANGO_PASSWORD` after that and the DB will reject auth. To reset:
 > `make down-wipe && make up`
 
+## pnpm
+
+Host `pnpm install`, e2e, and Turbo builds need [pnpm](https://pnpm.io/installation). This workspace pins **9.15.9** (`packageManager` in `package.json`). Compose (`make up`) does not.
+
+macOS / Linux:
+
+```bash
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=9.15.9 sh -
+```
+
+Open a new shell so `pnpm` is on PATH.
+
+Windows: Defender can block the standalone installer, so use npm ([Using npm](https://pnpm.io/installation#using-npm)):
+
+```powershell
+npx get-pnpm
+corepack prepare pnpm@9.15.9 --activate
+```
+
+If Node 22 is already on PATH, Corepack is enough on any OS:
+
+```bash
+corepack enable
+corepack prepare pnpm@9.15.9 --activate
+```
+
+`make install-requirements` enables that Corepack pin on Windows, Linux, and macOS (plus Node 22 and Go 1.23). It does not install Docker or workspace dependencies.
+
 ## End-to-end tests
 
-Playwright BDD against a real Compose stack — not the one on `:80`. All feature files run in one `make e2e` process. Last-runs are the recorded result of the last `/e2e-docker` suite pass (id `memries`). Catalog marks follow that one finding.
+Playwright BDD against a real Compose stack — not the one on `:80`. All feature files run in one `make e2e` process. Last-runs are the recorded result of the last `/e2e-docker` suite pass (id `memries`). Catalog marks follow that one finding. Host commands below need [pnpm](#pnpm).
 
 <!-- e2e-last-runs-catalog:start -->
 - ❌ **Albums** — Create, add a Photo, count survives reload. Opening an Album shows its Photos. Long-press on the Album page unmembers; the Photo stays in the library.
@@ -185,18 +213,15 @@ Indexer accepts any prefix — pass `-prefix admin@example.com` to limit to one 
 
 ## Local Turbo (host Node + Go)
 
-Docker Desktop is enough for `make up`. To run `pnpm build` / `pnpm test` / `pnpm lint` on the host:
+Docker Desktop is enough for `make up`. Host `pnpm build` / `pnpm test` / `pnpm lint` need [pnpm](#pnpm) first:
 
 ```bash
-make install-requirements
 pnpm install
 pnpm build
 pnpm test   # frontend, backend, scripts — not Playwright
 ```
 
 `make e2e` still runs the isolated Playwright suite (`@memries/e2e`).
-
-The installer provisions Node 22, Go 1.23, and corepack pnpm. It does not install Docker or workspace dependencies.
 
 ## Dev mode (without Docker)
 
